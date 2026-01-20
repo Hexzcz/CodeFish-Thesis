@@ -1,0 +1,27 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Project-specific cache
+cache/
+
+# Large generated files (optional: uncomment if you don't want to track them)
+*.html
+# *.geojson
+*.shp
+*.dbf
+*.prj
+*.shx
+
+!index.html
+
+# IDEs
+.vscode/
+.idea/

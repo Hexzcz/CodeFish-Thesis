@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quezon City Flood Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Flood Map</h2>
+                <p>Quezon City</p>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label class="toggle-label">
+                        <span>Show Flood Heatmap</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-flood" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </label>
+                    <div class="slider-container" id="flood-opacity-container" style="margin-top: 10px;">
+                        <label for="flood-opacity" style="font-size: 12px; color: #ccc;">Opacity</label>
+                        <input type="range" id="flood-opacity" min="0" max="1" step="0.1" value="0.6"
+                            style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="toggle-label">
+                        <span>Show QC Boundary</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-boundary" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <label class="toggle-label">
+                        <span>Show Project 8 Boundary</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-project8-boundary">
+                            <span class="slider round"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <label class="toggle-label">
+                        <span>Show Road Network</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-roads">
+                            <span class="slider round"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <label class="toggle-label">
+                        <span>Color Roads by Risk</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-road-risk">
+                            <span class="slider round"></span>
+                        </label>
+                    </label>
+                </div>
+
+                <div class="control-group node-selection">
+                    <h3>Node Selection</h3>
+                    <div class="node-info">
+                        <strong>Current:</strong> <span id="current-node-display">None</span>
+                        <button id="clear-current" class="clear-btn">×</button>
+                    </div>
+                    <div class="node-info">
+                        <strong>Target:</strong> <span id="target-node-display">None</span>
+                        <button id="clear-target" class="clear-btn">×</button>
+                    </div>
+                    <button id="find-path" class="primary-btn" disabled style="width: 100%; margin-top: 15px;">Find
+                        Shortest Path</button>
+                </div>
+            </div>
+
+            <div class="legend">
+                <h3>Legend</h3>
+                <div class="legend-item">
+                    <span class="color-box" style="background: yellow;"></span>
+                    <span>Low Susceptibility (1)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background: orange;"></span>
+                    <span>Medium Susceptibility (2)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background: red;"></span>
+                    <span>High Susceptibility (3)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map"></div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Custom JS -->
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
