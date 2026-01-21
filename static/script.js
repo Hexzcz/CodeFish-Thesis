@@ -114,6 +114,8 @@ let targetNode = null;
 let currentNodeMarker = null;
 let targetNodeMarker = null;
 let project8NodeLayer = null;
+let adjacencyList = new Map();
+let pathLayer = null;
 
 // Expose to window for debugging
 window.nodeState = {
@@ -131,21 +133,34 @@ let project8RoadLayer = null;
 fetch('/project8_roads.geojson?t=' + new Date().getTime())
     .then(response => response.json())
     .then(data => {
-        // Extract unique nodes
+        // Extract unique nodes and build Adjacency List
         const nodes = new Map();
+        adjacencyList.clear();
+
         data.features.forEach(feature => {
             const coords = feature.geometry.coordinates;
-            // LineStrings should have at least 2 points
+            const u = feature.properties.u;
+            const v = feature.properties.v;
+            const length = feature.properties.length || 1;
+
             if (coords.length >= 2) {
                 const startCoords = coords[0];
                 const endCoords = coords[coords.length - 1];
 
-                if (feature.properties.u !== undefined) {
-                    nodes.set(feature.properties.u, { id: feature.properties.u, coords: [startCoords[1], startCoords[0]] });
+                if (u !== undefined) {
+                    nodes.set(u, { id: u, coords: [startCoords[1], startCoords[0]] });
                 }
-                if (feature.properties.v !== undefined) {
-                    nodes.set(feature.properties.v, { id: feature.properties.v, coords: [endCoords[1], endCoords[0]] });
+                if (v !== undefined) {
+                    nodes.set(v, { id: v, coords: [endCoords[1], endCoords[0]] });
                 }
+            }
+
+            if (u !== undefined && v !== undefined) {
+                if (!adjacencyList.has(u)) adjacencyList.set(u, []);
+                if (!adjacencyList.has(v)) adjacencyList.set(v, []);
+
+                adjacencyList.get(u).push({ node: v, weight: length, feature: feature });
+                adjacencyList.get(v).push({ node: u, weight: length, feature: feature });
             }
         });
 
@@ -272,12 +287,344 @@ function initSearchButton() {
             console.log("Button clicked event fired");
             if (currentNode && targetNode) {
                 console.log(`ACTION: Finding path from Node ${currentNode} to Node ${targetNode}...`);
+                const result = runDijkstra(currentNode, targetNode);
+                if (result) {
+                    drawPath(result);
+                } else {
+                    alert("No path found between the selected nodes.");
+                }
             } else {
                 console.log("Button clicked but nodes not fully selected:", { currentNode, targetNode });
             }
         });
     }
+
+    const clearBtn = document.getElementById('clear-path');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            clearSelectionAndPath();
+        });
+    }
 }
+
+function runDijkstra(startNode, endNode) {
+    const distances = new Map();
+    const previous = new Map();
+    const pq = new PriorityQueue();
+
+    // Initialize all nodes
+    for (let node of adjacencyList.keys()) {
+        distances.set(node, Infinity);
+        previous.set(node, null);
+    }
+
+    distances.set(startNode, 0);
+    pq.enqueue(startNode, 0);
+
+    while (!pq.isEmpty()) {
+        const { element: currentNode, priority: currentDist } = pq.dequeue();
+
+        // Skip if we've already found a better path
+        if (currentDist > distances.get(currentNode)) continue;
+
+        // Early exit if we reached the target
+        if (currentNode === endNode) break;
+
+        const neighbors = adjacencyList.get(currentNode) || [];
+
+        for (let neighbor of neighbors) {
+            const nextNode = neighbor.node;
+            const edgeWeight = neighbor.weight;
+            const newDist = distances.get(currentNode) + edgeWeight;
+
+            if (newDist < distances.get(nextNode)) {
+                distances.set(nextNode, newDist);
+                previous.set(nextNode, {
+                    node: currentNode,
+                    feature: neighbor.feature,
+                    weight: edgeWeight
+                });
+                pq.enqueue(nextNode, newDist);
+            }
+        }
+    }
+
+    // Check if path exists
+    if (distances.get(endNode) === Infinity) {
+        return null;
+    }
+
+    // Reconstruct path with proper ordering
+    const pathFeatures = [];
+    const pathNodes = [];
+    let current = endNode;
+
+    while (previous.get(current)) {
+        const prev = previous.get(current);
+        pathFeatures.unshift(prev.feature); // Add to beginning
+        pathNodes.unshift(current);
+        current = prev.node;
+    }
+    pathNodes.unshift(startNode);
+
+    return {
+        features: pathFeatures,
+        nodes: pathNodes,
+        totalDistance: distances.get(endNode)
+    };
+}
+
+
+function drawPath(result) {
+    if (pathLayer) {
+        map.removeLayer(pathLayer);
+    }
+
+    const { features, nodes, totalDistance } = result;
+
+    // Build continuous path coordinates
+    const pathCoords = [];
+
+    features.forEach((feature, index) => {
+        const coords = feature.geometry.coordinates;
+        const geometryType = feature.geometry.type;
+
+        if (geometryType === 'LineString') {
+            // Determine if we need to reverse the coordinates
+            // Check if the line connects properly to previous segment
+            const lineCoords = coords.map(c => [c[1], c[0]]);
+
+            if (pathCoords.length > 0) {
+                const lastPoint = pathCoords[pathCoords.length - 1];
+                const firstPoint = lineCoords[0];
+                const lastPoint2 = lineCoords[lineCoords.length - 1];
+
+                // Calculate distances to determine orientation
+                const distToFirst = Math.hypot(
+                    lastPoint[0] - firstPoint[0],
+                    lastPoint[1] - firstPoint[1]
+                );
+                const distToLast = Math.hypot(
+                    lastPoint[0] - lastPoint2[0],
+                    lastPoint[1] - lastPoint2[1]
+                );
+
+                // If closer to last point, reverse the line
+                if (distToLast < distToFirst) {
+                    lineCoords.reverse();
+                }
+            }
+
+            // Add coordinates (skip first if continuing from previous segment)
+            const startIdx = pathCoords.length > 0 ? 1 : 0;
+            pathCoords.push(...lineCoords.slice(startIdx));
+
+        } else if (geometryType === 'MultiLineString') {
+            // Handle MultiLineString (less common in road networks)
+            coords.forEach(line => {
+                const lineCoords = line.map(c => [c[1], c[0]]);
+                const startIdx = pathCoords.length > 0 ? 1 : 0;
+                pathCoords.push(...lineCoords.slice(startIdx));
+            });
+        }
+    });
+
+    // Create the path polyline with enhanced styling
+    pathLayer = L.polyline(pathCoords, {
+        color: '#00D9FF',        // Bright cyan blue
+        weight: 6,
+        opacity: 0.9,
+        lineJoin: 'round',
+        lineCap: 'round',
+        pane: 'roadPane',
+        className: 'path-highlight' // For CSS animations if desired
+    }).addTo(map);
+
+    // Add a glow effect with a second, wider line underneath
+    const glowLayer = L.polyline(pathCoords, {
+        color: '#00D9FF',
+        weight: 10,
+        opacity: 0.3,
+        lineJoin: 'round',
+        lineCap: 'round',
+        pane: 'roadPane'
+    }).addTo(map);
+
+    // Store glow layer for cleanup
+    pathLayer._glowLayer = glowLayer;
+
+    // Add markers at start and end with distance info
+    if (pathCoords.length > 0) {
+        const startMarker = L.circleMarker(pathCoords[0], {
+            radius: 8,
+            fillColor: '#00ff00',
+            color: '#fff',
+            weight: 2,
+            fillOpacity: 1,
+            pane: 'roadPane'
+        }).addTo(map);
+
+        const endMarker = L.circleMarker(pathCoords[pathCoords.length - 1], {
+            radius: 8,
+            fillColor: '#ff0000',
+            color: '#fff',
+            weight: 2,
+            fillOpacity: 1,
+            pane: 'roadPane'
+        }).addTo(map);
+
+        // Add distance popup
+        const distanceKm = (totalDistance / 1000).toFixed(2);
+        const distanceM = totalDistance.toFixed(0);
+
+        const popup = L.popup()
+            .setLatLng(pathCoords[Math.floor(pathCoords.length / 2)])
+            .setContent(`
+                <div style="text-align: center;">
+                    <strong>Route Found</strong><br>
+                    Distance: ${distanceKm} km (${distanceM} m)<br>
+                    Segments: ${features.length}
+                </div>
+            `)
+            .openOn(map);
+
+        // Store for cleanup
+        pathLayer._startMarker = startMarker;
+        pathLayer._endMarker = endMarker;
+        pathLayer._popup = popup;
+    }
+
+    // Zoom to path with padding
+    map.fitBounds(pathLayer.getBounds(), {
+        padding: [80, 80],
+        maxZoom: 16
+    });
+
+    console.log(`Path found: ${totalDistance.toFixed(2)}m over ${features.length} segments`);
+}
+
+function clearSelectionAndPath() {
+    // Clear node markers
+    if (currentNodeMarker) {
+        currentNodeMarker.setStyle({
+            radius: 4,
+            fillColor: '#ffffff',
+            weight: 1,
+            color: '#000'
+        });
+    }
+    if (targetNodeMarker) {
+        targetNodeMarker.setStyle({
+            radius: 4,
+            fillColor: '#ffffff',
+            weight: 1,
+            color: '#000'
+        });
+    }
+
+    // Clear path and associated layers
+    if (pathLayer) {
+        if (pathLayer._glowLayer) map.removeLayer(pathLayer._glowLayer);
+        if (pathLayer._startMarker) map.removeLayer(pathLayer._startMarker);
+        if (pathLayer._endMarker) map.removeLayer(pathLayer._endMarker);
+        if (pathLayer._popup) map.closePopup(pathLayer._popup);
+        map.removeLayer(pathLayer);
+        pathLayer = null;
+    }
+
+    // Reset state
+    currentNode = null;
+    targetNode = null;
+    currentNodeMarker = null;
+    targetNodeMarker = null;
+
+    // Update UI
+    document.getElementById('current-node-display').innerText = 'None';
+    document.getElementById('target-node-display').innerText = 'None';
+    updateSearchButtonState();
+}
+
+// Simple Priority Queue implementation for Dijkstra
+class PriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    enqueue(element, priority) {
+        this.heap.push({ element, priority });
+        this._bubbleUp(this.heap.length - 1);
+    }
+
+    dequeue() {
+        if (this.isEmpty()) return null;
+
+        const min = this.heap[0];
+        const end = this.heap.pop();
+
+        if (this.heap.length > 0) {
+            this.heap[0] = end;
+            this._bubbleDown(0);
+        }
+
+        return min;
+    }
+
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+
+    _bubbleUp(index) {
+        const element = this.heap[index];
+
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            const parent = this.heap[parentIndex];
+
+            if (element.priority >= parent.priority) break;
+
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+
+        this.heap[index] = element;
+    }
+
+    _bubbleDown(index) {
+        const length = this.heap.length;
+        const element = this.heap[index];
+
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let swapIndex = null;
+
+            if (leftChildIndex < length) {
+                const leftChild = this.heap[leftChildIndex];
+                if (leftChild.priority < element.priority) {
+                    swapIndex = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex < length) {
+                const rightChild = this.heap[rightChildIndex];
+                if (
+                    (swapIndex === null && rightChild.priority < element.priority) ||
+                    (swapIndex !== null && rightChild.priority < this.heap[swapIndex].priority)
+                ) {
+                    swapIndex = rightChildIndex;
+                }
+            }
+
+            if (swapIndex === null) break;
+
+            this.heap[index] = this.heap[swapIndex];
+            index = swapIndex;
+        }
+
+        this.heap[index] = element;
+    }
+}
+
 initSearchButton();
 
 // Clear Buttons Logic
@@ -288,6 +635,10 @@ document.getElementById('clear-current').addEventListener('click', () => {
     currentNode = null;
     currentNodeMarker = null;
     document.getElementById('current-node-display').innerText = 'None';
+    if (pathLayer) {
+        map.removeLayer(pathLayer);
+        pathLayer = null;
+    }
     updateSearchButtonState();
 });
 
@@ -298,6 +649,10 @@ document.getElementById('clear-target').addEventListener('click', () => {
     targetNode = null;
     targetNodeMarker = null;
     document.getElementById('target-node-display').innerText = 'None';
+    if (pathLayer) {
+        map.removeLayer(pathLayer);
+        pathLayer = null;
+    }
     updateSearchButtonState();
 });
 

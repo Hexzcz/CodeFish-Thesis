@@ -245,3 +245,24 @@ input:checked+.slider:before {
     cursor: not-allowed;
     box-shadow: none;
 }
+
+.secondary-btn {
+    background: #3c3c3c;
+    border: 1px solid #555;
+    color: #ccc;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.secondary-btn:hover {
+    background: #4a4a4a;
+    color: #fff;
+    border-color: #777;
+}
+
+.secondary-btn:active {
+    background: #333;
+}
