@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 4. Load GeoJSON Data
         await loadData();
 
+        // 5. Fetch Initial Rainfall Data
+        const { fetchRainfallData } = await import('./jaxa-api.js');
+        await fetchRainfallData('now');
+
         console.log("Application successfully initialized.");
     } catch (error) {
         console.error("Failed to initialize application:", error);

@@ -8,6 +8,7 @@ import { API_ENDPOINTS, STYLES } from './config.js';
 import { getFloodStyle, getRoadRiskStyle } from './styling.js';
 import { handleNodeClick, updateSearchButtonState } from './node-selection.js';
 import { clearSelectionAndPath } from './path-manager.js';
+import { evacuationSitesData } from './evacuation-sites.js';
 
 /**
  * Fetch all required GeoJSON data and initialize layers
@@ -134,11 +135,69 @@ export async function loadData() {
                 }
             });
 
+            state.nodes = nodes; // Store for nearest node search
+
             if (document.getElementById('toggle-roads').checked) {
                 state.project8RoadLayer.addTo(map);
                 state.project8NodeLayer.addTo(map);
             }
+
+            initEvacuationSites();
             updateSearchButtonState();
         })
         .catch(err => console.error("Error loading road data:", err));
+}
+
+/**
+ * Initialize evacuation sites layer
+ */
+export function initEvacuationSites() {
+    if (!state.nodes) return;
+
+    state.evacuationSites = evacuationSitesData.map(site => ({
+        ...site,
+        nodeId: findNearestNode(site.lat, site.lng)
+    }));
+
+    const markers = state.evacuationSites.map(site => {
+        const nearestNodeId = site.nodeId;
+
+        // Custom icon for evacuation site
+        const evacIcon = L.divIcon({
+            html: `<div style="background-color: #ff9500; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; box-shadow: 0 0 10px rgba(255,149,0,0.5);">E</div>`,
+            className: 'evac-icon',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+
+        const marker = L.marker([site.lat, site.lng], { icon: evacIcon });
+        marker.bindTooltip(`<b>${site.name}</b><br>Barangay: ${site.barangay}`);
+
+        return marker;
+    });
+
+    state.evacuationLayer = L.layerGroup(markers);
+
+    if (document.getElementById('toggle-evacuation').checked) {
+        state.evacuationLayer.addTo(map);
+    }
+}
+
+/**
+ * Find the nearest road node to a given lat/lng
+ */
+function findNearestNode(lat, lng) {
+    let minDistance = Infinity;
+    let nearestNodeId = null;
+
+    state.nodes.forEach((node, id) => {
+        // Simple Euclidean distance for selection
+        const dist = Math.sqrt(Math.pow(node.coords[0] - lat, 2) + Math.pow(node.coords[1] - lng, 2));
+        if (dist < minDistance) {
+            minDistance = dist;
+            nearestNodeId = id;
+        }
+    });
+
+    return nearestNodeId;
 }

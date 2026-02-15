@@ -266,3 +266,37 @@ input:checked+.slider:before {
 .secondary-btn:active {
     background: #333;
 }
+
+/* Custom Select Styling */
+.custom-select {
+    background-color: #383838;
+    color: #eee;
+    border: 1px solid #555;
+    padding: 8px 12px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.custom-select:focus {
+    border-color: #4facfe;
+}
+
+/* Rainfall Intensity Colors */
+.intensity-low {
+    background: #b3e5fc;
+}
+
+.intensity-med {
+    background: #03a9f4;
+}
+
+.intensity-high {
+    background: #01579b;
+}
+
+.intensity-extreme {
+    background: #311b92;
+}

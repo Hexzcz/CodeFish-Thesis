@@ -16,12 +16,20 @@ export const state = {
     project8RoadLayer: null,
     project8NodeLayer: null,
     pathLayer: null,
+    rainfallLayer: null,
+    evacuationLayer: null,
 
     // Data structures
     adjacencyList: new Map(),
+    rainfallData: null,
+    evacuationSites: [],
 
     // UI state
-    currentFloodOpacity: 0.6
+    currentFloodOpacity: 0.6,
+    rainfallTimeframe: 'now',
+    showRainfall: false,
+    showEvacuationSites: false,
+    selectedEvacuationSite: null
 };
 
 // Debug object

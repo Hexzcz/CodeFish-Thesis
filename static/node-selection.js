@@ -9,26 +9,21 @@ import { map } from './map-init.js';
  * Handle clicking on a road node
  */
 export function handleNodeClick(nodeId, layer, clearSelectionAndPath) {
-    if (!state.currentNode) {
-        // Set as Current
-        state.currentNode = nodeId;
-        state.currentNodeMarker = layer;
-        layer.setStyle({ radius: 8, fillColor: '#00ff00', weight: 2, color: '#fff' });
-        document.getElementById('current-node-display').innerText = nodeId;
-    } else if (!state.targetNode && nodeId !== state.currentNode) {
-        // Set as Target
-        state.targetNode = nodeId;
-        state.targetNodeMarker = layer;
-        layer.setStyle({ radius: 8, fillColor: '#ff0000', weight: 2, color: '#fff' });
-        document.getElementById('target-node-display').innerText = nodeId;
-    } else {
-        console.log("Both nodes already set. Clear them first to change selection.");
-    }
-
     // If a path exists, clear it when selection changes
     if (state.pathLayer) {
-        clearSelectionAndPath(false); // don't reset markers we just set
+        clearSelectionAndPath(false);
     }
+
+    // Always set as Current (Starting Point)
+    // Clear previous marker if exists
+    if (state.currentNodeMarker) {
+        state.currentNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
+    }
+
+    state.currentNode = nodeId;
+    state.currentNodeMarker = layer;
+    layer.setStyle({ radius: 8, fillColor: '#00ff00', weight: 2, color: '#fff' });
+    document.getElementById('current-node-display').innerText = nodeId;
 
     updateSearchButtonState();
 }
@@ -40,7 +35,7 @@ export function updateSearchButtonState() {
     const btn = document.getElementById('find-path');
     if (!btn) return;
 
-    if (state.currentNode && state.targetNode) {
+    if (state.currentNode) {
         btn.disabled = false;
         btn.style.pointerEvents = 'auto';
         btn.style.opacity = '1';
@@ -82,6 +77,7 @@ export function initNodeClearHandlers(clearSelectionAndPath) {
         state.targetNode = null;
         state.targetNodeMarker = null;
         document.getElementById('target-node-display').innerText = 'None';
+        document.getElementById('clear-target').style.display = 'none';
 
         // Remove path if one of the nodes is cleared
         if (state.pathLayer) {

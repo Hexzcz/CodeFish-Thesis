@@ -52,7 +52,7 @@
 
                 <div class="control-group">
                     <label class="toggle-label">
-                        <span>Show Project 8 Boundary</span>
+                        <span>Show District 1 Boundary</span>
                         <label class="switch">
                             <input type="checkbox" id="toggle-project8-boundary">
                             <span class="slider round"></span>
@@ -62,7 +62,7 @@
 
                 <div class="control-group">
                     <label class="toggle-label">
-                        <span>Show Road Network</span>
+                        <span>Show Road Network (Dist 1)</span>
                         <label class="switch">
                             <input type="checkbox" id="toggle-roads">
                             <span class="slider round"></span>
@@ -80,16 +80,135 @@
                     </label>
                 </div>
 
+                <div class="control-group">
+                    <label
+                        style="display: block; margin-bottom: 12px; font-weight: bold; color: #4facfe; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">JAXA
+                        Rainfall Data</label>
+
+                    <!-- Mode Selector -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Data
+                            Mode</label>
+                        <select id="jaxa-mode" class="custom-select" style="width: 100%;">
+                            <option value="live">Live / Forecast (NEXRA)</option>
+                            <option value="historical" selected>Historical Archive (GSMaP)</option>
+                        </select>
+                    </div>
+
+                    <!-- Live/Forecast Inputs -->
+                    <div id="section-live-forecast" style="display: none; margin-bottom: 15px;">
+                        <label
+                            style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Timeframe</label>
+                        <select id="rainfall-timeframe" class="custom-select" style="width: 100%;">
+                            <option value="now">Real-time (Now)</option>
+                            <option value="1h">1 Hour Forecast</option>
+                            <option value="3h">3 Hour Forecast</option>
+                            <option value="6h">6 Hour Forecast</option>
+                        </select>
+                    </div>
+
+                    <!-- Historical Inputs -->
+                    <div id="section-historical" style="margin-bottom: 15px;">
+                        <div style="display: flex; gap: 8px;">
+                            <div style="flex: 2;">
+                                <label
+                                    style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Date</label>
+                                <input type="date" id="ftp-date" class="custom-select"
+                                    style="width: 100%; height: 32px; font-size: 12px;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Hour
+                                    (UTC)</label>
+                                <select id="ftp-hour" class="custom-select"
+                                    style="width: 100%; height: 32px; font-size: 12px;">
+                                    <option value="">Latest</option>
+                                    <option value="00">00:00</option>
+                                    <option value="01">01:00</option>
+                                    <option value="02">02:00</option>
+                                    <option value="03">03:00</option>
+                                    <option value="04">04:00</option>
+                                    <option value="05">05:00</option>
+                                    <option value="06">06:00</option>
+                                    <option value="07">07:00</option>
+                                    <option value="08">08:00</option>
+                                    <option value="09">09:00</option>
+                                    <option value="10">10:00</option>
+                                    <option value="11">11:00</option>
+                                    <option value="12">12:00</option>
+                                    <option value="13">13:00</option>
+                                    <option value="14">14:00</option>
+                                    <option value="15">15:00</option>
+                                    <option value="16">16:00</option>
+                                    <option value="17">17:00</option>
+                                    <option value="18">18:00</option>
+                                    <option value="19">19:00</option>
+                                    <option value="20">20:00</option>
+                                    <option value="21">21:00</option>
+                                    <option value="22">22:00</option>
+                                    <option value="23">23:00</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px; padding-top: 5px; border-top: 1px solid #444;">
+                        <label class="toggle-label">
+                            <span>Show Rainfall Layer</span>
+                            <label class="switch">
+                                <input type="checkbox" id="toggle-rainfall">
+                                <span class="slider round"></span>
+                            </label>
+                        </label>
+                    </div>
+
+                    <button id="save-ftp-creds" class="primary-btn" style="width: 100%; margin-bottom: 10px;">Sync JAXA
+                        Data 🔄</button>
+
+                    <button id="toggle-ftp-menu" class="secondary-btn"
+                        style="width: 100%; font-size: 10px; padding: 4px; opacity: 0.7;">Advanced FTP Settings</button>
+
+                    <div id="ftp-credentials-menu"
+                        style="display: none; margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                        <div style="margin-bottom: 8px;">
+                            <label style="font-size: 10px; color: #888;">FTP Host</label>
+                            <input type="text" id="ftp-host" class="custom-select" value="hokusai.eorc.jaxa.jp"
+                                style="width: 100%; height: 24px; font-size: 10px;">
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <label style="font-size: 10px; color: #888;">User</label>
+                            <input type="text" id="ftp-user" class="custom-select" value="rainmap"
+                                style="width: 100%; height: 24px; font-size: 10px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 10px; color: #888;">Pass</label>
+                            <input type="password" id="ftp-pass" class="custom-select" value="Niskur+1404"
+                                style="width: 100%; height: 24px; font-size: 10px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="toggle-label">
+                        <span>Show Evacuation Sites</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-evacuation">
+                            <span class="slider round"></span>
+                        </label>
+                    </label>
+                </div>
+
                 <div class="control-group node-selection">
                     <h3>Node Selection</h3>
                     <div class="node-info">
-                        <strong>Current:</strong> <span id="current-node-display">None</span>
+                        <strong>Starting Point:</strong> <span id="current-node-display">None</span>
                         <button id="clear-current" class="clear-btn">×</button>
                     </div>
                     <div class="node-info">
-                        <strong>Target:</strong> <span id="target-node-display">None</span>
-                        <button id="clear-target" class="clear-btn">×</button>
+                        <strong>Nearest Evacuation:</strong> <span id="target-node-display">None</span>
+                        <button id="clear-target" class="clear-btn" style="display: none;">×</button>
                     </div>
+                    <p style="font-size: 11px; color: #888; margin-top: 10px;">Select a starting node on the map, then
+                        hit "Find Shortest Path" to automatically find the safest nearest evacuation site.</p>
                     <button id="find-path" class="primary-btn" disabled style="width: 100%; margin-top: 15px;">Find
                         Shortest Path</button>
                     <button id="clear-path" class="secondary-btn" style="width: 100%; margin-top: 8px;">Clear
@@ -110,6 +229,29 @@
                 <div class="legend-item">
                     <span class="color-box" style="background: red;"></span>
                     <span>High Susceptibility (3)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box"
+                        style="background: #ff9500; border-radius: 50%; border: 1px solid white;"></span>
+                    <span>Evacuation Site</span>
+                </div>
+                <h3 style="margin-top: 15px; font-size: 14px; border-top: 1px solid #444; padding-top: 10px;">JAXA
+                    Rainfall</h3>
+                <div class="legend-item">
+                    <span class="color-box" style="background: #b3e5fc;"></span>
+                    <span>Low (1-5 mm/h)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background: #03a9f4;"></span>
+                    <span>Medium (5-15 mm/h)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background: #01579b;"></span>
+                    <span>High (15-30 mm/h)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="color-box" style="background: #311b92;"></span>
+                    <span>Extreme (>30 mm/h)</span>
                 </div>
             </div>
         </div>

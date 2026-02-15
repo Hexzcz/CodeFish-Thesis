@@ -8,43 +8,47 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
 # ---------------------
-# 1. Get Project 8 Boundary
+# 1. Get District 1 Boundary
 # ---------------------
-log("Getting Project 8 boundary (Baesa, Bahay Toro, Sangandaan)...")
-barangays = [
-    "Baesa, Quezon City, Philippines",
-    "Bahay Toro, Quezon City, Philippines",
-    "Sangandaan, Quezon City, Philippines"
+log("Getting District 1 (QC) boundary...")
+district1_barangays = [
+    "Alicia", "Bagong Pag-asa", "Bahay Toro", "Balingasa", "Bungad",
+    "Damar", "Damayan", "Del Monte", "Katipunan", "Lourdes",
+    "Maharlika", "Manresa", "Mariblo", "Masambong", "N.S. Amoranto",
+    "Nayong Kanluran", "Paang Bundok", "Pag-ibig sa Nayon", "Paltok", "Paraiso",
+    "Phil-Am", "Project 6", "Ramon Magsaysay", "Saint Peter", "Salvacion",
+    "San Antonio", "San Isidro Labrador", "San Jose", "Santa Cruz", "Santa Teresita",
+    "Sto. Cristo", "Santo Domingo", "Siena", "Talayan", "Vasra",
+    "Veterans Village", "West Triangle"
 ]
 
-project8_parts = []
-for brgy in barangays:
+district1_parts = []
+for brgy in district1_barangays:
+    query = f"{brgy}, Quezon City, Philippines"
     try:
-        brgy_gdf = ox.geocode_to_gdf(brgy)
+        brgy_gdf = ox.geocode_to_gdf(query)
         brgy_gdf = brgy_gdf.to_crs(epsg=4326)
-        project8_parts.append(brgy_gdf)
+        district1_parts.append(brgy_gdf)
         log(f"  ✓ Loaded {brgy}")
     except Exception as e:
         log(f"  ✗ Failed to load {brgy}: {e}")
 
-if not project8_parts:
-    log("Critical Error: Could not load any Project 8 barangays. Exiting.")
+if not district1_parts:
+    log("Critical Error: Could not load any District 1 barangays. Exiting.")
     exit(1)
 
-project8_boundary_gdf = gpd.GeoDataFrame(
-    pd.concat(project8_parts, ignore_index=True),
-    crs=project8_parts[0].crs
+district1_boundary_gdf = gpd.GeoDataFrame(
+    pd.concat(district1_parts, ignore_index=True),
+    crs=district1_parts[0].crs
 ).dissolve()
-log(f"  ✓ Project 8 boundary created (EPSG:4326)")
+log(f"  ✓ District 1 boundary created (EPSG:4326)")
 
 # ---------------------
 # 2. Get Road Network (with 500m Buffer for Context)
 # ---------------------
 log("Fetching road network (with 500m buffer for context)...")
-# Filter to UTM for accurate buffering in meters
-utm_crs = project8_boundary_gdf.estimate_utm_crs()
-buffered_boundary_utm = project8_boundary_gdf.to_crs(utm_crs).buffer(500)
-# Convert back to EPSG:4326 for OSMnx
+utm_crs = district1_boundary_gdf.estimate_utm_crs()
+buffered_boundary_utm = district1_boundary_gdf.to_crs(utm_crs).buffer(500)
 buffered_boundary_4326 = buffered_boundary_utm.to_crs(epsg=4326).iloc[0]
 
 G = ox.graph_from_polygon(buffered_boundary_4326, network_type='all', retain_all=True)
@@ -52,38 +56,33 @@ nodes, buffered_roads = ox.graph_to_gdfs(G)
 log(f"  ✓ {len(buffered_roads)} road segments fetched (including 500m buffer)")
 
 # ---------------------
-# 3. Load and CLIP Flood Data (Strictly to Project 8)
+# 3. Load and CLIP Flood Data (Strictly to District 1)
 # ---------------------
-log("Checking flood shapefile CRS...")
+log("Checking flood shapefile...")
 temp_gdf = gpd.read_file("ph137404000_fh100yr_30m_10m.shp", rows=1)
 shapefile_crs = temp_gdf.crs
-log(f"  ✓ Shapefile CRS: {shapefile_crs}")
 
-log("Loading flood data using mask...")
-boundary_for_mask = project8_boundary_gdf.to_crs(shapefile_crs)
+log("Loading and clipping flood data...")
+boundary_for_mask = district1_boundary_gdf.to_crs(shapefile_crs)
 flood_gdf = gpd.read_file("ph137404000_fh100yr_30m_10m.shp", mask=boundary_for_mask)
 flood_gdf = flood_gdf.to_crs(epsg=4326)
+flood_gdf = gpd.clip(flood_gdf, district1_boundary_gdf)
 
-log("Clipping flood polygons strictly to Project 8 boundary...")
-flood_gdf = gpd.clip(flood_gdf, project8_boundary_gdf)
-
-log("Simplifying flood geometries for performance...")
+log("Simplifying flood geometries...")
 flood_gdf['geometry'] = flood_gdf.simplify(0.00005, preserve_topology=True)
 log(f"  ✓ Processed {len(flood_gdf)} clipped flood polygons")
 
 # ---------------------
-# 4. Analyze Risk (on Buffered Roads)
+# 4. Analyze Risk
 # ---------------------
-log("Analyzing flood risk...")
+log("Analyzing flood risk on roads...")
 if buffered_roads.crs != flood_gdf.crs:
     buffered_roads = buffered_roads.to_crs(flood_gdf.crs)
 
-# Spatial join to apply risk level from flood polygons to roads
 roads_joined = gpd.sjoin(buffered_roads, flood_gdf[['Var', 'geometry']], how="left", predicate="intersects")
 
 if 'Var' in roads_joined.columns:
     roads_joined['Var'] = pd.to_numeric(roads_joined['Var'], errors='coerce').fillna(0)
-    # Take max risk per road segment
     road_risks = roads_joined.groupby(level=[0, 1, 2])['Var'].max()
     buffered_roads['risk_level'] = road_risks
 else:
@@ -93,15 +92,14 @@ log("  ✓ Risk analysis complete")
 # ---------------------
 # 5. Save Files
 # ---------------------
-log("Getting QC boundary reference...")
 qc_boundary_gdf = ox.geocode_to_gdf("Quezon City, Philippines").to_crs(epsg=4326)
 
 log("Saving results...")
 output_files = {
     "flood_clipped.geojson": flood_gdf,
     "qc_boundary.geojson": qc_boundary_gdf,
-    "project8_boundary.geojson": project8_boundary_gdf,
-    "project8_roads.geojson": buffered_roads
+    "district1_boundary.geojson": district1_boundary_gdf,
+    "district1_roads.geojson": buffered_roads
 }
 
 for filename, gdf in output_files.items():
@@ -110,7 +108,4 @@ for filename, gdf in output_files.items():
     gdf.to_file(filename, driver="GeoJSON")
     log(f"  ✓ Saved {filename}")
 
-if os.path.exists("qc_roads.geojson"):
-    os.remove("qc_roads.geojson")
-
-log("Success! Project 8 data with 500m road buffer is ready.")
+log("Success! District 1 data is ready.")

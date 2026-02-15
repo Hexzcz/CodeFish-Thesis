@@ -86,13 +86,14 @@ export function drawPath(result) {
 
         const distanceKm = (totalDistance / 1000).toFixed(2);
         const distanceM = totalDistance.toFixed(0);
+        const actualMeterText = result.actualDistance ? `<br>Actual Distance: ${(result.actualDistance / 1000).toFixed(2)} km` : '';
 
         const popup = L.popup()
             .setLatLng(pathCoords[Math.floor(pathCoords.length / 2)])
             .setContent(`
                 <div style="text-align: center;">
-                    <strong>Route Found</strong><br>
-                    Distance: ${distanceKm} km (${distanceM} m)<br>
+                    <strong>Route to ${result.targetName || 'Evacuation Site'}</strong><br>
+                    Weighted Cost: ${distanceKm} units ${actualMeterText}<br>
                     Segments: ${features.length}
                 </div>
             `)
@@ -129,6 +130,7 @@ export function clearSelectionAndPath(resetMarkers = true) {
 
         document.getElementById('current-node-display').innerText = 'None';
         document.getElementById('target-node-display').innerText = 'None';
+        document.getElementById('clear-target').style.display = 'none';
     }
 
     clearPathOverlay();
