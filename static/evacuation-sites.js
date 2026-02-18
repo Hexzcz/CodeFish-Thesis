@@ -37,7 +37,6 @@ export const evacuationSitesData = [
     { name: "San Jose Elementary School", barangay: "San Jose", lat: 14.649, lng: 121.004 },
     { name: "Siena Barangay Hall", barangay: "Siena", lat: 14.637, lng: 121.008 },
     { name: "Barangay Multipurpose Hall", barangay: "St. Peter", lat: 14.635, lng: 121.004 },
-    { name: "Sta. Lucia Multipurpose Building", barangay: "Sta Lucia", lat: 14.701, lng: 121.045 }, // Note: Sta Lucia might be far north
     { name: "Barangay Multipurpose Hall", barangay: "Sta. Cruz", lat: 14.640, lng: 121.011 },
     { name: "Sta. Teresita Covered Court", barangay: "Sta. Teresita", lat: 14.628, lng: 121.003 },
     { name: "Sto. Cristo Elementary School", barangay: "Sto Cristo", lat: 14.663, lng: 121.026 },

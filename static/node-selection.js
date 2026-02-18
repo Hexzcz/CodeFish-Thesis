@@ -4,6 +4,55 @@
 
 import { state } from './state.js';
 import { map } from './map-init.js';
+import { findNearestNode } from './data-loader.js';
+
+/**
+ * Handle clicking anywhere on the map to set starting point
+ */
+export function handleMapClick(latlng, clearSelectionAndPath) {
+    if (!state.nodes) return;
+
+    const lat = latlng.lat;
+    const lng = latlng.lng;
+    const nearestNodeId = findNearestNode(lat, lng);
+
+    if (nearestNodeId === null) return;
+
+    // If a path exists, clear it
+    if (state.pathLayer) {
+        clearSelectionAndPath(false);
+    }
+
+    // Set arbitrary click coords
+    state.startLatlng = latlng;
+
+    // Clear previous starting marker
+    if (state.currentNodeMarker) {
+        if (state.currentNodeMarker.options.isCustomStart) {
+            map.removeLayer(state.currentNodeMarker);
+        } else {
+            state.currentNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
+        }
+    }
+
+    state.currentNode = nearestNodeId;
+
+    // Create or move a custom marker for the exact click location
+    const customMarker = L.circleMarker(latlng, {
+        radius: 8,
+        fillColor: '#00D9FF', // Sky blue for arbitrary start
+        weight: 2,
+        color: '#fff',
+        opacity: 1,
+        fillOpacity: 1,
+        isCustomStart: true
+    }).addTo(map);
+
+    state.currentNodeMarker = customMarker;
+    document.getElementById('current-node-display').innerText = `Near Node ${nearestNodeId}`;
+
+    updateSearchButtonState();
+}
 
 /**
  * Handle clicking on a road node
@@ -17,10 +66,15 @@ export function handleNodeClick(nodeId, layer, clearSelectionAndPath) {
     // Always set as Current (Starting Point)
     // Clear previous marker if exists
     if (state.currentNodeMarker) {
-        state.currentNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
+        if (state.currentNodeMarker.options.isCustomStart) {
+            map.removeLayer(state.currentNodeMarker);
+        } else {
+            state.currentNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
+        }
     }
 
     state.currentNode = nodeId;
+    state.startLatlng = null; // Direct node click resets arbitrary start
     state.currentNodeMarker = layer;
     layer.setStyle({ radius: 8, fillColor: '#00ff00', weight: 2, color: '#fff' });
     document.getElementById('current-node-display').innerText = nodeId;
@@ -52,9 +106,14 @@ export function updateSearchButtonState() {
 export function initNodeClearHandlers(clearSelectionAndPath) {
     document.getElementById('clear-current').addEventListener('click', () => {
         if (state.currentNodeMarker) {
-            state.currentNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
+            if (state.currentNodeMarker.options.isCustomStart) {
+                map.removeLayer(state.currentNodeMarker);
+            } else {
+                state.currentNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
+            }
         }
         state.currentNode = null;
+        state.startLatlng = null;
         state.currentNodeMarker = null;
         document.getElementById('current-node-display').innerText = 'None';
 

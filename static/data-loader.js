@@ -27,7 +27,11 @@ export async function loadData() {
                         layer.bindTooltip(`Flood Level: ${feature.properties.Var}`);
                     }
                 }
-            }).addTo(map);
+            });
+
+            if (document.getElementById('toggle-flood').checked) {
+                state.floodLayer.addTo(map);
+            }
         })
         .catch(err => console.error("Error loading flood data:", err));
 
@@ -37,22 +41,29 @@ export async function loadData() {
         .then(data => {
             state.boundaryLayer = L.geoJSON(data, {
                 style: STYLES.boundary
-            }).addTo(map);
+            });
+
+            if (document.getElementById('toggle-boundary').checked) {
+                state.boundaryLayer.addTo(map);
+            }
         })
         .catch(err => console.error("Error loading boundary data:", err));
 
-    // Fetch Project 8 Boundary Data
-    fetch(`${API_ENDPOINTS.project8Boundary}?t=${timestamp}`)
+    // Fetch District 1 Boundary Data
+    fetch(`${API_ENDPOINTS.district1Boundary}?t=${timestamp}`)
         .then(response => response.json())
         .then(data => {
-            state.project8BoundaryLayer = L.geoJSON(data, {
-                style: STYLES.project8Boundary
+            state.district1BoundaryLayer = L.geoJSON(data, {
+                style: STYLES.district1Boundary
             });
-            // Not added by default
-        })
-        .catch(err => console.error("Error loading Project 8 boundary data:", err));
 
-    // Fetch Project 8 Road Data
+            if (document.getElementById('toggle-district1-boundary').checked) {
+                state.district1BoundaryLayer.addTo(map);
+            }
+        })
+        .catch(err => console.error("Error loading District 1 boundary data:", err));
+
+    // Fetch District 1 Road Data
     fetch(`${API_ENDPOINTS.roads}?t=${timestamp}`)
         .then(response => response.json())
         .then(data => {
@@ -81,7 +92,7 @@ export async function loadData() {
             });
 
             // Create Roads Layer
-            state.project8RoadLayer = L.geoJSON(data, {
+            state.district1RoadLayer = L.geoJSON(data, {
                 pane: 'roadPane',
                 interactive: true,
                 style: STYLES.road,
@@ -104,14 +115,14 @@ export async function loadData() {
                 }
             });
 
-            // Create Nodes Layer
+            // Create Nodes Layer (Circular markers)
             const nodeFeatures = Array.from(nodes.values()).map(node => ({
                 type: 'Feature',
                 geometry: { type: 'Point', coordinates: [node.coords[1], node.coords[0]] },
                 properties: { id: node.id }
             }));
 
-            state.project8NodeLayer = L.geoJSON(nodeFeatures, {
+            state.district1NodeLayer = L.geoJSON(nodeFeatures, {
                 pane: 'roadPane',
                 interactive: true,
                 pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
@@ -138,8 +149,8 @@ export async function loadData() {
             state.nodes = nodes; // Store for nearest node search
 
             if (document.getElementById('toggle-roads').checked) {
-                state.project8RoadLayer.addTo(map);
-                state.project8NodeLayer.addTo(map);
+                state.district1RoadLayer.addTo(map);
+                state.district1NodeLayer.addTo(map);
             }
 
             initEvacuationSites();
@@ -186,7 +197,7 @@ export function initEvacuationSites() {
 /**
  * Find the nearest road node to a given lat/lng
  */
-function findNearestNode(lat, lng) {
+export function findNearestNode(lat, lng) {
     let minDistance = Infinity;
     let nearestNodeId = null;
 

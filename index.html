@@ -17,8 +17,15 @@
 <body>
 
     <div class="app-container">
+        <!-- Sidebar Toggle Button (Mobile) -->
+        <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle Sidebar">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>Flood Map</h2>
                 <p>Quezon City</p>
@@ -29,7 +36,7 @@
                     <label class="toggle-label">
                         <span>Show Flood Heatmap</span>
                         <label class="switch">
-                            <input type="checkbox" id="toggle-flood" checked>
+                            <input type="checkbox" id="toggle-flood">
                             <span class="slider round"></span>
                         </label>
                     </label>
@@ -54,7 +61,7 @@
                     <label class="toggle-label">
                         <span>Show District 1 Boundary</span>
                         <label class="switch">
-                            <input type="checkbox" id="toggle-project8-boundary">
+                            <input type="checkbox" id="toggle-district1-boundary" checked>
                             <span class="slider round"></span>
                         </label>
                     </label>
@@ -191,7 +198,7 @@
                     <label class="toggle-label">
                         <span>Show Evacuation Sites</span>
                         <label class="switch">
-                            <input type="checkbox" id="toggle-evacuation">
+                            <input type="checkbox" id="toggle-evacuation" checked>
                             <span class="slider round"></span>
                         </label>
                     </label>
@@ -211,7 +218,21 @@
                         hit "Find Shortest Path" to automatically find the safest nearest evacuation site.</p>
                     <button id="find-path" class="primary-btn" disabled style="width: 100%; margin-top: 15px;">Find
                         Shortest Path</button>
-                    <button id="clear-path" class="secondary-btn" style="width: 100%; margin-top: 8px;">Clear
+
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #444;">
+                        <label class="toggle-label">
+                            <span style="font-size: 12px;">Show Generated Paths</span>
+                            <label class="switch">
+                                <input type="checkbox" id="toggle-paths" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </label>
+                        <div id="individual-path-controls" style="margin-top: 8px; padding-left: 10px; display: none;">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+
+                    <button id="clear-path" class="secondary-btn" style="width: 100%; margin-top: 12px;">Clear
                         Path</button>
                 </div>
             </div>

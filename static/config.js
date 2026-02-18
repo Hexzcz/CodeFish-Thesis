@@ -24,7 +24,7 @@ export const STYLES = {
         weight: 1.5,
         opacity: 0.8
     },
-    project8Boundary: {
+    district1Boundary: {
         fillColor: 'transparent',
         color: '#ff9500', // Orange neon border
         weight: 3,
@@ -43,8 +43,8 @@ export const STYLES = {
 export const API_ENDPOINTS = {
     flood: '/flood_clipped.geojson',
     boundary: '/qc_boundary.geojson',
-    project8Boundary: '/project8_boundary.geojson',
-    roads: '/project8_roads.geojson'
+    district1Boundary: '/district1_boundary.geojson',
+    roads: '/district1_roads.geojson'
 };
 
 export const PANES = {

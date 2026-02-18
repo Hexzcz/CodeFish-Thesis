@@ -20,6 +20,7 @@ html {
 /* Sidebar Styles */
 .sidebar {
     width: 300px;
+    min-width: 300px;
     background: rgba(30, 30, 30, 0.95);
     backdrop-filter: blur(10px);
     border-right: 1px solid #333;
@@ -28,6 +29,59 @@ html {
     padding: 20px;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
     z-index: 1000;
+    transition: transform 0.3s ease, margin-left 0.3s ease, visibility 0.3s;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 2000;
+    display: flex;
+    /* Show toggle on all devices */
+    flex-direction: column;
+    justify-content: space-around;
+    width: 35px;
+    height: 35px;
+    background: rgba(45, 45, 45, 0.9);
+    border: 1px solid #4facfe;
+    border-radius: 6px;
+    padding: 7px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar.collapsed {
+    margin-left: -300px;
+    visibility: hidden;
+}
+
+.sidebar-toggle .bar {
+    width: 100%;
+    height: 3px;
+    background-color: #4facfe;
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+/* Toggle Animation */
+.sidebar-toggle.active .bar:nth-child(1) {
+    transform: translateY(7.5px) rotate(45deg);
+}
+
+.sidebar-toggle.active .bar:nth-child(2) {
+    opacity: 0;
+}
+
+.sidebar-toggle.active .bar:nth-child(3) {
+    transform: translateY(-7.5px) rotate(-45deg);
+}
+
+/* Sidebar Hidden State (for mobile) */
+.sidebar.collapsed {
+    transform: translateX(-100%);
+    visibility: hidden;
 }
 
 .sidebar-header h2 {
@@ -299,4 +353,63 @@ input:checked+.slider:before {
 
 .intensity-extreme {
     background: #311b92;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    .sidebar-toggle {
+        display: flex;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 85%;
+        /* Take up most of screen on small devices */
+        max-width: 320px;
+        z-index: 1500;
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+        visibility: hidden;
+    }
+
+    /* Add an overlay when sidebar is open */
+    .app-container::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1400;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.3s;
+    }
+
+    .app-container.sidebar-open::after {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .control-group {
+        padding: 20px 15px;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        min-height: 44px;
+        margin-bottom: 5px;
+    }
+
+    .sidebar-header {
+        padding-top: 40px;
+    }
 }

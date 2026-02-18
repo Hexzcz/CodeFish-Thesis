@@ -7,7 +7,7 @@ import { map } from './map-init.js';
 import { getFloodStyle, getRoadRiskStyle } from './styling.js';
 import { STYLES } from './config.js';
 import { runDijkstra, findNearestEvacuationPath } from './dijkstra.js';
-import { drawPath, clearSelectionAndPath } from './path-manager.js';
+import { drawPaths, clearSelectionAndPath, togglePathsVisibility } from './path-manager.js';
 
 import { fetchRainfallData, updateRainfallOverlay } from './jaxa-api.js';
 
@@ -15,6 +15,8 @@ import { fetchRainfallData, updateRainfallOverlay } from './jaxa-api.js';
  * Initialize all UI control event listeners
  */
 export function initSidebarControls() {
+    initMobileControls();
+
     // Flood Layer Toggle
     document.getElementById('toggle-flood').addEventListener('change', (e) => {
         if (!state.floodLayer) return;
@@ -27,21 +29,21 @@ export function initSidebarControls() {
         e.target.checked ? map.addLayer(state.boundaryLayer) : map.removeLayer(state.boundaryLayer);
     });
 
-    // Project 8 Boundary Toggle
-    document.getElementById('toggle-project8-boundary').addEventListener('change', (e) => {
-        if (!state.project8BoundaryLayer) return;
-        e.target.checked ? map.addLayer(state.project8BoundaryLayer) : map.removeLayer(state.project8BoundaryLayer);
+    // District 1 Boundary Toggle
+    document.getElementById('toggle-district1-boundary').addEventListener('change', (e) => {
+        if (!state.district1BoundaryLayer) return;
+        e.target.checked ? map.addLayer(state.district1BoundaryLayer) : map.removeLayer(state.district1BoundaryLayer);
     });
 
     // Road Network Toggle
     document.getElementById('toggle-roads').addEventListener('change', (e) => {
-        if (!state.project8RoadLayer || !state.project8NodeLayer) return;
+        if (!state.district1RoadLayer || !state.district1NodeLayer) return;
         if (e.target.checked) {
-            map.addLayer(state.project8RoadLayer);
-            map.addLayer(state.project8NodeLayer);
+            map.addLayer(state.district1RoadLayer);
+            map.addLayer(state.district1NodeLayer);
         } else {
-            map.removeLayer(state.project8RoadLayer);
-            map.removeLayer(state.project8NodeLayer);
+            map.removeLayer(state.district1RoadLayer);
+            map.removeLayer(state.district1NodeLayer);
         }
     });
 
@@ -61,11 +63,11 @@ export function initSidebarControls() {
 
     // Road Risk Mode Toggle
     document.getElementById('toggle-road-risk').addEventListener('change', (e) => {
-        if (!state.project8RoadLayer) return;
+        if (!state.district1RoadLayer) return;
         if (e.target.checked) {
-            state.project8RoadLayer.setStyle(getRoadRiskStyle);
+            state.district1RoadLayer.setStyle(getRoadRiskStyle);
         } else {
-            state.project8RoadLayer.setStyle(STYLES.road);
+            state.district1RoadLayer.setStyle(STYLES.road);
         }
     });
 
@@ -76,8 +78,8 @@ export function initSidebarControls() {
         updateRainfallOverlay();
 
         // Refresh road risk styles if enabled, as rainfall affects risk
-        if (document.getElementById('toggle-road-risk').checked && state.project8RoadLayer) {
-            state.project8RoadLayer.setStyle(getRoadRiskStyle);
+        if (document.getElementById('toggle-road-risk').checked && state.district1RoadLayer) {
+            state.district1RoadLayer.setStyle(getRoadRiskStyle);
         }
     });
 
@@ -166,14 +168,15 @@ export function initSearchButton() {
             if (state.currentNode) {
                 console.log(`ACTION: Finding nearest evacuation site from Node ${state.currentNode}...`);
 
-                const result = findNearestEvacuationPath(state.currentNode, state.evacuationSites, state.adjacencyList);
+                const results = findNearestEvacuationPath(state.currentNode, state.evacuationSites, state.adjacencyList);
 
-                if (result) {
-                    state.targetNode = result.nodes[result.nodes.length - 1];
-                    document.getElementById('target-node-display').innerText = result.targetName;
+                if (results && results.length > 0) {
+                    const optimal = results[0];
+                    state.targetNode = optimal.nodes[optimal.nodes.length - 1];
+                    document.getElementById('target-node-display').innerText = optimal.targetName;
                     document.getElementById('clear-target').style.display = 'inline-block';
 
-                    drawPath(result);
+                    drawPaths(results);
                 } else {
                     alert("No reachable evacuation centers found from this location.");
                 }
@@ -187,4 +190,78 @@ export function initSearchButton() {
             clearSelectionAndPath();
         });
     }
+
+    // Path Visibility Toggle
+    document.getElementById('toggle-paths')?.addEventListener('change', (e) => {
+        togglePathsVisibility(e.target.checked);
+    });
+}
+
+/**
+ * Mobile Sidebar Toggle Logic
+ */
+function initMobileControls() {
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const container = document.querySelector('.app-container');
+
+    if (!toggleBtn || !sidebar) return;
+
+    // Initial state: 
+    // On mobile, collapse it. On desktop, keep it open and set toggle to active (X).
+    if (window.innerWidth <= 768) {
+        sidebar.classList.add('collapsed');
+        toggleBtn.classList.remove('active');
+    } else {
+        sidebar.classList.remove('collapsed');
+        toggleBtn.classList.add('active'); // Shows 'X' when open
+    }
+
+    const toggleSidebar = (shouldCollapse) => {
+        if (shouldCollapse === undefined) {
+            shouldCollapse = !sidebar.classList.contains('collapsed');
+        }
+
+        if (shouldCollapse) {
+            sidebar.classList.add('collapsed');
+            toggleBtn.classList.remove('active');
+            if (container) container.classList.remove('sidebar-open');
+        } else {
+            sidebar.classList.remove('collapsed');
+            toggleBtn.classList.add('active');
+            if (container && window.innerWidth <= 768) {
+                container.classList.add('sidebar-open');
+            }
+        }
+    };
+
+    toggleBtn.addEventListener('click', () => {
+        const currentlyCollapsed = sidebar.classList.contains('collapsed');
+        toggleSidebar(!currentlyCollapsed);
+    });
+
+    // Close sidebar when clicking on the map or the overlay (on mobile)
+    map.on('click', () => {
+        if (window.innerWidth <= 768) {
+            toggleSidebar(true);
+        }
+    });
+
+    // Handle clicking the overlay specifically
+    // Since we don't have a direct overlay element but use ::after on container,
+    // we can check if the click target is the container itself or add a real overlay.
+    // For now, map click is usually sufficient. But let's add a window listener for the 'after' overlay.
+    container.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && e.target === container && container.classList.contains('sidebar-open')) {
+            toggleSidebar(true);
+        }
+    });
+
+    // Handle window resize to sync states
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768 && sidebar.classList.contains('collapsed')) {
+            // Optional: Auto-expand when going back to desktop
+            // toggleSidebar(false);
+        }
+    });
 }

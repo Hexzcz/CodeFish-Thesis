@@ -23,6 +23,18 @@ export async function fetchRainfallData(timeframe = 'now') {
 
         state.rainfallData = data;
 
+        // Pre-process for performance
+        state.rainfallGrid = data.features.map(f => {
+            const coords = f.geometry.coordinates[0];
+            return {
+                minLon: coords[0][0],
+                maxLon: coords[2][0],
+                minLat: coords[0][1],
+                maxLat: coords[2][1],
+                intensity: f.properties.intensity
+            };
+        });
+
         // Log the retrieved statistics
         const intensities = data.features.map(f => f.properties.intensity);
         const maxRain = Math.max(...intensities);
@@ -83,6 +95,19 @@ function simulateRainfall(timeframe) {
         }
     }
     state.rainfallData = { type: 'FeatureCollection', features: features };
+
+    // Pre-process simulated grid for performance
+    state.rainfallGrid = features.map(f => {
+        const coords = f.geometry.coordinates[0];
+        return {
+            minLon: coords[0][0],
+            maxLon: coords[2][0],
+            minLat: coords[0][1],
+            maxLat: coords[2][1],
+            intensity: f.properties.intensity
+        };
+    });
+
     return state.rainfallData;
 }
 
@@ -127,17 +152,12 @@ export function updateRainfallOverlay() {
  * Gets rainfall intensity for a specific coordinate
  */
 export function getIntensityAt(lat, lon) {
-    if (!state.rainfallData) return 0;
+    if (!state.rainfallGrid) return 0;
 
-    for (const feature of state.rainfallData.features) {
-        const coords = feature.geometry.coordinates[0];
-        const minLon = coords[0][0];
-        const maxLon = coords[2][0];
-        const minLat = coords[0][1];
-        const maxLat = coords[2][1];
-
-        if (lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat) {
-            return feature.properties.intensity;
+    for (let i = 0; i < state.rainfallGrid.length; i++) {
+        const cell = state.rainfallGrid[i];
+        if (lon >= cell.minLon && lon <= cell.maxLon && lat >= cell.minLat && lat <= cell.maxLat) {
+            return cell.intensity;
         }
     }
     return 0;

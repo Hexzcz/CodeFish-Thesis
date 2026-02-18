@@ -6,16 +6,18 @@ export const state = {
     // Selection state
     currentNode: null,
     targetNode: null,
+    startLatlng: null, // Stores actual click coordinates for start
     currentNodeMarker: null,
     targetNodeMarker: null,
 
     // Layers
     floodLayer: null,
     boundaryLayer: null,
-    project8BoundaryLayer: null,
-    project8RoadLayer: null,
-    project8NodeLayer: null,
+    district1BoundaryLayer: null,
+    district1RoadLayer: null,
+    district1NodeLayer: null,
     pathLayer: null,
+    pathLayers: [], // To store multiple path layers
     rainfallLayer: null,
     evacuationLayer: null,
 
@@ -28,7 +30,8 @@ export const state = {
     currentFloodOpacity: 0.6,
     rainfallTimeframe: 'now',
     showRainfall: false,
-    showEvacuationSites: false,
+    showPaths: true, // Whether to show/hide path overlays
+    showEvacuationSites: true,
     selectedEvacuationSite: null
 };
 
