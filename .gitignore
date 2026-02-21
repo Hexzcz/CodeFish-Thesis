@@ -2,6 +2,7 @@
 .venv/
 venv/
 ENV/
+.env
 
 # Python cache
 __pycache__/
@@ -25,3 +26,6 @@ cache/
 # IDEs
 .vscode/
 .idea/
+
+# Database script
+upload_to_supabase.py
