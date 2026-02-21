@@ -85,12 +85,145 @@ export class PriorityQueue {
     }
 }
 
+import { state } from './state.js';
 import { getIntensityAt } from './jaxa-api.js';
+
+/**
+ * Normalizes a value between 0 and 1
+ */
+function normalize(val, min, max, isCost = true) {
+    if (max === min) return 0.5;
+    const norm = (val - min) / (max - min);
+    return isCost ? norm : (1 - norm);
+}
+
+/**
+ * Pre-calculates WSM and TOPSIS scores for all edges
+ */
+export function calculateMCWeights(adjacencyList) {
+    const weights = state.mcWeights;
+    const manualRainfall = state.manualRainfall;
+
+    // 1. Gather all values for normalization
+    let allEdges = [];
+    adjacencyList.forEach((neighbors, u) => {
+        neighbors.forEach(neighbor => {
+            const feature = neighbor.feature;
+            const length = feature.properties.length || 1;
+            const risk = feature.properties.risk_level || 0;
+            const coords = feature.geometry.coordinates;
+            const midPoint = coords[Math.floor(coords.length / 2)];
+            const rainfall = state.simulationMode ? manualRainfall : getIntensityAt(midPoint[1], midPoint[0]);
+
+            allEdges.push({
+                u,
+                v: neighbor.node,
+                length,
+                risk,
+                rainfall,
+                neighbor
+            });
+        });
+    });
+
+    if (allEdges.length === 0) return;
+
+    const minMax = {
+        length: { min: Math.min(...allEdges.map(e => e.length)), max: Math.max(...allEdges.map(e => e.length)) },
+        risk: { min: 0, max: 3 },
+        rainfall: { min: 0, max: Math.max(10, ...allEdges.map(e => e.rainfall)) }
+    };
+
+    // 2. TOPSIS Step 1: Decision Matrix and Normalization
+    // We'll calculate WSM and TOPSIS simultaneously
+
+    // TOPSIS: Calculate denominator for vector normalization: sqrt(sum(x^2))
+    const denoms = {
+        length: Math.sqrt(allEdges.reduce((sum, e) => sum + Math.pow(e.length, 2), 0)),
+        risk: Math.sqrt(allEdges.reduce((sum, e) => sum + Math.pow(e.risk, 2), 0)),
+        rainfall: Math.sqrt(allEdges.reduce((sum, e) => sum + Math.pow(e.rainfall, 2), 0))
+    };
+
+    // TOPSIS: Weight normalized matrix and find PIS/NIS
+    // Since all criteria are COSTS (lower is better):
+    // PIS (Ideal) = min values
+    // NIS (Negative Ideal) = max values
+
+    // For TOPSIS, we need the weighted normalized values first to find PIS/NIS
+    const weightedNorms = allEdges.map(e => ({
+        length: (e.length / (denoms.length || 1)) * weights.length,
+        risk: (e.risk / (denoms.risk || 1)) * weights.risk,
+        rainfall: (e.rainfall / (denoms.rainfall || 1)) * weights.rainfall
+    }));
+
+    const PIS = {
+        length: Math.min(...weightedNorms.map(w => w.length)),
+        risk: Math.min(...weightedNorms.map(w => w.risk)),
+        rainfall: Math.min(...weightedNorms.map(w => w.rainfall))
+    };
+
+    const NIS = {
+        length: Math.max(...weightedNorms.map(w => w.length)),
+        risk: Math.max(...weightedNorms.map(w => w.risk)),
+        rainfall: Math.max(...weightedNorms.map(w => w.rainfall))
+    };
+
+    // 3. Final calculation for each edge
+    allEdges.forEach((e, i) => {
+        // WSM: Weighted Sum of Normalized Values (0-1 scale)
+        const nLen = normalize(e.length, minMax.length.min, minMax.length.max);
+        const nRisk = normalize(e.risk, minMax.risk.min, minMax.risk.max);
+        const nRain = normalize(e.rainfall, minMax.rainfall.min, minMax.rainfall.max);
+
+        const wsmScore = (nLen * weights.length) + (nRisk * weights.risk) + (nRain * weights.rainfall);
+
+        // TOPSIS: Closeness to Ideal
+        const w = weightedNorms[i];
+        const distPIS = Math.sqrt(
+            Math.pow(w.length - PIS.length, 2) +
+            Math.pow(w.risk - PIS.risk, 2) +
+            Math.pow(w.rainfall - PIS.rainfall, 2)
+        );
+        const distNIS = Math.sqrt(
+            Math.pow(w.length - NIS.length, 2) +
+            Math.pow(w.risk - NIS.risk, 2) +
+            Math.pow(w.rainfall - NIS.rainfall, 2)
+        );
+
+        // Closeness Coefficient: Di- / (Di+ + Di-)
+        // Higher is better in TOPSIS (closer to ideal), but we want a STICK/COST for Dijkstra.
+        // So we use (1 - CC) or just the distance to PIS? 
+        // Let's use 1 - CC as the weight.
+        const closeness = (distPIS + distNIS) === 0 ? 0 : distNIS / (distPIS + distNIS);
+        const topsisScore = 1 - closeness;
+
+        // Store for breakdown
+        const breakdown = {
+            length: e.length,
+            risk: e.risk,
+            rainfall: e.rainfall,
+            wsm: wsmScore,
+            topsis: closeness
+        };
+
+        e.neighbor.mcBreakdown = breakdown;
+        e.neighbor.feature.mcBreakdown = breakdown; // Attach to feature for table display
+
+        // The baked weight for Dijkstra will be the combined multi-criteria weight
+        // Normalized and scaled by original length to keep it in a reasonable "distance" range
+        // This ensures the pathfinding follows the "lowest cost" based on WSM
+        e.neighbor.currentBakedWeight = e.length * (1 + wsmScore * 5);
+    });
+}
 
 /**
  * Calculates the dynamic weight of an edge based on static risk and current rainfall
  */
 function getEffectedWeight(neighbor) {
+    if (state.simulationMode && neighbor.currentBakedWeight !== undefined) {
+        return neighbor.currentBakedWeight;
+    }
+
     const feature = neighbor.feature;
     const staticRisk = feature.properties.risk_level || 0;
     const coords = feature.geometry.coordinates;
@@ -294,16 +427,103 @@ export function runYensAlgorithm(startNode, target, adjacencyList, K = 3) {
 export function findNearestEvacuationPath(startNode, evacuationSites, adjacencyList) {
     const targetNodeIds = new Set(evacuationSites.map(s => s.nodeId));
 
-    // Find K-shortest paths to ANY of the evacuation sites
-    const paths = runYensAlgorithm(startNode, targetNodeIds, adjacencyList, 3);
+    // 1. Find 3 paths with lowest total WSM cost
+    const rawPaths = runYensAlgorithm(startNode, targetNodeIds, adjacencyList, 3);
+    if (!rawPaths || rawPaths.length === 0) return [];
 
-    return paths.map((p, index) => {
+    // 2. Add metadata and path-level metrics for TOPSIS
+    const results = rawPaths.map((p) => {
         const siteInfo = evacuationSites.find(s => s.nodeId === p.targetNode);
+
+        // Calculate total raw metrics for the path
+        const totalRisk = p.features.reduce((sum, f) => sum + (f.properties.risk_level || 0), 0);
+        const totalRainfall = p.features.reduce((sum, f) => {
+            const coords = f.geometry.coordinates;
+            const mid = coords[Math.floor(coords.length / 2)];
+            return sum + getIntensityAt(mid[1], mid[0]);
+        }, 0);
+
         return {
             ...p,
-            isOptimal: index === 0,
             targetName: siteInfo ? siteInfo.name : "Evacuation Site",
-            targetLatlng: siteInfo ? { lat: siteInfo.lat, lng: siteInfo.lng } : null
+            targetLatlng: siteInfo ? { lat: siteInfo.lat, lng: siteInfo.lng } : null,
+            metrics: {
+                length: p.actualDistance,
+                risk: totalRisk,
+                rainfall: totalRainfall
+            }
         };
     });
+
+    // 3. Rank the 3 paths using TOPSIS at the path level
+    const rankedResults = rankPathsByTOPSIS(results);
+
+    // 4. Set final isOptimal flag and return
+    return rankedResults;
+}
+
+/**
+ * Performs TOPSIS ranking on a set of completed paths
+ */
+function rankPathsByTOPSIS(paths) {
+    if (!paths || paths.length === 0) return [];
+
+    // Reset all paths to non-optimal first
+    paths.forEach(p => p.isOptimal = false);
+
+    if (paths.length === 1) {
+        paths[0].isOptimal = true;
+        paths[0].topsisRankScore = 1.0;
+        return paths;
+    }
+
+    const weights = state.mcWeights;
+    const criteria = ['length', 'risk', 'rainfall'];
+
+    // 1. Vector Normalization
+    const denoms = {};
+    criteria.forEach(c => {
+        const sumSq = paths.reduce((sum, p) => sum + Math.pow(p.metrics[c] || 0, 2), 0);
+        denoms[c] = Math.sqrt(sumSq) || 0.0001;
+    });
+
+    // 2. Weight Normalized Matrix and PIS/NIS
+    const weightedNorms = paths.map(p => {
+        const wn = {};
+        criteria.forEach(c => {
+            wn[c] = ((p.metrics[c] || 0) / denoms[c]) * (weights[c] || 0);
+        });
+        return wn;
+    });
+
+    const PIS = {};
+    const NIS = {};
+    criteria.forEach(c => {
+        const vals = weightedNorms.map(w => w[c]);
+        PIS[c] = Math.min(...vals);
+        NIS[c] = Math.max(...vals);
+    });
+
+    // 3. Closeness Coefficient
+    let maxCloseness = -1;
+    let winnerIndex = 0;
+
+    paths.forEach((p, i) => {
+        const w = weightedNorms[i];
+        const dPIS = Math.sqrt(criteria.reduce((sum, c) => sum + Math.pow(w[c] - PIS[c], 2), 0));
+        const dNIS = Math.sqrt(criteria.reduce((sum, c) => sum + Math.pow(w[c] - NIS[c], 2), 0));
+
+        const closeness = (dPIS + dNIS) === 0 ? 0 : dNIS / (dPIS + dNIS);
+        p.topsisRankScore = closeness;
+
+        if (closeness > maxCloseness) {
+            maxCloseness = closeness;
+            winnerIndex = i;
+        }
+    });
+
+    // 4. Mark the official winner
+    paths[winnerIndex].isOptimal = true;
+
+    return paths;
 }

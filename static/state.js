@@ -32,7 +32,18 @@ export const state = {
     showRainfall: false,
     showPaths: true, // Whether to show/hide path overlays
     showEvacuationSites: true,
-    selectedEvacuationSite: null
+    selectedEvacuationSite: null,
+
+    // Simulation & Multi-Criteria Pathfinding
+    simulationMode: false,
+    mcWeights: {
+        length: 0.2,
+        risk: 0.5,
+        rainfall: 0.3
+    },
+    manualRainfall: 0, // Manual override for simulation
+    colorRoadByRainfall: false,
+    lastAnalysisResults: null // Store breakdown for the table
 };
 
 // Debug object

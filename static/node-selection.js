@@ -86,25 +86,29 @@ export function handleNodeClick(nodeId, layer, clearSelectionAndPath) {
  * Update the "Find Shortest Path" button state
  */
 export function updateSearchButtonState() {
-    const btn = document.getElementById('find-path');
-    if (!btn) return;
+    const simBtn = document.getElementById('find-optimal-path');
 
-    if (state.currentNode) {
-        btn.disabled = false;
-        btn.style.pointerEvents = 'auto';
-        btn.style.opacity = '1';
-    } else {
-        btn.disabled = true;
-        btn.style.pointerEvents = 'none';
-        btn.style.opacity = '0.6';
-    }
+    const isSelected = !!state.currentNode;
+
+    [simBtn].forEach(b => {
+        if (!b) return;
+        b.disabled = !isSelected;
+        b.style.pointerEvents = isSelected ? 'auto' : 'none';
+        b.style.opacity = isSelected ? '1' : '0.6';
+    });
+
+    // Update Simulation Sidebar display
+    const simDisplay = document.getElementById('sim-current-node-display');
+    const mainDisplay = document.getElementById('current-node-display');
+    const mainDisplayText = mainDisplay ? mainDisplay.innerText : 'None';
+    if (simDisplay) simDisplay.innerText = mainDisplayText;
 }
 
 /**
  * Initialize node clear button handlers
  */
 export function initNodeClearHandlers(clearSelectionAndPath) {
-    document.getElementById('clear-current').addEventListener('click', () => {
+    document.getElementById('clear-current')?.addEventListener('click', () => {
         if (state.currentNodeMarker) {
             if (state.currentNodeMarker.options.isCustomStart) {
                 map.removeLayer(state.currentNodeMarker);
@@ -115,7 +119,8 @@ export function initNodeClearHandlers(clearSelectionAndPath) {
         state.currentNode = null;
         state.startLatlng = null;
         state.currentNodeMarker = null;
-        document.getElementById('current-node-display').innerText = 'None';
+        const display = document.getElementById('current-node-display');
+        if (display) display.innerText = 'None';
 
         // Remove path if one of the nodes is cleared
         if (state.pathLayer) {
@@ -129,14 +134,16 @@ export function initNodeClearHandlers(clearSelectionAndPath) {
         updateSearchButtonState();
     });
 
-    document.getElementById('clear-target').addEventListener('click', () => {
+    document.getElementById('clear-target')?.addEventListener('click', () => {
         if (state.targetNodeMarker) {
             state.targetNodeMarker.setStyle({ radius: 4, fillColor: '#ffffff', weight: 1, color: '#000' });
         }
         state.targetNode = null;
         state.targetNodeMarker = null;
-        document.getElementById('target-node-display').innerText = 'None';
-        document.getElementById('clear-target').style.display = 'none';
+        const display = document.getElementById('target-node-display');
+        if (display) display.innerText = 'None';
+        const clearTargetBtn = document.getElementById('clear-target');
+        if (clearTargetBtn) clearTargetBtn.style.display = 'none';
 
         // Remove path if one of the nodes is cleared
         if (state.pathLayer) {

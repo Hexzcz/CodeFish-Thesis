@@ -31,7 +31,12 @@
                 <p>Quezon City</p>
             </div>
 
-            <div class="controls">
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" id="tab-general">General</button>
+                <button class="tab-btn" id="tab-simulation">Simulation</button>
+            </div>
+
+            <div class="controls" id="general-controls">
                 <div class="control-group">
                     <label class="toggle-label">
                         <span>Show Flood Heatmap</span>
@@ -214,10 +219,83 @@
                         <strong>Nearest Evacuation:</strong> <span id="target-node-display">None</span>
                         <button id="clear-target" class="clear-btn" style="display: none;">×</button>
                     </div>
-                    <p style="font-size: 11px; color: #888; margin-top: 10px;">Select a starting node on the map, then
-                        hit "Find Shortest Path" to automatically find the safest nearest evacuation site.</p>
-                    <button id="find-path" class="primary-btn" disabled style="width: 100%; margin-top: 15px;">Find
-                        Shortest Path</button>
+                </div>
+            </div>
+
+            <!-- Simulation Sidebar -->
+            <div class="controls" id="simulation-controls" style="display: none;">
+                <div class="control-group">
+                    <label
+                        style="display: block; margin-bottom: 12px; font-weight: bold; color: #00f2fe; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Multi-Criteria
+                        Weights (WSM/TOPSIS)</label>
+
+                    <div class="weight-control">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <label style="font-size: 12px;">Road Length</label>
+                            <span id="weight-length-display"
+                                style="font-size: 12px; font-weight: bold; color: #00f2fe;">0.20</span>
+                        </div>
+                        <input type="range" id="weight-length" min="0" max="1" step="0.05" value="0.2"
+                            style="width: 100%;">
+                    </div>
+
+                    <div class="weight-control" style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <label style="font-size: 12px;">Risk (Hazard Map)</label>
+                            <span id="weight-risk-display"
+                                style="font-size: 12px; font-weight: bold; color: #00f2fe;">0.50</span>
+                        </div>
+                        <input type="range" id="weight-risk" min="0" max="1" step="0.05" value="0.5"
+                            style="width: 100%;">
+                    </div>
+
+                    <div class="weight-control" style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <label style="font-size: 12px;">Rainfall Data</label>
+                            <span id="weight-rainfall-display"
+                                style="font-size: 12px; font-weight: bold; color: #00f2fe;">0.30</span>
+                        </div>
+                        <input type="range" id="weight-rainfall" min="0" max="1" step="0.05" value="0.3"
+                            style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label
+                        style="display: block; margin-bottom: 12px; font-weight: bold; color: #00f2fe; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">Simulation
+                        Settings</label>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">Manual JAXA
+                            Rainfall (mm/h)</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="manual-rainfall" class="custom-select" value="0" min="0" max="200"
+                                style="width: 80px;">
+                            <span style="font-size: 11px; color: #666;">(Applies to entire area)</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px;">
+                        <label class="toggle-label">
+                            <span style="font-size: 13px;">Color Roads by Rainfall</span>
+                            <label class="switch">
+                                <input type="checkbox" id="toggle-road-rainfall">
+                                <span class="slider round"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-group node-selection">
+                    <h3>Path Selection</h3>
+                    <div class="node-info">
+                        <strong>Starting Point:</strong> <span id="sim-current-node-display">None</span>
+                    </div>
+                    <button id="find-optimal-path" class="primary-btn" disabled
+                        style="width: 100%; margin-top: 15px; background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);">Find
+                        Optimal Path</button>
+                    <p style="font-size: 10px; color: #888; margin-top: 8px; text-align: center;">Calculated using WSM &
+                        TOPSIS</p>
 
                     <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #444;">
                         <label class="toggle-label">
@@ -234,6 +312,31 @@
 
                     <button id="clear-path" class="secondary-btn" style="width: 100%; margin-top: 12px;">Clear
                         Path</button>
+                </div>
+
+                <!-- Analysis Results Table Container -->
+                <div id="analysis-results" class="analysis-results" style="display: none;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="margin: 0;">Analysis Breakdown</h4>
+                        <button id="show-breakdown-btn" class="secondary-btn"
+                            style="font-size: 10px; padding: 4px 8px; border-color: #00f2fe; color: #00f2fe;">View Full
+                            Detail</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Edge</th>
+                                    <th>WSM</th>
+                                    <th>TOPSIS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -286,6 +389,26 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <!-- Custom JS (Modular) -->
     <script type="module" src="/static/main.js"></script>
+    <!-- Breakdown Overlay -->
+    <div id="breakdown-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Multi-Criteria Decision Analysis Breakdown</h2>
+                <button id="close-breakdown" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-tabs" id="path-tabs">
+                <!-- Tabs for Optimal, Alt 1, Alt 2 -->
+            </div>
+            <div id="breakdown-cards-container" class="cards-container">
+                <!-- Path cards will be injected here -->
+            </div>
+            <div class="modal-footer">
+                <p style="font-size: 11px; color: #888;">* WSM: Weighted Sum Model | TOPSIS: Technique for Order of
+                    Preference by Similarity to Ideal Solution</p>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

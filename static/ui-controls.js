@@ -6,7 +6,7 @@ import { state } from './state.js';
 import { map } from './map-init.js';
 import { getFloodStyle, getRoadRiskStyle } from './styling.js';
 import { STYLES } from './config.js';
-import { runDijkstra, findNearestEvacuationPath } from './dijkstra.js';
+import { runDijkstra, findNearestEvacuationPath, calculateMCWeights } from './dijkstra.js';
 import { drawPaths, clearSelectionAndPath, togglePathsVisibility } from './path-manager.js';
 
 import { fetchRainfallData, updateRainfallOverlay } from './jaxa-api.js';
@@ -18,25 +18,25 @@ export function initSidebarControls() {
     initMobileControls();
 
     // Flood Layer Toggle
-    document.getElementById('toggle-flood').addEventListener('change', (e) => {
+    document.getElementById('toggle-flood')?.addEventListener('change', (e) => {
         if (!state.floodLayer) return;
         e.target.checked ? map.addLayer(state.floodLayer) : map.removeLayer(state.floodLayer);
     });
 
     // QC Boundary Toggle
-    document.getElementById('toggle-boundary').addEventListener('change', (e) => {
+    document.getElementById('toggle-boundary')?.addEventListener('change', (e) => {
         if (!state.boundaryLayer) return;
         e.target.checked ? map.addLayer(state.boundaryLayer) : map.removeLayer(state.boundaryLayer);
     });
 
     // District 1 Boundary Toggle
-    document.getElementById('toggle-district1-boundary').addEventListener('change', (e) => {
+    document.getElementById('toggle-district1-boundary')?.addEventListener('change', (e) => {
         if (!state.district1BoundaryLayer) return;
         e.target.checked ? map.addLayer(state.district1BoundaryLayer) : map.removeLayer(state.district1BoundaryLayer);
     });
 
     // Road Network Toggle
-    document.getElementById('toggle-roads').addEventListener('change', (e) => {
+    document.getElementById('toggle-roads')?.addEventListener('change', (e) => {
         if (!state.district1RoadLayer || !state.district1NodeLayer) return;
         if (e.target.checked) {
             map.addLayer(state.district1RoadLayer);
@@ -48,13 +48,13 @@ export function initSidebarControls() {
     });
 
     // Evacuation Sites Toggle
-    document.getElementById('toggle-evacuation').addEventListener('change', (e) => {
+    document.getElementById('toggle-evacuation')?.addEventListener('change', (e) => {
         if (!state.evacuationLayer) return;
         e.target.checked ? map.addLayer(state.evacuationLayer) : map.removeLayer(state.evacuationLayer);
     });
 
     // Flood Opacity Slider
-    document.getElementById('flood-opacity').addEventListener('input', (e) => {
+    document.getElementById('flood-opacity')?.addEventListener('input', (e) => {
         state.currentFloodOpacity = parseFloat(e.target.value);
         if (state.floodLayer) {
             state.floodLayer.setStyle(getFloodStyle);
@@ -62,7 +62,7 @@ export function initSidebarControls() {
     });
 
     // Road Risk Mode Toggle
-    document.getElementById('toggle-road-risk').addEventListener('change', (e) => {
+    document.getElementById('toggle-road-risk')?.addEventListener('change', (e) => {
         if (!state.district1RoadLayer) return;
         if (e.target.checked) {
             state.district1RoadLayer.setStyle(getRoadRiskStyle);
@@ -72,13 +72,13 @@ export function initSidebarControls() {
     });
 
     // JAXA Rainfall Timeframe Selection
-    document.getElementById('rainfall-timeframe').addEventListener('change', async (e) => {
+    document.getElementById('rainfall-timeframe')?.addEventListener('change', async (e) => {
         state.rainfallTimeframe = e.target.value;
         await fetchRainfallData(state.rainfallTimeframe);
         updateRainfallOverlay();
 
         // Refresh road risk styles if enabled, as rainfall affects risk
-        if (document.getElementById('toggle-road-risk').checked && state.district1RoadLayer) {
+        if (document.getElementById('toggle-road-risk')?.checked && state.district1RoadLayer) {
             state.district1RoadLayer.setStyle(getRoadRiskStyle);
         }
     });
@@ -113,15 +113,15 @@ export function initSidebarControls() {
 
     // Save/Sync Button
     document.getElementById('save-ftp-creds')?.addEventListener('click', async () => {
-        const mode = document.getElementById('jaxa-mode').value;
-        const host = document.getElementById('ftp-host').value;
-        const user = document.getElementById('ftp-user').value;
-        const pass = document.getElementById('ftp-pass').value;
-        const timeframe = document.getElementById('rainfall-timeframe').value;
+        const mode = document.getElementById('jaxa-mode')?.value;
+        const host = document.getElementById('ftp-host')?.value;
+        const user = document.getElementById('ftp-user')?.value;
+        const pass = document.getElementById('ftp-pass')?.value;
+        const timeframe = document.getElementById('rainfall-timeframe')?.value;
 
         // Conditional Date/Hour based on mode
-        const date = mode === 'historical' ? document.getElementById('ftp-date').value : "";
-        const hour = mode === 'historical' ? document.getElementById('ftp-hour').value : "";
+        const date = mode === 'historical' ? document.getElementById('ftp-date')?.value : "";
+        const hour = mode === 'historical' ? document.getElementById('ftp-hour')?.value : "";
 
         console.log(`SYNC REQUEST: Mode=${mode}, Date=${date || 'LATEST'}, Hour=${hour || 'LATEST'}`);
 
@@ -156,38 +156,124 @@ export function initSidebarControls() {
             }
         }
     });
+
+    initSimulationControls();
+}
+
+/**
+ * Initialize Simulation Sidebar Controls
+ */
+function initSimulationControls() {
+    const tabGeneral = document.getElementById('tab-general');
+    const tabSimulation = document.getElementById('tab-simulation');
+    const generalControls = document.getElementById('general-controls');
+    const simulationControls = document.getElementById('simulation-controls');
+
+    if (tabGeneral && tabSimulation) {
+        tabGeneral.addEventListener('click', () => {
+            tabGeneral.classList.add('active');
+            tabSimulation.classList.remove('active');
+            generalControls.style.display = 'block';
+            simulationControls.style.display = 'none';
+            state.simulationMode = false;
+        });
+
+        tabSimulation.addEventListener('click', () => {
+            tabSimulation.classList.add('active');
+            tabGeneral.classList.remove('active');
+            generalControls.style.display = 'none';
+            simulationControls.style.display = 'block';
+            state.simulationMode = true;
+
+            // Initial calc
+            calculateMCWeights(state.adjacencyList);
+        });
+    }
+
+    // Weight Sliders
+    ['length', 'risk', 'rainfall'].forEach(key => {
+        const slider = document.getElementById(`weight-${key}`);
+        const display = document.getElementById(`weight-${key}-display`);
+        if (slider) {
+            slider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                state.mcWeights[key] = val;
+                if (display) display.innerText = val.toFixed(2);
+
+                if (state.simulationMode) {
+                    calculateMCWeights(state.adjacencyList);
+                    // Refresh road style if coloring by rainfall
+                    if (state.colorRoadByRainfall) {
+                        state.district1RoadLayer.setStyle(getRoadRiskStyle);
+                    }
+                }
+            });
+        }
+    });
+
+    // Manual Rainfall Input
+    document.getElementById('manual-rainfall')?.addEventListener('input', (e) => {
+        state.manualRainfall = parseFloat(e.target.value) || 0;
+        if (state.simulationMode) {
+            calculateMCWeights(state.adjacencyList);
+            if (state.colorRoadByRainfall) {
+                state.district1RoadLayer.setStyle(getRoadRiskStyle);
+            }
+        }
+    });
+
+    // Color Road By Rainfall Toggle
+    document.getElementById('toggle-road-rainfall')?.addEventListener('change', (e) => {
+        state.colorRoadByRainfall = e.target.checked;
+        if (state.district1RoadLayer) {
+            if (e.target.checked) {
+                state.district1RoadLayer.setStyle(getRoadRiskStyle);
+            } else {
+                // Return to previous style (either risk or default)
+                if (document.getElementById('toggle-road-risk').checked) {
+                    state.district1RoadLayer.setStyle(getRoadRiskStyle);
+                } else {
+                    state.district1RoadLayer.setStyle(STYLES.road);
+                }
+            }
+        }
+    });
 }
 
 /**
  * Initialize Pathfinding Button
  */
 export function initSearchButton() {
-    const btn = document.getElementById('find-path');
-    if (btn) {
-        btn.addEventListener('click', () => {
+    const clearBtn = document.getElementById('clear-path');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            clearSelectionAndPath();
+        });
+    }
+
+    // Simulation Optimal Path Button
+    const findOptimalBtn = document.getElementById('find-optimal-path');
+    if (findOptimalBtn) {
+        findOptimalBtn.addEventListener('click', () => {
             if (state.currentNode) {
-                console.log(`ACTION: Finding nearest evacuation site from Node ${state.currentNode}...`);
+                console.log(`ACTION: Finding OPTIMAL evacuation site from Node ${state.currentNode}...`);
+
+                // Ensure weights are calculated before running
+                calculateMCWeights(state.adjacencyList);
 
                 const results = findNearestEvacuationPath(state.currentNode, state.evacuationSites, state.adjacencyList);
 
                 if (results && results.length > 0) {
                     const optimal = results[0];
                     state.targetNode = optimal.nodes[optimal.nodes.length - 1];
+                    // Keep displays in sync
                     document.getElementById('target-node-display').innerText = optimal.targetName;
-                    document.getElementById('clear-target').style.display = 'inline-block';
 
                     drawPaths(results);
                 } else {
-                    alert("No reachable evacuation centers found from this location.");
+                    alert("No reachable evacuation centers found in simulation.");
                 }
             }
-        });
-    }
-
-    const clearBtn = document.getElementById('clear-path');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            clearSelectionAndPath();
         });
     }
 
