@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+geopandas
+rio-tiler
+rasterio
+numpy
+pandas
+joblib
+scikit-learn
+xgboost
+shapely
+geopy
+python-multipart
+matplotlib
+pillow
+networkx

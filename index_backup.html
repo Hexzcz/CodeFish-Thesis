@@ -1,0 +1,2307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODEFISH | Flood-Aware Routing</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --c-bg: #0b1121;
+            --c-bg-glass: rgba(11, 17, 33, 0.92);
+            --c-surface: #111a2e;
+            --c-bg-card: rgba(255, 255, 255, 0.025);
+            --c-cyan: #00bcd4;
+            --c-cyan-dim: rgba(0, 188, 212, 0.12);
+            --c-cyan-glow: rgba(0, 188, 212, 0.25);
+            --c-green: #10b981;
+            --c-amber: #f59e0b;
+            --c-red: #ef4444;
+            --c-text: #8b9cb6;
+            --c-text-bright: #e2e8f0;
+            --c-text-dim: #475569;
+            --c-border: rgba(255, 255, 255, 0.06);
+            --c-border-accent: rgba(0, 188, 212, 0.15);
+            --font-h: 'Rajdhani', sans-serif;
+            --font-b: 'Inter', sans-serif;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --z-sidebar: 1000;
+            --z-toggle: 1001;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            background: var(--c-bg);
+            color: var(--c-text);
+            font-family: var(--font-b);
+            overflow: hidden;
+        }
+
+        #app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        #map {
+            flex: 1;
+            height: 100%;
+            background: #010409;
+        }
+
+        /* ── Sidebar Shell ── */
+        #sidebar {
+            width: 320px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--c-bg);
+            border-right: 1px solid var(--c-border);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: var(--z-sidebar);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(12px);
+        }
+
+        #sidebar.closed {
+            transform: translateX(-100%);
+        }
+
+        #sidebar-toggle {
+            position: fixed;
+            left: 320px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: var(--z-toggle);
+            width: 20px;
+            height: 60px;
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--c-cyan);
+        }
+
+        #sidebar.closed+#sidebar-toggle {
+            left: 0;
+        }
+
+        #sidebar-toggle svg {
+            width: 10px;
+            transition: transform 0.4s;
+        }
+
+        #sidebar.closed+#sidebar-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        /* ── Header ── */
+        .sidebar-header {
+            height: 72px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--c-border);
+            flex-shrink: 0;
+        }
+
+        .header-left .app-name {
+            font-family: var(--font-h);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--c-cyan);
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+
+        .header-left .app-sub {
+            font-size: 8px;
+            color: var(--c-text-dim);
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--c-green);
+            border-radius: 50%;
+            display: inline-block;
+            margin-bottom: 2px;
+            box-shadow: 0 0 8px var(--c-green);
+            animation: pulse 2s infinite;
+        }
+
+        .status-text {
+            display: block;
+            font-family: var(--font-h);
+            font-size: 9px;
+            color: var(--c-green);
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 0.4;
+                transform: scale(0.9);
+            }
+        }
+
+        /* ── Panels ── */
+        .sidebar-panels {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--c-cyan-dim) transparent;
+        }
+
+        .panel {
+            display: none;
+            padding: 10px 20px 30px 20px;
+        }
+
+        .panel.active {
+            display: block;
+            animation: panelFade 0.3s ease-out;
+        }
+
+        @keyframes panelFade {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Tab Bar ── */
+        .sidebar-tabbar {
+            height: 56px;
+            background: var(--c-surface);
+            border-top: 1px solid var(--c-border);
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        .tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .tab svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--c-text-dim);
+            fill: none;
+            stroke-width: 1.5;
+            transition: 0.2s;
+        }
+
+        .tab span {
+            font-family: var(--font-h);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--c-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tab.active svg {
+            stroke: var(--c-cyan);
+            filter: drop-shadow(0 0 4px var(--c-cyan));
+        }
+
+        .tab.active span {
+            color: var(--c-cyan);
+        }
+
+        .tab.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: var(--c-cyan);
+            box-shadow: 0 0 10px var(--c-cyan);
+        }
+
+        .tab:hover:not(.active) svg {
+            stroke: var(--c-text);
+        }
+
+        /* ── UI Components ── */
+        .section-label {
+            font-family: var(--font-h);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--c-cyan);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 20px 0 10px 0;
+            opacity: 0.7;
+        }
+
+        .scenario-grid {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .scenario-btn {
+            flex: 1;
+            height: 34px;
+            background: var(--c-bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-h);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--c-text-dim);
+            transition: 0.2s;
+        }
+
+        .scenario-btn.active {
+            background: var(--c-cyan-dim);
+            border-color: var(--c-cyan);
+            color: var(--c-cyan);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+        }
+
+        .action-btn {
+            width: 100%;
+            height: 42px;
+            background: var(--c-cyan);
+            color: var(--c-bg);
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-h);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:disabled {
+            background: var(--c-bg-card);
+            color: var(--c-text-dim);
+            cursor: not-allowed;
+        }
+
+        .action-btn.secondary {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            color: var(--c-text);
+            margin-top: 8px;
+        }
+
+        .route-card {
+            background: var(--c-bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-left: 3px solid #666;
+            border-radius: 10px;
+            padding: 14px;
+            min-width: 260px;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+        }
+
+        .route-card.highlighted {
+            background: rgba(0, 212, 255, 0.08);
+            border-color: var(--c-cyan) !important;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .route-title {
+            font-family: var(--font-h);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--c-text-bright);
+        }
+
+        .metrics-grid {
+            display: flex;
+            gap: 10px;
+        }
+
+        .metric {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 6px 10px;
+        }
+
+        .metric-label {
+            font-size: 8px;
+            color: var(--c-text-dim);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Results Bottom Bar ── */
+        #results-bottom-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 344px;
+            /* Offset from sidebar */
+            right: 24px;
+            z-index: 900;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #sidebar.closed~#results-bottom-bar {
+            left: 24px;
+        }
+
+        #route-cards-horizontal {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 10px 5px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--c-cyan-dim) transparent;
+        }
+
+        #route-cards-horizontal::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        #route-cards-horizontal::-webkit-scrollbar-thumb {
+            background: var(--c-cyan-dim);
+            border-radius: 2px;
+        }
+
+        .metric-value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--c-text-bright);
+        }
+
+        /* ── Icons (no emoji) ── */
+        .ico {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            line-height: 1;
+            margin-right: 8px;
+            color: inherit;
+            opacity: 0.95;
+        }
+
+        .ico i {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .switch-label {
+            font-size: 13px;
+            color: var(--c-text);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            top: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--c-cyan);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+
+        /* ── Road Info Panel ── */
+        .road-info-card {
+            background: var(--c-bg-card);
+            border: 1px solid var(--c-border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .road-name {
+            font-family: var(--font-h);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--c-cyan);
+            margin-bottom: 4px;
+        }
+
+        .road-meta {
+            font-size: 11px;
+            color: var(--c-text-dim);
+            margin-bottom: 12px;
+        }
+
+        .risk-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .risk-high {
+            background: rgba(255, 68, 68, 0.15);
+            color: var(--c-red);
+        }
+
+        .risk-med {
+            background: rgba(255, 170, 0, 0.15);
+            color: var(--c-amber);
+        }
+
+        .risk-low {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--c-green);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 30px;
+            background: var(--c-bg);
+            border: 1px solid var(--c-cyan);
+            color: var(--c-text-bright);
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            font-weight: 600;
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        /* ── Map Elements ── */
+        .marching-ants {
+            stroke-dasharray: 8, 12;
+            animation: ants 1.5s linear infinite;
+        }
+
+        @keyframes ants {
+            from {
+                stroke-dashoffset: 20;
+            }
+
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        #road-tooltip {
+            position: fixed;
+            z-index: 3000;
+            background: rgba(8, 15, 30, 0.95);
+            border: 1px solid var(--c-border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            pointer-events: none;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ── Opacity Slider ── */
+        .opacity-container {
+            padding: 0 0 12px 0;
+            display: none;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .opacity-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: var(--c-text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .opacity-slider {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .opacity-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--c-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--c-cyan);
+            border: 2px solid var(--c-bg);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Dynamic Legend (Bottom Right) ── */
+        #map-legend {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+            background: var(--c-bg-glass);
+            border: 1px solid var(--c-border);
+            border-radius: 12px;
+            width: 240px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            animation: slideInUp 0.4s ease-out;
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .legend-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--c-border);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .legend-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .legend-tab {
+            padding: 8px 12px;
+            font-family: var(--font-h);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--c-text-dim);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.2s;
+        }
+
+        .legend-tab.active {
+            background: var(--c-cyan-dim);
+            color: var(--c-cyan);
+        }
+
+        .legend-body {
+            padding: 16px;
+        }
+
+        .legend-title {
+            font-family: var(--font-h);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--c-text-bright);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-label {
+            font-size: 11px;
+            color: var(--c-text);
+        }
+
+        /* ── Details Sidebar (Right) ── */
+        #sidebar-details {
+            width: 360px;
+            height: 100vh;
+            background: var(--c-bg);
+            border-left: 1px solid var(--c-border);
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: var(--z-sidebar);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(12px);
+        }
+
+        #sidebar-details.open {
+            transform: translateX(0);
+        }
+
+        .details-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .details-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 60px;
+        }
+
+        .details-close {
+            background: none;
+            border: none;
+            color: var(--c-text-dim);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .detail-card {
+            background: var(--c-bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .detail-val {
+            font-weight: 700;
+            color: var(--c-text-bright);
+        }
+
+        .segment-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        .segment-table th {
+            text-align: left;
+            color: var(--c-text-dim);
+            padding: 8px 4px;
+            border-bottom: 1px solid var(--c-border);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .segment-table td {
+            padding: 10px 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        /* ── Mode Toggle UI ── */
+        .mode-toggle {
+            display: flex;
+            background: var(--c-bg-card);
+            border-radius: 8px;
+            padding: 4px;
+            margin: 15px 0;
+            gap: 4px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: none;
+            color: var(--c-text-dim);
+            font-family: var(--font-h);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--c-cyan-dim);
+            color: var(--c-cyan);
+        }
+
+        .btn-details {
+            padding: 6px 12px;
+            background: var(--c-cyan-dim);
+            color: var(--c-cyan);
+            border: 1px solid var(--c-cyan);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--font-h);
+            transition: 0.2s;
+        }
+
+        .btn-details:hover {
+            background: var(--c-cyan);
+            color: var(--c-bg);
+        }
+
+        /* ── Comparison Overlay ── */
+        #comparison-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(8, 15, 30, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 5000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .comparison-modal {
+            background: var(--c-bg);
+            border: 1px solid var(--c-border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 1100px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        .comparison-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--c-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .comparison-card {
+            background: var(--c-bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .comparison-card.optimal {
+            border-color: var(--c-cyan);
+            background: rgba(0, 212, 255, 0.03);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .optimal-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--c-cyan);
+            color: var(--c-bg);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .comparison-card h3 {
+            font-family: var(--font-h);
+            font-size: 20px;
+            color: var(--c-text-bright);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .compare-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .compare-label {
+            font-size: 12px;
+            color: var(--c-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .compare-val {
+            font-family: var(--font-h);
+            font-weight: 600;
+            color: var(--c-text-bright);
+        }
+
+        .compare-val.rank {
+            color: var(--c-cyan);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app-container">
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <div class="header-left">
+                    <div class="app-name">CODEFISH</div>
+                    <div class="app-sub">Flood-Aware Evacuation Routing</div>
+                </div>
+                <div class="header-right">
+                    <div class="status-dot"></div>
+                    <span class="status-text">ONLINE</span>
+                </div>
+            </div>
+
+            <div class="sidebar-panels">
+                <!-- ROUTING PANEL -->
+                <div class="panel active" id="panel-routing">
+                    <div class="section-label">Scenario Selection</div>
+                    <div class="scenario-grid">
+                        <button class="scenario-btn" data-scenario="5yr" onclick="selectScenario('5yr')">5-Year</button>
+                        <button class="scenario-btn active" data-scenario="25yr"
+                            onclick="selectScenario('25yr')">25-Year</button>
+                        <button class="scenario-btn" data-scenario="100yr"
+                            onclick="selectScenario('100yr')">100-Year</button>
+                    </div>
+
+                    <div class="section-label">Origin Location</div>
+                    <button id="place-origin-btn" class="action-btn secondary" onclick="toggleOriginPlacement()">
+                        <span class="ico" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></span>
+                        Set Start Point
+                    </button>
+                    <div id="origin-coords-display"
+                        style="display:none; text-align:center; margin-top:10px; font-size:11px; color:var(--c-text-dim);">
+                        <span id="origin-lat"></span>N, <span id="origin-lon"></span>E
+                    </div>
+
+                    <div class="section-label">Route Selection Criteria</div>
+                    <div
+                        style="background:var(--c-bg-card); padding:16px; border-radius:10px; margin-bottom:20px; border: 1px solid var(--c-border);">
+                        <div class="weight-slider-container">
+                            <div class="weight-label"><span>Flood Risk</span><span id="weight-val-flood">50%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="opacity-slider"
+                                oninput="adjustWeights('flood', this.value)">
+                        </div>
+                        <div class="weight-slider-container" style="margin-top:12px;">
+                            <div class="weight-label"><span>Path Distance</span><span
+                                    id="weight-val-distance">30%</span></div>
+                            <input type="range" min="0" max="100" value="30" class="opacity-slider"
+                                oninput="adjustWeights('distance', this.value)">
+                        </div>
+                        <div class="weight-slider-container" style="margin-top:12px;">
+                            <div class="weight-label"><span>Road Hierarchy</span><span
+                                    id="weight-val-road_class">20%</span></div>
+                            <input type="range" min="0" max="100" value="20" class="opacity-slider"
+                                oninput="adjustWeights('road_class', this.value)">
+                        </div>
+                        <div
+                            style="font-size:9px; color:var(--c-text-dim); margin-top:8px; text-transform:uppercase; letter-spacing:0.5px;">
+                            Auto-balanced to 100% total</div>
+                    </div>
+
+                    <div style="margin-top:24px;">
+                        <button id="find-routes-btn" class="action-btn" disabled onclick="findRoutes()">
+                            <span class="ico" aria-hidden="true"><i class="bi bi-search"></i></span>
+                            Find Evacuation Routes
+                        </button>
+                        <button class="action-btn secondary" onclick="clearRouting()">Clear All</button>
+                    </div>
+
+                </div>
+
+                <!-- LAYERS PANEL -->
+                <div class="panel" id="panel-layers">
+                    <div class="section-label">Map Configuration</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Clip to District Boundary</span>
+                        <label class="switch">
+                            <input type="checkbox" id="clip-toggle" checked onchange="toggleClip(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="section-label">Flood Hazard Scenario</div>
+                    <div class="switch-row">
+                        <span class="switch-label">5-Year Return Period</span>
+                        <label class="switch">
+                            <input type="checkbox" class="flood-toggle" id="toggle-flood_5yr"
+                                onchange="updateLayer('flood_5yr', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-flood_5yr">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_5yr">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('flood_5yr', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">25-Year Return Period</span>
+                        <label class="switch">
+                            <input type="checkbox" class="flood-toggle" id="toggle-flood_25yr"
+                                onchange="updateLayer('flood_25yr', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-flood_25yr">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_25yr">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('flood_25yr', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">100-Year Return Period</span>
+                        <label class="switch">
+                            <input type="checkbox" class="flood-toggle" id="toggle-flood_100yr"
+                                onchange="updateLayer('flood_100yr', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-flood_100yr">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span
+                                id="opacity-val-flood_100yr">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('flood_100yr', this.value)">
+                    </div>
+
+                    <div class="section-label">Topographic & Hydrologic</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Waterway Hazard Map</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-dist_waterway"
+                                onchange="updateLayer('dist_waterway', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-dist_waterway">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span
+                                id="opacity-val-dist_waterway">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('dist_waterway', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">Elevation Map</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-elevation"
+                                onchange="updateLayer('elevation', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-elevation">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-elevation">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('elevation', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">Slope Map</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-slope" onchange="updateLayer('slope', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-slope">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-slope">50%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="opacity-slider"
+                            oninput="updateLayerOpacity('slope', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">Land Cover</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-land_cover"
+                                onchange="updateLayer('land_cover', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-land_cover">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-land_cover">60%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="60" class="opacity-slider"
+                            oninput="updateLayerOpacity('land_cover', this.value)">
+                    </div>
+
+                    <div class="section-label">Vector Overlays</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Road Network</span>
+                        <label class="switch">
+                            <input type="checkbox" id="road-master-toggle" onchange="toggleRoadMaster(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="switch-row">
+                        <span class="switch-label">Evacuation Centers</span>
+                        <label class="switch">
+                            <input type="checkbox" checked onchange="toggleEvacCenters(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="road-info-panel" style="display:none;">
+                        <div class="road-info-card">
+                            <div class="road-name" id="road-info-name">Unnamed Road</div>
+                            <div class="road-meta" id="road-info-meta">Primary Road · 1.2km</div>
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <div class="metric-label">Hazard Level</div>
+                                    <div id="road-risk-badge" class="risk-badge risk-low">Low</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">OSM ID</div>
+                                    <div id="road-info-osmid" style="font-family:monospace; font-size:11px;">—</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTHER PANEL -->
+                <div class="panel" id="panel-other">
+                    <div class="section-label">System Information</div>
+                    <div class="switch-row"><span class="switch-label">Target Area</span><span
+                            style="font-size:12px; font-weight:600;">District 1, QC</span></div>
+                    <div class="switch-row"><span class="switch-label">Base Scale</span><span
+                            style="font-size:12px; font-weight:600;">1:5,000</span></div>
+
+                    <div class="section-label">Data Sources</div>
+                    <div style="font-size:11px; line-height:1.6; color:var(--c-text-dim);">
+                        • OSM Road Network (2024)<br>
+                        • UP LiPAD Flood Hazard Models<br>
+                        • PhilGIS District Boundaries
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-tabbar">
+                <button class="tab active" data-panel="routing">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    <span>Routing</span>
+                </button>
+                <button class="tab" data-panel="layers">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 12h18M3 12l4-4m-4 4l4 4M21 12l-4-4m4 4l-4 4" />
+                    </svg>
+                    <span>Layers</span>
+                </button>
+                <button class="tab" data-panel="other">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                    </svg>
+                    <span>System</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- DETAILS SIDEBAR (RIGHT) -->
+        <aside id="sidebar-details">
+            <div class="details-header">
+                <div>
+                    <div id="details-title"
+                        style="font-family:var(--font-h); font-size:22px; font-weight:700; color:var(--c-cyan);">Route
+                        Details</div>
+                </div>
+                <button class="details-close" onclick="closeDetails()">×</button>
+            </div>
+            <div class="details-content" id="details-content">
+                <!-- Populated by JS -->
+            </div>
+        </aside>
+
+        <button id="sidebar-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M15 18l-6-6 6-6" />
+            </svg>
+        </button>
+
+        <div id="map"></div>
+
+        <!-- ROUTE RESULTS BOTTOM BAR -->
+        <div id="results-bottom-bar">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:0 10px;">
+                <div>
+                    <div class="section-label" style="margin:0; color:var(--c-cyan);">Search Results</div>
+                    <div style="font-size:10px; color:var(--c-text-dim);">Click a route to highlight and view detailed
+                        analysis</div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-details"
+                        style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:#fff;"
+                        onclick="openComparison()">📊 COMPARE ALL</button>
+                    <button id="toggle-all-btn" class="btn-details" onclick="toggleAllRoutes()">HIDE ALL</button>
+                </div>
+            </div>
+            <div id="route-cards-horizontal"></div>
+        </div>
+
+        <!-- COMPARISON OVERLAY -->
+        <div id="comparison-overlay">
+            <div class="comparison-modal">
+                <div class="comparison-header">
+                    <div>
+                        <h2 style="font-family:var(--font-h); font-size:24px; color:var(--c-cyan); margin:0;">Route
+                            Decision Matrix</h2>
+                        <p style="font-size:12px; color:var(--c-text-dim); margin:4px 0 0 0;">Multi-Criteria Analysis of
+                            Evacuation Paths</p>
+                    </div>
+                    <button class="details-close" onclick="closeComparison()">×</button>
+                </div>
+                    <div class="comparison-grid" id="comparison-grid">
+                    <!-- Cards populated by JS -->
+                </div>
+                <div
+                    style="padding: 20px 32px; border-top: 1px solid var(--c-border); font-size: 11px; color: var(--c-text-dim);">
+                    * Path Optimality is determined using the <strong>Technique for Order of Preference by Similarity to
+                        Ideal Solution (TOPSIS)</strong>.
+                </div>
+            </div>
+        </div>
+        <div id="road-tooltip">
+            <div id="road-tooltip-name" style="font-weight:700; color:var(--c-cyan);">Road Name</div>
+            <div id="road-tooltip-meta" style="font-size:11px; margin-top:2px;">Type · Length</div>
+        </div>
+        <div id="toast" class="toast">Message here</div>
+
+        <div id="map-legend">
+            <div class="legend-tabs" id="legend-tabs"></div>
+            <div class="legend-body" id="legend-body"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script>
+        // ── STATE ──
+        const state = {
+            routing: {
+                scenario: '25yr',
+                placingOrigin: false,
+                originCoords: null,
+                originMarker: null,
+                destMarker: null,
+                routePolylines: [],
+                routeVisibility: [],
+                connectors: [],
+                activeRouteIndex: null,
+                activeOverlay: null,
+                currentData: null,
+                heatmapActive: false,
+                isolatePath: false,
+                weights: {
+                    flood: 0.5,
+                    distance: 0.3,
+                    road_class: 0.2
+                },
+                routeStyles: [
+                    { color: '#ffff00', weight: 5, opacity: 0.9, dash: null },
+                    { color: '#ffaa00', weight: 4.5, opacity: 0.85, dash: null },
+                    { color: '#a78bfa', weight: 4.5, opacity: 0.85, dash: null }
+                ]
+            },
+            layers: {
+                clip: true,
+                roadVisible: false,
+                roadData: null,
+                roadLayer: null,
+                floodRisk: false,
+                floodCache: {}
+            },
+            config: {
+                layers: {
+                    flood_5yr: { group: "flood", visible: false, opacity: 0.7, leafletLayer: null },
+                    flood_25yr: { group: "flood", visible: false, opacity: 0.7, leafletLayer: null },
+                    flood_100yr: { group: "flood", visible: false, opacity: 0.7, leafletLayer: null },
+                    dist_waterway: { group: "env", visible: false, opacity: 0.7, leafletLayer: null },
+                    elevation: { group: "env", visible: false, opacity: 0.7, leafletLayer: null },
+                    slope: { group: "env", visible: false, opacity: 0.7, leafletLayer: null },
+                    land_cover: { group: "env", visible: false, opacity: 0.7, leafletLayer: null }
+                },
+                evac: {
+                    visible: true,
+                    data: null,
+                    layer: null
+                }
+            }
+        };
+
+        // ── INIT MAP ──
+        const map = L.map('map', { zoomControl: false, maxZoom: 22 }).setView([14.645, 121.02], 14);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri', maxZoom: 22, maxNativeZoom: 16
+        }).addTo(map);
+
+        fetch('/boundary').then(r => r.json()).then(data => {
+            L.geoJSON(data, { style: { color: "#00d4ff", weight: 2, dashArray: "8, 6", fillOpacity: 0, opacity: 0.6 } }).addTo(map);
+        });
+
+        // Initialize Evacuation Centers by default
+        toggleEvacCenters(true);
+
+        // ── TABS ──
+        document.querySelectorAll('.tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+            });
+        });
+
+        // ── SIDEBAR TOGGLE ──
+        const sidebar = document.getElementById('sidebar');
+        document.getElementById('sidebar-toggle').addEventListener('click', () => {
+            sidebar.classList.toggle('closed');
+            setTimeout(() => map.invalidateSize(), 400);
+        });
+
+        // ── LAYER MANAGEMENT ──
+        function toggleClip(on) {
+            state.layers.clip = on;
+            Object.keys(state.config.layers).forEach(id => {
+                if (state.config.layers[id].visible) {
+                    removeLayer(id); addLayer(id);
+                }
+            });
+        }
+
+        function updateLayer(id, visible) {
+            state.config.layers[id].visible = visible;
+            if (visible && state.config.layers[id].group === 'flood') {
+                Object.keys(state.config.layers).forEach(k => {
+                    if (state.config.layers[k].group === 'flood' && k !== id) {
+                        removeLayer(k);
+                        state.config.layers[k].visible = false;
+                        const otherCheck = document.getElementById('toggle-' + k);
+                        if (otherCheck) otherCheck.checked = false;
+                        // Hide associated opacity container
+                        const otherCnt = document.getElementById('opacity-cnt-' + k);
+                        if (otherCnt) otherCnt.style.display = 'none';
+                    }
+                });
+            }
+            if (visible) {
+                addLayer(id);
+                document.getElementById('opacity-cnt-' + id).style.display = 'block';
+            } else {
+                removeLayer(id);
+                document.getElementById('opacity-cnt-' + id).style.display = 'none';
+            }
+            updateMapLegend();
+        }
+
+        function updateLayerOpacity(id, val) {
+            const opacity = val / 100;
+            state.config.layers[id].opacity = opacity;
+            const layer = state.config.layers[id].leafletLayer;
+            if (layer) layer.setOpacity(opacity);
+            document.getElementById('opacity-val-' + id).textContent = val + '%';
+        }
+
+        const LEGEND_DATA = {
+            'flood': {
+                title: 'Flood Hazard',
+                items: [
+                    { color: '#7f0000', label: 'Very High (1.5m+)' },
+                    { color: '#ff0000', label: 'High (1.0m - 1.5m)' },
+                    { color: '#ffaa00', label: 'Medium (0.5m - 1.0m)' },
+                    { color: '#ffff00', label: 'Low (< 0.5m)' }
+                ]
+            },
+            'dist_waterway': {
+                title: 'Waterway Proximity',
+                items: [
+                    { color: '#004c6d', label: 'Critical (< 50m)' },
+                    { color: '#255e7e', label: 'Near (50m - 100m)' },
+                    { color: 'var(--c-cyan)', label: 'Moderate (100m - 200m)' },
+                    { color: '#6daed5', label: 'Safe (> 200m)' }
+                ]
+            },
+            'elevation': {
+                title: 'Terrain Elevation',
+                items: [
+                    { color: '#ffffff', label: 'Peak (High)' },
+                    { color: '#94a3b8', label: 'Elevated' },
+                    { color: '#475569', label: 'Lowland' },
+                    { color: '#0f172a', label: 'Valley (Low)' }
+                ]
+            },
+            'slope': {
+                title: 'Slope Gradient',
+                items: [
+                    { color: '#fee2e2', label: 'Steep (> 18%)' },
+                    { color: '#fca5a5', label: 'Moderate (8-18%)' },
+                    { color: '#fee2e2', label: 'Gente (3-8%)' },
+                    { color: '#f8fafc', label: 'Flat (< 3%)' }
+                ]
+            },
+            'land_cover': {
+                title: 'Surface Type',
+                items: [
+                    { color: '#1e293b', label: 'Built-up Area' },
+                    { color: '#15803d', label: 'High Vegetation' },
+                    { color: '#4ade80', label: 'Open Space' },
+                    { color: '#0ea5e9', label: 'Water Body' }
+                ]
+            }
+        };
+
+        function updateMapLegend() {
+            const legendEl = document.getElementById('map-legend');
+            const tabsEl = document.getElementById('legend-tabs');
+            const bodyEl = document.getElementById('legend-body');
+
+            // 1. Determine active categories
+            const activeCategories = [];
+
+            // Check flood group (only one can be active)
+            const floodActive = Object.keys(state.config.layers).find(k =>
+                state.config.layers[k].group === 'flood' && state.config.layers[k].visible
+            );
+            if (floodActive) activeCategories.push({ id: 'flood', label: 'Hazard' });
+
+            // Check individual env layers
+            if (state.config.layers.dist_waterway.visible) activeCategories.push({ id: 'dist_waterway', label: 'Hydrology' });
+            if (state.config.layers.elevation.visible) activeCategories.push({ id: 'elevation', label: 'Elevation' });
+            if (state.config.layers.slope.visible) activeCategories.push({ id: 'slope', label: 'Slope' });
+            if (state.config.layers.land_cover.visible) activeCategories.push({ id: 'land_cover', label: 'Land Cover' });
+
+            if (activeCategories.length === 0) {
+                legendEl.style.display = 'none';
+                return;
+            }
+
+            legendEl.style.display = 'flex';
+
+            // 2. Render Tabs
+            tabsEl.innerHTML = activeCategories.map((cat, i) => `
+                <div class="legend-tab ${i === 0 ? 'active' : ''}" data-cat="${cat.id}" onclick="switchLegendTab('${cat.id}')">
+                    ${cat.label}
+                </div>
+            `).join('');
+
+            // 3. Render initial body
+            renderLegendBody(activeCategories[0].id);
+        }
+
+        function switchLegendTab(catId) {
+            document.querySelectorAll('.legend-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.cat === catId);
+            });
+            renderLegendBody(catId);
+        }
+
+        function renderLegendBody(catId) {
+            const data = LEGEND_DATA[catId];
+            if (!data) return;
+
+            const bodyEl = document.getElementById('legend-body');
+            bodyEl.innerHTML = `
+                <div class="legend-title">${data.title}</div>
+                ${data.items.map(item => `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background:${item.color};"></div>
+                        <div class="legend-label">${item.label}</div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function addLayer(id) {
+            const cfg = state.config.layers[id];
+            if (cfg.leafletLayer) return;
+            cfg.leafletLayer = L.tileLayer(`/tiles/${id}/{z}/{x}/{y}.png?clip=${state.layers.clip}`, {
+                opacity: cfg.opacity, maxZoom: 22, maxNativeZoom: 18
+            }).addTo(map);
+        }
+
+        function removeLayer(id) {
+            const cfg = state.config.layers[id];
+            if (cfg.leafletLayer) { map.removeLayer(cfg.leafletLayer); cfg.leafletLayer = null; }
+            const cnt = document.getElementById('opacity-cnt-' + id);
+            if (cnt) cnt.style.display = 'none';
+        }
+
+        function toggleGroup(groupId, visible) {
+            // Deprecated - using individual scenario toggles now
+        }
+
+        // ── ROAD NETWORK ──
+        function toggleRoadMaster(on) {
+            state.layers.roadVisible = on;
+            if (!on) {
+                if (state.layers.roadLayer) map.removeLayer(state.layers.roadLayer);
+                document.getElementById('road-info-panel').style.display = 'none';
+                return;
+            }
+            if (state.layers.roadData) { renderRoads(); return; }
+            fetch('/roads').then(r => r.json()).then(data => {
+                state.layers.roadData = data;
+                renderRoads();
+            });
+        }
+
+        function renderRoads() {
+            if (state.layers.roadLayer) map.removeLayer(state.layers.roadLayer);
+            state.layers.roadLayer = L.geoJSON(state.layers.roadData, {
+                style: { color: '#475569', weight: 1.5, opacity: 0.6 },
+                onEachFeature: setupRoadInteractions
+            }).addTo(map);
+        }
+
+        function setupRoadInteractions(f, l) {
+            l.on('mouseover', e => {
+                l.setStyle({ color: '#ffffff', weight: 3, opacity: 1 });
+                const tt = document.getElementById('road-tooltip');
+                document.getElementById('road-tooltip-name').textContent = f.properties.name || 'Unnamed Road';
+                document.getElementById('road-tooltip-meta').textContent = (f.properties.highway || 'Road') + ' · ' + (f.properties.length || 0).toFixed(0) + 'm';
+                tt.style.display = 'block';
+                tt.style.left = (e.originalEvent.clientX + 15) + 'px';
+                tt.style.top = (e.originalEvent.clientY - 10) + 'px';
+            });
+            l.on('mouseout', () => {
+                l.setStyle({ color: '#475569', weight: 1.5, opacity: 0.6 });
+                document.getElementById('road-tooltip').style.display = 'none';
+            });
+            l.on('click', () => {
+                document.getElementById('road-info-panel').style.display = 'block';
+                document.getElementById('road-info-name').textContent = f.properties.name || 'Unnamed Road';
+                document.getElementById('road-info-osmid').textContent = f.properties.osmid || '—';
+                document.getElementById('road-info-meta').textContent = (f.properties.highway || 'Road') + ' · ' + (f.properties.length || 0).toFixed(0) + 'm';
+            });
+        }
+
+        // ── EVACUATION CENTERS ──
+        function toggleEvacCenters(on) {
+            state.config.evac.visible = on;
+            if (!on) {
+                if (state.config.evac.layer) map.removeLayer(state.config.evac.layer);
+                return;
+            }
+            if (state.config.evac.data) { renderEvacCenters(); return; }
+            fetch('/evacuation-centers').then(r => r.json()).then(data => {
+                state.config.evac.data = data;
+                renderEvacCenters();
+            });
+        }
+
+        function renderEvacCenters() {
+            if (state.config.evac.layer) map.removeLayer(state.config.evac.layer);
+            state.config.evac.layer = L.geoJSON(state.config.evac.data, {
+                pointToLayer: (f, latlng) => {
+                    return L.circleMarker(latlng, {
+                        radius: 6,
+                        fillColor: "var(--c-amber)",
+                        color: "#fff",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
+                },
+                onEachFeature: (f, l) => {
+                    l.bindPopup(`<div style="font-family:var(--font-h); font-weight:700; color:var(--c-amber);">${f.properties.facility}</div>
+                                 <div style="font-size:11px; margin-top:4px;">${f.properties.barangay || 'Unknown Barangay'}</div>`);
+                }
+            }).addTo(map);
+        }
+
+        // ── ROUTING ──
+        function selectScenario(s) {
+            state.routing.scenario = s;
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.scenario === s);
+            });
+        }
+
+        function toggleOriginPlacement() {
+            state.routing.placingOrigin = !state.routing.placingOrigin;
+            document.getElementById('place-origin-btn').classList.toggle('active', state.routing.placingOrigin);
+            map.getContainer().style.cursor = state.routing.placingOrigin ? 'crosshair' : '';
+        }
+
+        map.on('click', e => {
+            if (!state.routing.placingOrigin) return;
+            state.routing.originCoords = e.latlng;
+            if (state.routing.originMarker) map.removeLayer(state.routing.originMarker);
+            state.routing.originMarker = L.marker(e.latlng, {
+                icon: L.divIcon({ html: '<div style="width:24px; height:24px; background:var(--c-cyan); border:3px solid white; border-radius:50%; box-shadow:0 0 15px var(--c-cyan);"></div>', className: '', iconSize: [24, 24], iconAnchor: [12, 12] })
+            }).addTo(map);
+
+            document.getElementById('origin-lat').textContent = e.latlng.lat.toFixed(5);
+            document.getElementById('origin-lon').textContent = e.latlng.lng.toFixed(5);
+            document.getElementById('origin-coords-display').style.display = 'block';
+            document.getElementById('find-routes-btn').disabled = false;
+            toggleOriginPlacement();
+        });
+
+        function adjustWeights(changedKey, val) {
+            val = parseInt(val);
+            const keys = ['flood', 'distance', 'road_class'];
+            const others = keys.filter(k => k !== changedKey);
+
+            // Current total of others
+            let currentOtherTotal = 0;
+            others.forEach(k => currentOtherTotal += state.routing.weights[k] * 100);
+
+            const remaining = 100 - val;
+
+            if (currentOtherTotal === 0) {
+                // Split equally if others were zero
+                others.forEach(k => state.routing.weights[k] = remaining / (others.length * 100));
+            } else {
+                // Distribute proportionally
+                others.forEach(k => {
+                    const proportion = (state.routing.weights[k] * 100) / currentOtherTotal;
+                    state.routing.weights[k] = (remaining * proportion) / 100;
+                });
+            }
+
+            state.routing.weights[changedKey] = val / 100;
+
+            // Update UI
+            keys.forEach(k => {
+                const perc = Math.round(state.routing.weights[k] * 100);
+                document.getElementById('weight-val-' + k).textContent = perc + '%';
+                // Find and update the range input if it's not the one being dragged
+                const input = document.querySelector(`.weight-slider-container input[oninput*="'${k}'"]`);
+                if (input && k !== changedKey) input.value = perc;
+            });
+        }
+
+        async function findRoutes() {
+            const btn = document.getElementById('find-routes-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="ico" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>Processing...';
+            try {
+                const res = await fetch('/route', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        origin_lat: state.routing.originCoords.lat,
+                        origin_lon: state.routing.originCoords.lng,
+                        scenario: state.routing.scenario,
+                        k: 3,
+                        weights: state.routing.weights
+                    })
+                });
+                const data = await res.json();
+                state.routing.currentData = data;
+                state.routing.activeRouteIndex = 0;
+                state.routing.routeVisibility = data.routes.map(() => true); // Show all by default
+                document.getElementById('toggle-all-btn').textContent = 'HIDE ALL';
+
+                drawRoutesInternal();
+                renderRouteCards(data.routes);
+                showToast(`Found ${data.k_found ?? data.routes.length} routes \u2192 ${data.destination?.name || 'Evacuation Center'} (${data.computation_time_ms} ms)`, 'success');
+            } catch (e) {
+                showToast('Failed to calculate routes', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="ico" aria-hidden="true"><i class="bi bi-search"></i></span>Find Evacuation Routes';
+            }
+        }
+
+        function drawRoutesInternal() {
+            const data = state.routing.currentData;
+            if (!data) return;
+
+            // Cleanup previous
+            state.routing.routePolylines.forEach(p => map.removeLayer(p));
+            state.routing.connectors.forEach(c => map.removeLayer(c));
+            if (state.routing.activeOverlay) map.removeLayer(state.routing.activeOverlay);
+            if (state.routing.destMarker) map.removeLayer(state.routing.destMarker);
+
+            state.routing.routePolylines = [];
+            state.routing.connectors = [];
+
+            // 1. Draw Routes
+            const activeIdx = state.routing.activeRouteIndex !== null ? state.routing.activeRouteIndex : 0;
+
+            data.routes.forEach((route, idx) => {
+                // Individual visibility toggle
+                if (!state.routing.routeVisibility[idx]) return;
+
+                // In isolation mode (details sidebar), only draw the active one
+                if (state.routing.isolatePath && idx !== activeIdx) return;
+
+                let polyline;
+                const style = state.routing.routeStyles[idx] || state.routing.routeStyles[2];
+                const geom = route.geometry;
+                const coords = geom.coordinates;
+
+                if (state.routing.heatmapActive && idx === activeIdx) {
+                    // Risk Heatmap: Color-coded by probability per segment
+                    const segmentsData = route.properties.segments || [];
+                    const group = L.featureGroup();
+
+                    // Handle MultiLineString and LineString
+                    const allCoords = (geom.type === 'MultiLineString') ? coords : [coords];
+
+                    allCoords.forEach((segCoords, sIdx) => {
+                        const proba = (segmentsData[sIdx]) ? segmentsData[sIdx].flood_proba : 0;
+                        const latlngs = segCoords.map(pt => [pt[1], pt[0]]);
+                        L.polyline(latlngs, {
+                            color: getProbaColor(proba),
+                            weight: 6,
+                            opacity: 1.0,
+                            lineJoin: 'round',
+                            lineCap: 'round'
+                        }).addTo(group);
+                    });
+                    polyline = group;
+                } else {
+                    // Standard Rank-based coloring
+                    let latlngs;
+                    if (geom.type === 'MultiLineString') {
+                        latlngs = coords.map(seg => seg.map(pt => [pt[1], pt[0]]));
+                    } else {
+                        latlngs = coords.map(pt => [pt[1], pt[0]]);
+                    }
+
+                    polyline = L.polyline(latlngs, {
+                        color: style.color,
+                        weight: style.weight,
+                        opacity: style.opacity,
+                        dashArray: style.dash,
+                        lineJoin: 'round',
+                        lineCap: 'round',
+                    });
+                }
+
+                polyline.addTo(map);
+                polyline.routeIndex = idx;
+
+                if (!state.routing.isolatePath) { // Only add mouse events if not in isolation mode
+                    polyline.on('mouseover', function () {
+                        this.setStyle({ weight: style.weight + 2, opacity: 1.0 });
+                    });
+                    polyline.on('mouseout', function () {
+                        if (state.routing.activeRouteIndex !== idx) {
+                            this.setStyle({ weight: style.weight, opacity: style.opacity });
+                        }
+                    });
+                }
+
+                polyline.on('click', function () { highlightRoute(idx); });
+                state.routing.routePolylines.push(polyline);
+            });
+
+            // 2. Connectors
+            const oNode = data.origin;
+            if (oNode && oNode.nearest_node_lat != null) {
+                const c1 = L.polyline([[oNode.lat, oNode.lon], [oNode.nearest_node_lat, oNode.nearest_node_lon]],
+                    { color: '#00d4ff', weight: 2, dashArray: '5, 8', opacity: 0.8 }).addTo(map);
+                state.routing.connectors.push(c1);
+            }
+            const dNode = data.destination;
+            if (dNode && dNode.nearest_node_lat != null) {
+                const c2 = L.polyline([[dNode.lat, dNode.lon], [dNode.nearest_node_lat, dNode.nearest_node_lon]],
+                    { color: '#ffaa00', weight: 2, dashArray: '5, 8', opacity: 0.8 }).addTo(map);
+                state.routing.connectors.push(c2);
+            }
+
+            // 3. Markers for all unique destinations in the result set
+            const uniqueCenters = new Map();
+            data.routes.forEach(r => {
+                const props = r.properties;
+                const key = `${props.destination_name}_${props.destination_barangay}`;
+                if (!uniqueCenters.has(key)) {
+                    // Extract lat/lon from the last coordinate of the route geometry
+                    // (since the server now includes these in properties, let's use those if available)
+                    // Fallback to route geometry end
+                    const coords = r.geometry.coordinates;
+                    const lastSeg = coords[coords.length - 1];
+                    const lastPt = lastSeg[lastSeg.length - 1];
+                    uniqueCenters.set(key, {
+                        name: props.destination_name,
+                        barangay: props.destination_barangay,
+                        lat: lastPt[1], // Rough approximate or server provided
+                        lon: lastPt[0]
+                    });
+                }
+            });
+
+            state.routing.destMarkers = state.routing.destMarkers || [];
+            state.routing.destMarkers.forEach(m => map.removeLayer(m));
+            state.routing.destMarkers = [];
+
+            uniqueCenters.forEach(center => {
+                const m = L.marker([center.lat, center.lon], {
+                    icon: L.divIcon({
+                        html: `<div style="width:24px; height:24px; background:var(--c-amber); border:3px solid white; border-radius:50%; box-shadow:0 0 15px var(--c-amber); position:relative;">
+                                 <div style="position:absolute; top:-30px; left:50%; transform:translateX(-50%); background:var(--c-bg); border:1px solid var(--c-amber); padding:2px 8px; border-radius:4px; font-size:10px; white-space:nowrap; color:var(--c-amber); font-weight:700;">DESTINATION</div>
+                               </div>`,
+                        className: '', iconSize: [24, 24], iconAnchor: [12, 12]
+                    })
+                }).addTo(map).bindPopup(`<div style="font-family:var(--font-h); font-weight:700; color:var(--c-amber);">${center.name}</div><div style="font-size:11px; margin-top:4px;">${center.barangay}</div>`);
+                state.routing.destMarkers.push(m);
+            });
+
+            if (state.routing.routePolylines.length > 0) {
+                const group = L.featureGroup(state.routing.routePolylines);
+                map.fitBounds(group.getBounds(), { padding: [60, 60] });
+            }
+        }
+
+        function getProbaColor(p) {
+            // green -> yellow -> red
+            if (p < 0.2) return '#00ff88';
+            if (p < 0.5) return '#ffaa00';
+            return '#ff4444';
+        }
+
+        function toggleIsolatePath(val) {
+            state.routing.isolatePath = val;
+            drawRoutesInternal();
+            highlightRoute(state.routing.activeRouteIndex);
+        }
+
+        function toggleRiskHeatmap(val) {
+            state.routing.heatmapActive = val;
+            drawRoutesInternal();
+            highlightRoute(state.routing.activeRouteIndex);
+        }
+
+        function renderRouteCards(routes) {
+            const container = document.getElementById('route-cards-horizontal');
+            container.innerHTML = '';
+            document.getElementById('results-bottom-bar').style.display = 'flex';
+            const styles = state.routing.routeStyles;
+            // Ensure visibility array exists
+            if (!state.routing.routeVisibility || state.routing.routeVisibility.length === 0) {
+                state.routing.routeVisibility = routes.map(() => true);
+            }
+            const vis = state.routing.routeVisibility;
+
+            routes.forEach((r, i) => {
+                const card = document.createElement('div');
+                card.className = 'route-card';
+                card.style.borderLeftColor = (styles[i] || styles[2]).color;
+                card.dataset.routeIndex = i;
+                card.innerHTML = `
+                    <div class="route-header">
+                        <div style="display:flex; flex-direction:column;">
+                            <span class="route-title">ROUTE ${r.properties.rank}${r.properties.recommended ? ' <span style="color:var(--c-amber); font-weight:800;">BEST</span>' : ''}</span>
+                            <span style="font-size:9px; color:var(--c-cyan); opacity:0.8; text-transform:uppercase; letter-spacing:0.3px; margin-top:2px;">To: ${r.properties.destination_name}</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-details" onclick="openDetails(event, ${i})">DETAILS</button>
+                            <button class="visibility-toggle" 
+                                style="background:transparent; border:1px solid ${vis[i] ? 'var(--c-border)' : 'var(--c-cyan)'}; color:${vis[i] ? 'var(--c-text-dim)' : 'var(--c-cyan)'}; font-size:9px; padding:2px 6px; border-radius:4px; cursor:pointer;" 
+                                onclick="toggleRouteVisibility(event, ${i})">${vis[i] ? 'HIDE' : 'SHOW'}</button>
+                        </div>
+                    </div>
+                    <div class="metrics-grid">
+                        <div class="metric"><div class="metric-label">Distance</div><div class="metric-value">${r.properties.total_length_km} km</div></div>
+                        <div class="metric"><div class="metric-label">Safety</div><div class="metric-value">${r.properties.safety_score}%</div></div>
+                        <div class="metric"><div class="metric-label">Similarity</div><div class="metric-value">${r.properties.similarity_score}%</div></div>
+                    </div>
+                `;
+                card.onclick = (e) => {
+                    if (e.target.tagName !== 'BUTTON') {
+                        state.routing.activeRouteIndex = i;
+                        drawRoutesInternal(); // Redraw to ensure correct highlighting/isolation
+                        highlightRoute(i);
+                    }
+                };
+                container.appendChild(card);
+            });
+        }
+
+        function toggleRouteVisibility(e, idx) {
+            e.stopPropagation();
+            state.routing.routeVisibility[idx] = !state.routing.routeVisibility[idx];
+
+            // Sync Toggle All button label
+            const allVisible = state.routing.routeVisibility.every(v => v);
+            document.getElementById('toggle-all-btn').textContent = allVisible ? 'HIDE ALL' : 'SHOW ALL';
+
+            drawRoutesInternal();
+            renderRouteCards(state.routing.currentData.routes);
+        }
+
+        function toggleAllRoutes() {
+            const allVisible = state.routing.routeVisibility.every(v => v);
+            const newState = !allVisible;
+            state.routing.routeVisibility = state.routing.routeVisibility.map(() => newState);
+
+            document.getElementById('toggle-all-btn').textContent = newState ? 'HIDE ALL' : 'SHOW ALL';
+
+            drawRoutesInternal();
+            renderRouteCards(state.routing.currentData.routes);
+        }
+
+        function clearRouteHighlight() {
+            state.routing.activeRouteIndex = null;
+            if (state.routing.activeOverlay) {
+                map.removeLayer(state.routing.activeOverlay);
+                state.routing.activeOverlay = null;
+            }
+            state.routing.routePolylines.forEach(p => {
+                const ridx = p.routeIndex;
+                if (state.routing.routeVisibility[ridx]) {
+                    const style = state.routing.routeStyles[ridx] || state.routing.routeStyles[2];
+                    if (p.setStyle) p.setStyle({ weight: style.weight, opacity: style.opacity });
+                }
+            });
+            document.querySelectorAll('.route-card').forEach(c => c.classList.remove('highlighted'));
+        }
+
+        function highlightRoute(idx) {
+            state.routing.activeRouteIndex = idx;
+            state.routing.routePolylines.forEach(p => {
+                const ridx = p.routeIndex;
+                if (ridx === idx) {
+                    if (p.setStyle) p.setStyle({ weight: 8, opacity: 1 });
+                    if (p.bringToFront) p.bringToFront();
+                    if (state.routing.activeOverlay) map.removeLayer(state.routing.activeOverlay);
+
+                    let latlngs;
+                    if (p.getLatLngs) {
+                        latlngs = p.getLatLngs();
+                    } else if (p.getLayers) {
+                        latlngs = p.getLayers().map(l => l.getLatLngs());
+                    }
+
+                    state.routing.activeOverlay = L.polyline(latlngs, { color: 'white', weight: 3, opacity: 0.6, className: 'marching-ants' }).addTo(map);
+                } else {
+                    const style = state.routing.routeStyles[ridx] || state.routing.routeStyles[2];
+                    if (p.setStyle) p.setStyle({ weight: style.weight / 2, opacity: 0.2 });
+                }
+            });
+            document.querySelectorAll('.route-card').forEach((c, i) => c.classList.toggle('highlighted', i === idx));
+        }
+
+        function selectRoute(idx) {
+            highlightRoute(idx);
+        }
+
+        function openDetails(e, idx) {
+            if (e) e.stopPropagation();
+            const data = state.routing.currentData;
+            if (!data || !data.routes || !data.routes[idx]) {
+                showToast('Route data missing', 'error');
+                return;
+            }
+
+            const route = data.routes[idx];
+            const props = route.properties || {};
+            const segs = props.segments || [];
+            const counts = props.flood_class_counts || { 1: 0, 2: 0, 3: 0 };
+
+            document.getElementById('details-title').textContent = `Route ${idx + 1} - Analysis`;
+
+            let html = `
+                <div class="detail-card">
+                    <div class="section-label" style="margin-top:0;">Map Visualization</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Isolate Path</span>
+                        <label class="switch">
+                            <input type="checkbox" id="isolate-toggle" ${state.routing.isolatePath ? 'checked' : ''} onchange="toggleIsolatePath(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="switch-row" style="border:none;">
+                        <span class="switch-label">Show Risk Heatmap</span>
+                        <label class="switch">
+                            <input type="checkbox" id="heatmap-toggle" ${state.routing.heatmapActive ? 'checked' : ''} onchange="toggleRiskHeatmap(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="section-label" style="margin-top:0;">Optimal Ranking</div>
+                    <div class="detail-row"><span>MCDA Selection</span><span class="detail-val">#${props.rank || (idx + 1)} of ${data.routes.length}</span></div>
+                    <div class="detail-row"><span>Safety Score</span><span class="detail-val" style="color:var(--c-cyan)">${props.safety_score || 0}%</span></div>
+                    <div class="detail-row"><span>Risk Label</span><span class="detail-val" style="color:${getProbaColor(props.flood_exposure || 0)}">${props.risk_label || 'Unknown'}</span></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="section-label" style="margin-top:0;">MCDA Breakdown</div>
+                    <div class="detail-row"><span>TOPSIS Score</span><span class="detail-val">${(props.topsis_score || 0).toFixed(4)}</span></div>
+                    <div class="detail-row"><span>WSM Path Cost</span><span class="detail-val">${(props.wsm_path_cost || 0).toFixed(2)}</span></div>
+                    <div style="font-size:10px; color:var(--c-text-dim); margin-top:8px; line-height:1.4;">
+                        * TOPSIS calculates closeness to ideal. Higher is better.<br>
+                        * WSM Cost is the path's total weighted penalty.
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="section-label" style="margin-top:0;">Journey Summary</div>
+                    <div class="detail-row"><span>Total Distance</span><span class="detail-val">${props.total_length_km || 0} km</span></div>
+                    <div class="detail-row"><span>Average Risk</span><span class="detail-val">${((props.flood_exposure || 0) * 100).toFixed(1)}%</span></div>
+                </div>
+                
+                <div class="detail-card">
+                    <div class="section-label" style="margin-top:0;">Risk Breakdown</div>
+                    <div class="detail-row"><span>High Risk (Class 3)</span><span class="detail-val">${counts['3'] || 0} segments</span></div>
+                    <div class="detail-row"><span>Med Risk (Class 2)</span><span class="detail-val">${counts['2'] || 0} segments</span></div>
+                    <div class="detail-row"><span>Low Risk (Class 1)</span><span class="detail-val">${counts['1'] || 0} segments</span></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="section-label" style="margin-top:0;">Segment Breakdown</div>
+                    <table class="segment-table">
+                        <thead>
+                            <tr>
+                                <th>Road Name</th>
+                                <th>Len</th>
+                                <th>Risk%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${segs.map(seg => `
+                                <tr>
+                                    <td>${seg.name || 'Unnamed'}</td>
+                                    <td>${seg.length || 0}m</td>
+                                    <td style="color:${getProbaColor(seg.flood_proba || 0)}; font-weight:700;">${((seg.flood_proba || 0) * 100).toFixed(0)}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('details-content').innerHTML = html;
+            document.getElementById('sidebar-details').classList.add('open');
+
+            state.routing.activeRouteIndex = idx;
+            drawRoutesInternal();
+            highlightRoute(idx);
+        }
+
+        function closeDetails() {
+            document.getElementById('sidebar-details').classList.remove('open');
+        }
+
+        function clearRouting() {
+            state.routing.routePolylines.forEach(p => map.removeLayer(p));
+            state.routing.connectors.forEach(c => map.removeLayer(c));
+            if (state.routing.activeOverlay) map.removeLayer(state.routing.activeOverlay);
+            if (state.routing.originMarker) map.removeLayer(state.routing.originMarker);
+            if (state.routing.destMarker) map.removeLayer(state.routing.destMarker);
+            state.routing.originCoords = null;
+            state.routing.routePolylines = [];
+            state.routing.connectors = [];
+
+            document.getElementById('results-bottom-bar').style.display = 'none';
+            document.getElementById('origin-coords-display').style.display = 'none';
+            document.getElementById('find-routes-btn').disabled = true;
+        }
+
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.style.display = 'block';
+            t.style.borderColor = type === 'success' ? 'var(--c-green)' : 'var(--c-red)';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        // ── COMPARISON LOGIC ──
+        function openComparison() {
+            const data = state.routing.currentData;
+            if (!data || !data.routes) return;
+
+            const grid = document.getElementById('comparison-grid');
+            grid.innerHTML = '';
+
+            data.routes.forEach((r, i) => {
+                const props = r.properties;
+                const style = state.routing.routeStyles[i] || state.routing.routeStyles[2];
+                const card = document.createElement('div');
+                card.className = `comparison-card ${props.recommended ? 'optimal' : ''}`;
+
+                const wsm = props.wsm_breakdown || { flood: 0, distance: 0, road_class: 0 };
+                const topsis = props.topsis_breakdown || { s_best: 0, s_worst: 0 };
+
+                card.innerHTML = `
+                    ${props.recommended ? '<div class="optimal-badge">Recommended</div>' : ''}
+                    <h3>
+                        <div style="width:12px; height:12px; border-radius:3px; background:${style.color};"></div>
+                        Route ${props.rank || (i + 1)}
+                    </h3>
+
+                    <div style="margin-bottom:12px; display:flex; justify-content:space-between; font-size:11px; color:var(--c-text-dim);">
+                        <span>Spatial Similarity to P1:</span>
+                        <span style="color:var(--c-cyan); font-weight:700;">${props.similarity_score}%</span>
+                    </div>
+
+                    <div style="margin-bottom:20px;">
+                        <div class="compare-row" style="border-bottom: 2px solid var(--c-cyan);">
+                            <span class="compare-label" style="color:var(--c-cyan); font-weight:800;">TOPSIS Score</span>
+                            <span class="compare-val rank" style="font-size:16px;">${(props.topsis_score || 0).toFixed(4)}</span>
+                        </div>
+                        <div class="breakdown-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                             <div class="mini-metric">
+                                <div class="mini-label">S+ (Best)</div>
+                                <div class="mini-val">${topsis.s_best.toFixed(4)}</div>
+                             </div>
+                             <div class="mini-metric">
+                                <div class="mini-label">S- (Worst)</div>
+                                <div class="mini-val">${topsis.s_worst.toFixed(4)}</div>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <div class="compare-row" style="border-bottom: 2px solid var(--c-amber);">
+                            <span class="compare-label" style="color:var(--c-amber); font-weight:800;">WSM Cost</span>
+                            <span class="compare-val" style="font-size:16px;">${(props.wsm_path_cost || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="breakdown-list" style="margin-top:10px;">
+                            <div class="mini-bar-row">
+                                <div class="mini-bar-label">Flood Contribution</div>
+                                <div class="mini-bar-val">${wsm.flood.toFixed(2)}</div>
+                            </div>
+                            <div class="mini-bar-row">
+                                <div class="mini-bar-label">Distance Contribution</div>
+                                <div class="mini-bar-val">${wsm.distance.toFixed(2)}</div>
+                            </div>
+                            <div class="mini-bar-row">
+                                <div class="mini-bar-label">Road Hierarchy Cost</div>
+                                <div class="mini-bar-val">${wsm.road_class.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05);">
+                        <div class="compare-row">
+                            <span class="compare-label">Total Distance</span>
+                            <span class="compare-val">${props.total_length_km} km</span>
+                        </div>
+                        <div class="compare-row">
+                            <span class="compare-label">Risk Label</span>
+                            <span class="compare-val" style="color:${getProbaColor(props.flood_exposure)}">${props.risk_label}</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-details" style="width:100%; margin-top:15px;" onclick="closeComparison(); openDetails(null, ${i})">
+                        VIEW FULL ANALYSIS
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('comparison-overlay').style.display = 'flex';
+        }
+
+        // Add CSS for mini metrics locally
+        const extraStyles = document.createElement('style');
+        extraStyles.textContent = `
+            .mini-metric { background: rgba(0,212,255,0.05); padding:8px; border-radius:6px; text-align:center; }
+            .mini-label { font-size:9px; color:var(--c-text-dim); text-transform:uppercase; margin-bottom:2px; }
+            .mini-val { font-size:11px; font-weight:700; color:var(--c-text-bright); }
+            .mini-bar-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:10px; }
+            .mini-bar-label { color:var(--c-text-dim); }
+            .mini-bar-val { color:var(--c-amber); font-weight:700; }
+        `;
+        document.head.appendChild(extraStyles);
+
+        function closeComparison() {
+            document.getElementById('comparison-overlay').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>

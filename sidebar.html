@@ -1,0 +1,438 @@
+<aside id="sidebar">
+            <header class="sidebar-header">
+                <h1>CodeFish</h1>
+                <p>Flood-Aware Evacuation Routing — District 1, QC</p>
+            </header>
+
+            <div class="sidebar-content">
+                <div class="section-header">
+                    <span>🗂️</span>
+                    <span>Map Layers</span>
+                </div>
+
+                <!-- Clip Control -->
+                <div class="clip-control"
+                    title="ON: layers show only inside District 1&#10;OFF: layers show full raster extent">
+                    <div class="clip-label">
+                        Clip to District 1
+                        <span class="clip-subtitle">Restrict rasters to boundary</span>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="clip-toggle" checked onchange="toggleClip(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Group 1: Flood Hazard -->
+                <div class="layer-group" id="group-flood">
+                    <div class="group-header">
+                        <div class="group-title-container" onclick="toggleCollapse('group-flood')">
+                            <span class="expand-icon">▼</span>
+                            <span class="group-title">Flood Hazard</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleGroup('flood', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-list">
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#ffff00;"></span>
+                                    5-Year Return Period
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-flood_5yr"
+                                        onchange="updateLayer('flood_5yr', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('flood_5yr', this.value)">
+                            </div>
+                        </div>
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#ff8c00;"></span>
+                                    25-Year Return Period
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-flood_25yr"
+                                        onchange="updateLayer('flood_25yr', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('flood_25yr', this.value)">
+                            </div>
+                        </div>
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#ff0000;"></span>
+                                    100-Year Return Period
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-flood_100yr"
+                                        onchange="updateLayer('flood_100yr', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('flood_100yr', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 2: Environmental -->
+                <div class="layer-group" id="group-env">
+                    <div class="group-header">
+                        <div class="group-title-container" onclick="toggleCollapse('group-env')">
+                            <span class="expand-icon">▼</span>
+                            <span class="group-title">Environmental</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleGroup('env', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-list">
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#00d4ff;"></span>
+                                    Land Cover
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-land_cover"
+                                        onchange="updateLayer('land_cover', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('land_cover', this.value)">
+                            </div>
+                        </div>
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#4da6ff;"></span>
+                                    Distance to Waterway
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-dist_waterway"
+                                        onchange="updateLayer('dist_waterway', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('dist_waterway', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Group 3: Terrain -->
+                <div class="layer-group" id="group-terrain">
+                    <div class="group-header">
+                        <div class="group-title-container" onclick="toggleCollapse('group-terrain')">
+                            <span class="expand-icon">▼</span>
+                            <span class="group-title">Terrain</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" onchange="toggleGroup('terrain', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="layer-list">
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#8b4513;"></span>
+                                    Elevation (DEM)
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-elevation"
+                                        onchange="updateLayer('elevation', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('elevation', this.value)">
+                            </div>
+                        </div>
+                        <div class="layer-item">
+                            <div class="layer-main-row">
+                                <label class="layer-label">
+                                    <span class="layer-dot" style="background:#ff4500;"></span>
+                                    Slope
+                                </label>
+                                <label class="switch">
+                                    <input type="checkbox" id="check-slope"
+                                        onchange="updateLayer('slope', this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div class="opacity-control">
+                                <label>Opacity</label>
+                                <input type="range" class="opacity-slider" value="70"
+                                    oninput="updateOpacity('slope', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══ Road Network Section ══ -->
+                <div class="road-group" id="road-group">
+                    <div class="group-header">
+                        <div class="group-title-container">
+                            <span class="group-title">🛣 Road Network</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="road-master-toggle" onchange="toggleRoadMaster(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <!-- Sub-toggles -->
+                    <div class="road-subtoggle-area" id="road-subtoggle-area">
+                        <div class="road-subtoggle-item">
+                            <span class="road-subtoggle-label">Classification Style</span>
+                            <label class="switch" id="road-class-switch">
+                                <input type="checkbox" id="road-class-toggle"
+                                    onchange="toggleClassification(this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="road-subtoggle-item">
+                            <span class="road-subtoggle-label">
+                                Flood Risk Overlay
+                                <span class="mini-spinner" id="risk-spinner" style="display:none;"></span>
+                            </span>
+                            <label class="switch" id="road-risk-switch">
+                                <input type="checkbox" id="road-risk-toggle" onchange="toggleFloodRisk(this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="road-subtoggle-item">
+                            <span class="road-subtoggle-label">Connected Highlight</span>
+                            <label class="switch" id="road-conn-switch">
+                                <input type="checkbox" id="road-conn-toggle"
+                                    onchange="toggleConnectedHighlight(this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══ Evacuation Centers Section ══ -->
+                <div class="evac-group" id="evac-group">
+                    <div class="evac-header-title">Evacuation Centers</div>
+                    <div class="evac-master-row">
+                        <span class="evac-master-label">Show All Centers</span>
+                        <label class="switch">
+                            <input type="checkbox" id="evac-master-toggle" onchange="toggleEvacMaster(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="evac-subtoggle-area" id="evac-subtoggle-area">
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">🏛 Barangay Halls</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="Barangay Hall" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">🎓 Schools</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="School" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">⛪ Churches</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="Church" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">🏀 Courts/Gyms</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="Court/Gymnasium" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">🌳 Open Spaces</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="Open Space" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">🏥 Hospitals</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="Hospital" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="evac-subtoggle-item">
+                            <span class="evac-subtoggle-label">📍 Others</span>
+                            <label class="switch">
+                                <input type="checkbox" class="evac-type-toggle" data-evac-type="Other" checked
+                                    onchange="toggleEvacType(this)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="evac-stats">
+                            <div>Total: <span id="evac-total-count">0</span> centers</div>
+                        </div>
+                    </div>
+
+                    <!-- Road Info Panel -->
+                    <hr class="sidebar-separator">
+                    <div class="road-info-panel" id="road-info-panel">
+                        <div class="road-info-header">
+                            <span class="road-info-title">Road Info</span>
+                            <button class="road-info-close" id="road-info-close" onclick="deselectRoad()">✕</button>
+                        </div>
+                        <div class="road-info-placeholder" id="road-info-placeholder">
+                            Click any road segment to view details
+                        </div>
+                        <div class="road-info-content" id="road-info-content">
+                            <div class="road-info-name" id="road-info-name"></div>
+                            <div class="road-info-row">
+                                <div class="road-info-field-label">Classification</div>
+                                <div class="road-info-field-value" id="road-info-class"></div>
+                            </div>
+                            <div class="road-info-row">
+                                <div class="road-info-field-label">Length</div>
+                                <div class="road-info-field-value" id="road-info-length"></div>
+                            </div>
+                            <div class="road-info-row" id="road-info-risk-row" style="display:none;">
+                                <div class="road-info-field-label">Flood Risk</div>
+                                <div class="risk-bar-container">
+                                    <div class="risk-bar">
+                                        <div class="risk-bar-fill" id="road-risk-bar-fill"></div>
+                                    </div>
+                                    <span class="risk-badge" id="road-risk-badge"></span>
+                                </div>
+                                <div class="road-info-field-value" id="road-info-risk-label"
+                                    style="font-size:0.72rem; margin-top:2px;"></div>
+                            </div>
+                            <div class="road-info-row">
+                                <div class="road-info-field-label">OSM ID</div>
+                                <div class="road-info-field-value" id="road-info-osmid"
+                                    style="font-family: monospace; font-size:0.75rem; color: var(--text-muted);"></div>
+                            </div>
+
+                            <!-- Breakdown Section -->
+                            <div class="road-info-row" id="road-info-breakdown-row"
+                                style="display:none; margin-top: 1rem; border-top: 1px solid rgba(0, 212, 255, 0.15); padding-top: 0.5rem;">
+                                <div class="road-info-field-label">Segments Breakdown (<span
+                                        id="road-info-breakdown-count"></span>)</div>
+                                <div class="road-info-breakdown-list" id="road-info-breakdown-list"
+                                    style="max-height: 180px; overflow-y: auto; padding-right: 4px; margin-top: 5px; font-size: 0.75rem;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Evacuation Routing -->
+                    <hr class="sidebar-separator">
+                    <div class="sidebar-section">
+                        <div class="section-header">EVACUATION ROUTING</div>
+
+                        <!-- Scenario Selector -->
+                        <div style="margin-bottom: 0.5rem;">
+                            <div
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.3rem; letter-spacing: 0.5px;">
+                                SCENARIO</div>
+                            <div style="display: flex; gap: 0.3rem; margin-bottom: 0.5rem;">
+                                <button class="scenario-tab" data-scenario="5yr"
+                                    onclick="selectScenario('5yr')">5-Year</button>
+                                <button class="scenario-tab active" data-scenario="25yr"
+                                    onclick="selectScenario('25yr')">25-Year</button>
+                                <button class="scenario-tab" data-scenario="100yr"
+                                    onclick="selectScenario('100yr')">100-Year</button>
+                            </div>
+
+                            <!-- Flood Legend (always shown) -->
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.4rem;">
+                                <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                                    <span><span style="color: #00ff88;">●</span> No Flood</span>
+                                    <span><span style="color: #ffff00;">●</span> Low</span>
+                                    <span><span style="color: #ffaa00;">●</span> Medium</span>
+                                    <span><span style="color: #ff0000;">●</span> High</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Separator -->
+                        <div style="border-top: 1px solid rgba(0, 212, 255, 0.15); margin: 0.8rem 0;"></div>
+
+                        <!-- Origin Input -->
+                        <div style="margin-bottom: 0.8rem;">
+                            <div
+                                style="font-size: 0.75rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.3rem; letter-spacing: 0.5px;">
+                                ORIGIN</div>
+                            <button id="place-origin-btn" class="routing-action-btn" onclick="toggleOriginPlacement()">
+                                📍 Click map to place pin
+                            </button>
+                            <div id="origin-coords-display"
+                                style="display: none; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem;">
+                                <span id="origin-lat">--</span>°N, <span id="origin-lon">--</span>°E
+                            </div>
+                        </div>
+
+                        <!-- Separator -->
+                        <div style="border-top: 1px solid rgba(0, 212, 255, 0.15); margin: 0.8rem 0;"></div>
+
+                        <!-- Action Buttons -->
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="find-routes-btn" class="routing-action-btn primary" disabled
+                                onclick="findRoutes()">
+                                🔍 FIND ROUTES
+                            </button>
+                            <button class="routing-action-btn secondary" onclick="clearRouting()">
+                                ✕ CLEAR
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Route Results Container -->
+                    <div id="route-results-container" style="display: none;">
+                        <hr class="sidebar-separator">
+                        <div class="sidebar-section">
+                            <div class="section-header">ROUTE OPTIONS</div>
+                            <div id="route-cards-container"></div>
+                        </div>
+                    </div>
+
+                </div><!-- /sidebar-content -->
+        </aside>

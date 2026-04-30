@@ -1,0 +1,331 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+    /* Backgrounds */
+    --bg-0: #0e0e0e;
+    --bg-1: #141414;
+    --bg-2: #1a1a1a;
+    --bg-3: #222222;
+    --bg-4: #2a2a2a;
+
+    /* Borders */
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    /* Text */
+    --text-primary: #f0f0f0;
+    --text-secondary: #909090;
+    --text-tertiary: #555555;
+    --text-disabled: #333333;
+
+    /* Accent */
+    --accent: #e8c547;
+    --accent-dim: rgba(232, 197, 71, 0.12);
+    --accent-border: rgba(232, 197, 71, 0.35);
+
+    /* Status */
+    --safe: #4caf7d;
+    --low: #8bc34a;
+    --moderate: #ffc107;
+    --high: #ff7043;
+    --critical: #e53935;
+
+    /* Route colors — sky blue / violet / hot pink (outside flood-risk spectrum) */
+    --route-1: #29b6f6;
+    --route-2: #ce93d8;
+    --route-3: #f06292;
+
+    /* Spacing */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 20px;
+    --sp-6: 24px;
+
+    /* Typography */
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    /* Dimensions */
+    --sidebar-left: 280px;
+    --sidebar-right: 320px;
+    --bottom-bar: 64px;
+    --header-height: 52px;
+    --tab-bar-height: 36px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-0);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 13px;
+    overflow: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 3px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-4);
+    border-radius: 2px;
+}
+
+/* ── App Shell ── */
+#app {
+    display: grid;
+    grid-template-columns: var(--sidebar-left) 1fr 0px;
+    grid-template-rows: 1fr;
+    height: 100vh;
+    width: 100vw;
+    transition: grid-template-columns 0.3s ease;
+}
+
+#app.right-panel-open {
+    grid-template-columns: var(--sidebar-left) 1fr var(--sidebar-right);
+}
+
+#map-container {
+    position: relative;
+    overflow: hidden;
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+#sidebar-left {
+    grid-column: 1;
+    grid-row: 1;
+    background: var(--bg-1);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 100;
+}
+
+#sidebar-right {
+    grid-column: 3;
+    grid-row: 1;
+    background: var(--bg-1);
+    border-left: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 100;
+}
+
+#bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: var(--sidebar-left);
+    right: 0;
+    height: var(--bottom-bar);
+    background: var(--bg-1);
+    border-top: 1px solid var(--border-subtle);
+    display: none;
+    z-index: 200;
+    transition: right 0.3s ease;
+}
+
+#app.right-panel-open #bottom-bar {
+    right: var(--sidebar-right);
+}
+
+/* ── Sidebar Header ── */
+.sidebar-header {
+    height: var(--header-height);
+    padding: 0 var(--sp-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.sidebar-title {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.sidebar-status {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--safe);
+    flex-shrink: 0;
+    transition: background 0.3s;
+}
+
+.status-dot.computing {
+    background: var(--accent);
+    animation: pulse-dot 1s infinite;
+}
+
+@keyframes pulse-dot {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.status-text {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+}
+
+/* ── Tab Bar ── */
+.tab-bar {
+    height: var(--tab-bar-height);
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+}
+
+.tab:hover {
+    color: var(--text-secondary);
+}
+
+.tab.active {
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent);
+}
+
+/* ── Panel Area ── */
+.panel-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-4) transparent;
+}
+
+.panel {
+    display: none;
+    padding: var(--sp-5) var(--sp-4);
+    animation: panel-in 0.15s ease;
+}
+
+.panel.active {
+    display: block;
+}
+
+@keyframes panel-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ── Sidebar Footer ── */
+.sidebar-footer {
+    padding: var(--sp-3) var(--sp-4);
+    border-top: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.sidebar-footer span {
+    display: block;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+}
+
+/* ── Icon Button ── */
+.icon-btn {
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+}
+
+.icon-btn:hover {
+    color: var(--text-primary);
+}
+
+/* ── Section Pattern ── */
+.section {
+    margin-bottom: var(--sp-6);
+}
+
+.section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: var(--sp-2);
+}
+
+.section-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}

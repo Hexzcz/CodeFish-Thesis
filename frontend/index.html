@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeFish | Flood-Aware Routing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="css/base.css?v=5">
+    <link rel="stylesheet" href="css/components.css?v=5">
+    <link rel="stylesheet" href="css/panels.css?v=5">
+    <link rel="stylesheet" href="css/map.css?v=5">
+
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- ── LEFT SIDEBAR ── -->
+        <aside id="sidebar-left">
+            <div class="sidebar-header">
+                <span class="sidebar-title">CODEFISH</span>
+                <div class="sidebar-status">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span class="status-text" id="status-text">READY</span>
+                </div>
+            </div>
+
+            <div class="tab-bar" id="left-tab-bar">
+                <button class="tab active" data-panel="routing">ROUTING</button>
+                <button class="tab" data-panel="layers">LAYERS</button>
+                <button class="tab" data-panel="places">PLACES</button>
+            </div>
+
+            <div class="panel-area">
+                <!-- ROUTING PANEL -->
+                <div class="panel active" id="panel-routing">
+
+                    <div class="section">
+                        <div class="section-label">RAINFALL SCENARIO</div>
+                        <div class="section-body">
+                            <div class="btn-group">
+                                <button class="rf-source-btn active" id="mode-jaxa-btn"
+                                    onclick="setRainfallMode('jaxa')">JAXA</button>
+                                <button class="rf-source-btn" id="mode-sim-btn"
+                                    onclick="setRainfallMode('simulation')">SIMULATION</button>
+                            </div>
+                            <div id="jaxa-panel">
+                                <div class="rf-tab-bar">
+                                    <button id="jaxa-tab-forecast" class="rf-tab active"
+                                        onclick="setJaxaTab('forecast')">FORECAST</button>
+                                    <button id="jaxa-tab-historical" class="rf-tab"
+                                        onclick="setJaxaTab('historical')">HISTORICAL</button>
+                                </div>
+                                <div id="jaxa-forecast-controls">
+                                    <div class="rf-opt-row">
+                                        <button id="range-short-btn" class="rf-opt-btn active"
+                                            onclick="setForecastRange('short')">SHORT<span class="rf-opt-sub">1–6
+                                                hrs</span></button>
+                                        <button id="range-medium-btn" class="rf-opt-btn"
+                                            onclick="setForecastRange('medium')">MEDIUM<span class="rf-opt-sub">1–5
+                                                days</span></button>
+                                    </div>
+                                    <!-- Short range hour selector -->
+                                    <div id="jaxa-short-selector" class="rf-step-block">
+                                        <span class="rf-step-label">Hour</span>
+                                        <div class="rf-step-row" id="short-hour-pills">
+                                            <button class="rf-step-btn active"
+                                                onclick="setForecastStep('short',1)">1h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep('short',2)">2h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep('short',3)">3h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep('short',4)">4h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep('short',5)">5h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep('short',6)">6h</button>
+                                        </div>
+                                    </div>
+                                    <!-- Medium range day selector -->
+                                    <div id="jaxa-medium-selector" class="rf-step-block" style="display:none;">
+                                        <span class="rf-step-label">Day</span>
+                                        <div class="rf-step-row" id="medium-day-pills">
+                                            <button class="rf-step-btn active"
+                                                onclick="setForecastStep('medium',1)">1d</button>
+                                            <button class="rf-step-btn"
+                                                onclick="setForecastStep('medium',2)">2d</button>
+                                            <button class="rf-step-btn"
+                                                onclick="setForecastStep('medium',3)">3d</button>
+                                            <button class="rf-step-btn"
+                                                onclick="setForecastStep('medium',4)">4d</button>
+                                            <button class="rf-step-btn"
+                                                onclick="setForecastStep('medium',5)">5d</button>
+                                        </div>
+                                    </div>
+                                    <!-- Fetch FTP button -->
+                                    <div class="rf-ftp-wrap">
+                                        <button class="rf-ftp-btn" id="jaxa-ftp-btn" onclick="fetchJaxaFromFTP()">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" stroke="currentColor"
+                                                fill="none" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                                <polyline points="7 10 12 15 17 10" />
+                                                <line x1="12" y1="15" x2="12" y2="3" />
+                                            </svg>
+                                            <span>Fetch from FTP</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="jaxa-historical-controls" style="display:none;">
+                                    <input type="datetime-local" id="jaxa-historical-time"
+                                        style="width:100%; padding:6px 8px; background:var(--bg-3); border:1px solid var(--border-default); color:var(--text-primary); font-size:11px; border-radius:4px; outline:none; font-family:var(--font-body);">
+                                    <div class="rf-ftp-wrap">
+                                        <button class="rf-ftp-btn" id="jaxa-hist-ftp-btn" onclick="fetchJaxaFromFTP()">
+                                            <svg width="11" height="11" viewBox="0 0 24 24" stroke="currentColor"
+                                                fill="none" stroke-width="2">
+                                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                                <polyline points="7 10 12 15 17 10" />
+                                                <line x1="12" y1="15" x2="12" y2="3" />
+                                            </svg>
+                                            <span>Fetch from FTP</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    style="background:var(--bg-2); padding:var(--sp-3); border-radius:4px; border:1px solid var(--border-subtle); margin-top:var(--sp-2);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <span
+                                            style="font-size:9px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px;">Intensity</span>
+                                        <span
+                                            style="font-size:15px; font-weight:600; color:var(--accent); font-family:var(--font-mono);">
+                                            <span id="jaxa-fetch-spinner" style="display:none;"
+                                                class="jaxa-spinner"></span>
+                                            <span id="jaxa-intensity"></span>
+                                            <small style="font-size:9px; font-weight:400; color:var(--text-tertiary);">
+                                                mm/hr</small>
+                                        </span>
+                                    </div>
+                                    <div
+                                        style="margin-top:var(--sp-2); padding-top:var(--sp-2); border-top:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+                                        <span
+                                            style="font-size:9px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px;">Mapping</span>
+                                        <span id="jaxa-mapping"
+                                            style="font-size:10px; color:var(--text-secondary); font-family:var(--font-mono);"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sim-panel" style="display:none;">
+                                <div class="rf-opt-row">
+                                    <button class="rf-opt-btn" id="sim-btn-low" data-sim="low"
+                                        onclick="setSimulation('low')">LOW<span
+                                            class="rf-opt-sub">5-Year</span></button>
+                                    <button class="rf-opt-btn active" id="sim-btn-medium" data-sim="medium"
+                                        onclick="setSimulation('medium')">MED<span
+                                            class="rf-opt-sub">25-Year</span></button>
+                                    <button class="rf-opt-btn" id="sim-btn-high" data-sim="high"
+                                        onclick="setSimulation('high')">HIGH<span
+                                            class="rf-opt-sub">100-Year</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-label">ORIGIN POINT</div>
+                        <div class="section-body">
+                            <button class="origin-btn" id="place-origin-btn" onclick="toggleOriginPlacement()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                    <path
+                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                <span id="origin-btn-text">Click map to place</span>
+                            </button>
+                            <div class="coord-display" id="coord-display"></div>
+                        </div>
+                    </div>
+
+                    <div class="section" style="margin-bottom:0">
+                        <div class="action-row">
+                            <button class="btn-primary" id="find-routes-btn" disabled onclick="findRoutes()">FIND
+                                ROUTES</button>
+                            <button class="btn-icon" id="clear-btn" title="Clear" onclick="clearRouting()">
+                                <svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" fill="none"
+                                    stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="route-summary hidden" id="route-summary">
+                        <div class="summary-count" id="summary-count"></div>
+                        <div class="summary-best" id="summary-best"></div>
+                        <button class="summary-link" onclick="openRightPanel(0)">
+                            View analysis
+                            <svg width="10" height="10" viewBox="0 0 24 24" stroke="currentColor" fill="none"
+                                stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- LAYERS PANEL -->
+                <div class="panel" id="panel-layers">
+
+                    <div class="section">
+                        <div class="toggle-row">
+                            <span class="toggle-label">Clip to District 1</span>
+                            <div class="toggle-switch active" id="clip-toggle" onclick="toggleClip()">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-label">FLOOD HAZARD</div>
+                        <div class="layer-group-body">
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#e53935"></span>
+                                <span class="layer-name">5-Year Return</span>
+                                <div class="toggle-switch" data-layer="flood_5yr" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-flood_5yr">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="70"
+                                    oninput="updateLayerOpacity('flood_5yr', this.value)">
+                            </div>
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#ff7043"></span>
+                                <span class="layer-name">25-Year Return</span>
+                                <div class="toggle-switch" data-layer="flood_25yr" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-flood_25yr">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="70"
+                                    oninput="updateLayerOpacity('flood_25yr', this.value)">
+                            </div>
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#ffc107"></span>
+                                <span class="layer-name">100-Year Return</span>
+                                <div class="toggle-switch" data-layer="flood_100yr" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-flood_100yr">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="70"
+                                    oninput="updateLayerOpacity('flood_100yr', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-label">TERRAIN</div>
+                        <div class="layer-group-body">
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#8d6e63"></span>
+                                <span class="layer-name">Elevation</span>
+                                <div class="toggle-switch" data-layer="elevation" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-elevation">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="70"
+                                    oninput="updateLayerOpacity('elevation', this.value)">
+                            </div>
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#78909c"></span>
+                                <span class="layer-name">Slope</span>
+                                <div class="toggle-switch" data-layer="slope" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-slope">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="70"
+                                    oninput="updateLayerOpacity('slope', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-label">ENVIRONMENT</div>
+                        <div class="layer-group-body">
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#26c6da"></span>
+                                <span class="layer-name">Waterway Hazard</span>
+                                <div class="toggle-switch" data-layer="dist_waterway" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-dist_waterway">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="70"
+                                    oninput="updateLayerOpacity('dist_waterway', this.value)">
+                            </div>
+                            <div class="layer-row">
+                                <span class="layer-swatch" style="background:#66bb6a"></span>
+                                <span class="layer-name">Land Cover</span>
+                                <div class="toggle-switch" data-layer="land_cover" onclick="handleLayerToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                            <div class="opacity-row hidden" id="opacity-cnt-land_cover">
+                                <input type="range" class="opacity-slider" min="0" max="100" value="60"
+                                    oninput="updateLayerOpacity('land_cover', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-label">ROAD NETWORK</div>
+                        <div class="layer-group-body">
+                            <div class="toggle-row">
+                                <span class="toggle-label">Show Road Network</span>
+                                <div class="toggle-switch" id="road-master-toggle" onclick="handleRoadToggle(this)">
+                                    <div class="toggle-knob"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PLACES PANEL -->
+                <div class="panel" id="panel-places">
+
+                    <div class="section">
+                        <div class="toggle-row">
+                            <span class="toggle-label">Evacuation Centers</span>
+                            <div class="toggle-switch active" id="centers-master-toggle"
+                                onclick="handleCentersToggle(this)">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="centers-stats"
+                        style="margin-top:0; padding-top:var(--sp-3); border-top: 1px solid var(--border-subtle);">
+                        <span id="centers-showing">Loading centers...</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <span>District 1, Quezon City</span>
+                <span>LiPAD · OSM · ESA · COP30</span>
+            </div>
+        </aside>
+
+        <!-- ── MAP ── -->
+        <div id="map-container">
+            <div id="map"></div>
+            <div id="map-overlays">
+
+                <div class="decision-header hidden" id="decision-header">
+                    <div class="dh-label">RECOMMENDED ROUTE</div>
+                    <div class="dh-destination" id="dh-destination"></div>
+                    <div class="dh-meta" id="dh-meta"></div>
+                </div>
+
+                <div class="risk-legend hidden" id="risk-legend">
+                    <div class="rl-title">FLOOD RISK</div>
+                    <div class="rl-item"><span class="rl-dot"
+                            style="background:var(--safe)"></span><span>Safe</span><span class="rl-range">&lt;
+                            10%</span></div>
+                    <div class="rl-item"><span class="rl-dot" style="background:var(--low)"></span><span>Low</span><span
+                            class="rl-range">10–25%</span></div>
+                    <div class="rl-item"><span class="rl-dot"
+                            style="background:var(--moderate)"></span><span>Moderate</span><span
+                            class="rl-range">25–45%</span></div>
+                    <div class="rl-item"><span class="rl-dot"
+                            style="background:var(--high)"></span><span>High</span><span class="rl-range">45–65%</span>
+                    </div>
+                    <div class="rl-item"><span class="rl-dot"
+                            style="background:var(--critical)"></span><span>Critical</span><span class="rl-range">&gt;
+                            65%</span></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── RIGHT SIDEBAR ── -->
+        <aside id="sidebar-right">
+            <div class="sidebar-header">
+                <span class="sidebar-title">ROUTE ANALYSIS</span>
+                <button class="icon-btn" onclick="closeRightPanel()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="tab-bar" id="right-tab-bar">
+                <button class="tab active" data-panel="overview">OVERVIEW</button>
+                <button class="tab" data-panel="segments">SEGMENTS</button>
+                <button class="tab" data-panel="compare">COMPARE</button>
+            </div>
+
+            <div class="panel-area">
+                <!-- OVERVIEW -->
+                <div class="panel active" id="rpanel-overview">
+                    <div class="section">
+                        <div class="route-pills" id="route-pills"></div>
+                    </div>
+                    <div class="section">
+                        <div class="section-label">RECOMMENDATION</div>
+                        <p class="recommendation-text" id="recommendation-text"></p>
+                    </div>
+                    <div class="section">
+                        <div class="metrics-grid">
+                            <div class="metric-cell">
+                                <div class="metric-label">DISTANCE</div>
+                                <div class="metric-value"><span class="metric-num" id="m-distance">—</span><span
+                                        class="metric-unit">km</span></div>
+                            </div>
+                            <div class="metric-cell">
+                                <div class="metric-label" title="Route Suitability Score (TOPSIS)">SUITABILITY</div>
+                                <div class="metric-value"><span class="metric-num" id="m-safety">—</span><span
+                                        class="metric-unit">/ 100</span></div>
+                            </div>
+                            <div class="metric-cell">
+                                <div class="metric-label">FLOOD EXP.</div>
+                                <div class="metric-value"><span class="metric-num" id="m-flood">—</span><span
+                                        class="metric-unit">avg P</span></div>
+                            </div>
+                            <div class="metric-cell">
+                                <div class="metric-label">MAX HAZARD</div>
+                                <div class="metric-value"><span class="metric-num" id="m-hazard">—</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="section-label">HAZARD DISTRIBUTION</div>
+                        <div class="hazard-bar" id="hazard-bar"></div>
+                        <div class="hazard-legend" id="hazard-legend"></div>
+                    </div>
+                    <div class="section">
+                        <div class="section-label">SCORING BREAKDOWN</div>
+                        <div class="criteria-formula">R = Σ w_i × norm(criterion_i)</div>
+                        <div class="criteria-rows" id="criteria-rows"></div>
+                    </div>
+                </div>
+
+                <!-- SEGMENTS -->
+                <div class="panel" id="rpanel-segments">
+                    <div class="sort-bar">
+                        <button class="sort-btn active" data-sort="order">ORDER</button>
+                        <button class="sort-btn" data-sort="risk">RISK</button>
+                        <button class="sort-btn" data-sort="length">LENGTH</button>
+                    </div>
+                    <div class="segment-list" id="segment-list"></div>
+                    <div class="segment-summary" id="segment-summary"></div>
+                </div>
+
+                <!-- COMPARE -->
+                <div class="panel" id="rpanel-compare">
+                    <div class="compare-route-selector" id="compare-selector"></div>
+                    <div class="compare-table-wrap">
+                        <table class="compare-table" id="compare-table"></table>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- ── BOTTOM BAR ── -->
+    <div id="bottom-bar">
+        <div class="route-tabs" id="route-tabs"></div>
+        <div class="bar-controls">
+            <!-- 1. Master visibility toggle -->
+            <button class="bar-btn active" id="btn-toggle-visibility" title="Hide Routes"
+                onclick="toggleRouteVisibility()">
+                <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </button>
+            <div class="bar-divider"></div>
+
+            <!-- 2. Show All / Show Selected toggle -->
+            <button class="bar-btn" id="btn-toggle-focus" title="Show All Routes (Base Colors)"
+                onclick="toggleRouteFocus()">
+                <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+            </button>
+            <button class="bar-btn" id="analysis-btn" title="Route analysis" onclick="toggleAnalysisPanel()"> <svg
+                    width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <path d="M9 3v18M14 8h4M14 12h4M14 16h4" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── TOOLTIP ── -->
+    <div class="seg-tooltip hidden" id="seg-tooltip">
+        <div class="tt-name" id="tt-name"></div>
+        <div class="tt-type" id="tt-type"></div>
+        <div class="tt-row">
+            <span class="tt-row-label">Flood P</span>
+            <div class="tt-bar-wrap">
+                <div class="tt-bar-fill" id="tt-bar"></div>
+            </div>
+            <span class="tt-row-value" id="tt-prob"></span>
+        </div>
+        <div class="tt-row">
+            <span class="tt-row-label">Risk</span>
+            <span class="tt-row-value" id="tt-class"></span>
+        </div>
+        <div class="tt-row">
+            <span class="tt-row-label">Length</span>
+            <span class="tt-row-value" id="tt-length"></span>
+        </div>
+        <div class="tt-row">
+            <span class="tt-row-label">Elevation</span>
+            <span class="tt-row-value" id="tt-elev"></span>
+        </div>
+        <div class="tt-row">
+            <span class="tt-row-label">WSM Cost</span>
+            <span class="tt-row-value" id="tt-wsm"></span>
+        </div>
+        <div class="tt-formula" id="tt-formula"></div>
+
+
+        <!-- Scripts -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+        <script src="js/config.js?v=5"></script>
+        <script src="js/state.js?v=5"></script>
+        <script src="js/ui/utils.js?v=5"></script>
+        <script src="js/map/init.js?v=5"></script>
+        <script src="js/map/boundary.js?v=5"></script>
+        <script src="js/layers/raster_layers.js?v=5"></script>
+        <script src="js/layers/road_layer.js?v=5"></script>
+        <script src="js/centers/evacuation_centers.js?v=5"></script>
+        <script src="js/routing/origin.js?v=5"></script>
+        <script src="js/routing/draw_routes.js?v=5"></script>
+        <script src="js/routing/segment_hover.js?v=5"></script>
+        <script src="js/ui/tabs.js?v=5"></script>
+        <script src="js/ui/sidebar.js?v=5"></script>
+        <script src="js/ui/rainfall.js?v=5"></script>
+        <script src="js/ui/bottom_bar.js?v=5"></script>
+        <script src="js/ui/right_panel.js?v=5"></script>
+        <script src="js/app.js?v=5"></script>
+</body>
+
+</html>

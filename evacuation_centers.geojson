@@ -1,0 +1,1195 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0249628,
+          14.6616756
+        ]
+      },
+      "properties": {
+        "id": 1,
+        "barangay": "Alicia",
+        "facility": "Brgy Alicia Hall – 3rd Floor",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0228304,
+          14.6603153
+        ]
+      },
+      "properties": {
+        "id": 2,
+        "barangay": "Alicia",
+        "facility": "Bago bantay Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0337569,
+          14.6619578
+        ]
+      },
+      "properties": {
+        "id": 3,
+        "barangay": "Bagong Pag-asa",
+        "facility": "Open Ground",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0336992,
+          14.6633562
+        ]
+      },
+      "properties": {
+        "id": 4,
+        "barangay": "Bagong Pag-asa",
+        "facility": "Bagong Pag-asa Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0336953,
+          14.662514
+        ]
+      },
+      "properties": {
+        "id": 5,
+        "barangay": "Bagong Pag-asa",
+        "facility": "Multipurpose Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0214545,
+          14.6645041
+        ]
+      },
+      "properties": {
+        "id": 6,
+        "barangay": "Bahay Toro",
+        "facility": "Bahay Toro Basketball Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0210842,
+          14.6642715
+        ]
+      },
+      "properties": {
+        "id": 7,
+        "barangay": "Bahay Toro",
+        "facility": "Basketball Court",
+        "type": "Court/Gymnasium",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0208512,
+          14.665017
+        ]
+      },
+      "properties": {
+        "id": 8,
+        "barangay": "Bahay Toro",
+        "facility": "Toro Hills Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0017007,
+          14.6505356
+        ]
+      },
+      "properties": {
+        "id": 9,
+        "barangay": "Balingasa",
+        "facility": "Barangay Hall Covered Court",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0249266,
+          14.6507226
+        ]
+      },
+      "properties": {
+        "id": 10,
+        "barangay": "Bungad",
+        "facility": "Barangay Bungad Covered Court",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0248968,
+          14.6510176
+        ]
+      },
+      "properties": {
+        "id": 11,
+        "barangay": "Bungad",
+        "facility": "Bungad Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0009662,
+          14.6469959
+        ]
+      },
+      "properties": {
+        "id": 12,
+        "barangay": "Damar",
+        "facility": "Basketball Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0009662,
+          14.6469959
+        ]
+      },
+      "properties": {
+        "id": 13,
+        "barangay": "Damar",
+        "facility": "Multi-Purpose Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0009662,
+          14.6469959
+        ]
+      },
+      "properties": {
+        "id": 14,
+        "barangay": "Damar",
+        "facility": "Function Room",
+        "type": "Other",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0147635,
+          14.638585
+        ]
+      },
+      "properties": {
+        "id": 15,
+        "barangay": "Damayan",
+        "facility": "Cong Calalay Elementary School (F. Bautista Street)",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0148553,
+          14.6395581
+        ]
+      },
+      "properties": {
+        "id": 16,
+        "barangay": "Damayan",
+        "facility": "Minor Basilica of Saint Pedro Bautista",
+        "type": "Church",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0128287,
+          14.6449127
+        ]
+      },
+      "properties": {
+        "id": 17,
+        "barangay": "Del Monte",
+        "facility": "Dalupan Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0142331,
+          14.6408927
+        ]
+      },
+      "properties": {
+        "id": 18,
+        "barangay": "Del Monte",
+        "facility": "San Francisco Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0175159,
+          14.6564399
+        ]
+      },
+      "properties": {
+        "id": 19,
+        "barangay": "Katipunan",
+        "facility": "San Antonio Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0020456,
+          14.625804
+        ]
+      },
+      "properties": {
+        "id": 20,
+        "barangay": "Lourdes",
+        "facility": "Basketball Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9967706,
+          14.6330144
+        ]
+      },
+      "properties": {
+        "id": 21,
+        "barangay": "Maharlika",
+        "facility": "PureGold Kanlaon",
+        "type": "Other",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9969448,
+          14.630161
+        ]
+      },
+      "properties": {
+        "id": 22,
+        "barangay": "Maharlika",
+        "facility": "National Shrine of Our Lady of Lourdes",
+        "type": "Church",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0030883,
+          14.6416479
+        ]
+      },
+      "properties": {
+        "id": 23,
+        "barangay": "Manresa",
+        "facility": "Basketball Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0030883,
+          14.6416479
+        ]
+      },
+      "properties": {
+        "id": 24,
+        "barangay": "Manresa",
+        "facility": "Play Ground",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0182559,
+          14.6352388
+        ]
+      },
+      "properties": {
+        "id": 25,
+        "barangay": "Mariblo",
+        "facility": "Barangay Hall (Mariblo)",
+        "type": "Barangay Hall",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.017523,
+          14.6353141
+        ]
+      },
+      "properties": {
+        "id": 26,
+        "barangay": "Mariblo",
+        "facility": "Day Care Center",
+        "type": "Other",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0107179,
+          14.6413877
+        ]
+      },
+      "properties": {
+        "id": 27,
+        "barangay": "Masambong",
+        "facility": "Tennis Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0107179,
+          14.6413877
+        ]
+      },
+      "properties": {
+        "id": 28,
+        "barangay": "Masambong",
+        "facility": "Gazebo Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0107179,
+          14.6413877
+        ]
+      },
+      "properties": {
+        "id": 29,
+        "barangay": "Masambong",
+        "facility": "Parking Space",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0247002,
+          14.6401139
+        ]
+      },
+      "properties": {
+        "id": 30,
+        "barangay": "Nayong Kanluran",
+        "facility": "Nayong Kanluran Barangay Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0247002,
+          14.6401139
+        ]
+      },
+      "properties": {
+        "id": 31,
+        "barangay": "Nayong Kanluran",
+        "facility": "Nayong Kanluran Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9919876,
+          14.6280962
+        ]
+      },
+      "properties": {
+        "id": 32,
+        "barangay": "Paang Bundok",
+        "facility": "Barangay Hall Paang Bundok",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9919876,
+          14.6280962
+        ]
+      },
+      "properties": {
+        "id": 33,
+        "barangay": "Paang Bundok",
+        "facility": "Open Space",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9969526,
+          14.6462864
+        ]
+      },
+      "properties": {
+        "id": 34,
+        "barangay": "Pag-ibig sa Nayon",
+        "facility": "Barangay Covered Court",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9969526,
+          14.6462864
+        ]
+      },
+      "properties": {
+        "id": 35,
+        "barangay": "Pag-ibig sa Nayon",
+        "facility": "Yakap Day Care Center",
+        "type": "Other",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9965264,
+          14.6466194
+        ]
+      },
+      "properties": {
+        "id": 36,
+        "barangay": "Pag-ibig sa Nayon",
+        "facility": "San Jose Elementary School (pag ibig sa nayon)",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0223313,
+          14.6432298
+        ]
+      },
+      "properties": {
+        "id": 37,
+        "barangay": "Paltok",
+        "facility": "Paltok Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.022345,
+          14.6429703
+        ]
+      },
+      "properties": {
+        "id": 38,
+        "barangay": "Paltok",
+        "facility": "Paltok Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0215306,
+          14.6451309
+        ]
+      },
+      "properties": {
+        "id": 39,
+        "barangay": "Paltok",
+        "facility": "Bayanihan Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0222231,
+          14.6432412
+        ]
+      },
+      "properties": {
+        "id": 40,
+        "barangay": "Paltok",
+        "facility": "Paltok Barangay Hall",
+        "type": "Barangay Hall",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0176233,
+          14.6377941
+        ]
+      },
+      "properties": {
+        "id": 41,
+        "barangay": "Paraiso",
+        "facility": "Residential House",
+        "type": "Other",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0313883,
+          14.6484576
+        ]
+      },
+      "properties": {
+        "id": 42,
+        "barangay": "Phil-am",
+        "facility": "Phil-am Football Field",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0405567,
+          14.6592444
+        ]
+      },
+      "properties": {
+        "id": 43,
+        "barangay": "Project 6",
+        "facility": "Veterans Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0398249,
+          14.6626307
+        ]
+      },
+      "properties": {
+        "id": 44,
+        "barangay": "Project 6",
+        "facility": "Project 6 Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0406524,
+          14.6629865
+        ]
+      },
+      "properties": {
+        "id": 45,
+        "barangay": "Project 6",
+        "facility": "Project 6 Park",
+        "type": "Open Space",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0405567,
+          14.6592444
+        ]
+      },
+      "properties": {
+        "id": 46,
+        "barangay": "Project 6",
+        "facility": "Multipurpose Hall – 3rd Floor",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0226857,
+          14.6591031
+        ]
+      },
+      "properties": {
+        "id": 47,
+        "barangay": "Ramon Magsaysay",
+        "facility": "Parking Space & 3rd floor of Brgy.",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0226857,
+          14.6591031
+        ]
+      },
+      "properties": {
+        "id": 48,
+        "barangay": "Ramon Magsaysay",
+        "facility": "Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125.687227,
+          7.3185492
+        ]
+      },
+      "properties": {
+        "id": 49,
+        "barangay": "Salvacion",
+        "facility": "Salvacion Barangay Hall",
+        "type": "Barangay Hall",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0137214,
+          14.6492244
+        ]
+      },
+      "properties": {
+        "id": 50,
+        "barangay": "San Antonio",
+        "facility": "San Antonio De Padua Parish Church",
+        "type": "Church",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0171361,
+          14.650071
+        ]
+      },
+      "properties": {
+        "id": 51,
+        "barangay": "San Antonio",
+        "facility": "San Jose Covered Court",
+        "type": "Church",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9965227,
+          14.6240795
+        ]
+      },
+      "properties": {
+        "id": 52,
+        "barangay": "San Isidro Labrador",
+        "facility": "San Isidro Labrador Barangay Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9934674,
+          14.639792
+        ]
+      },
+      "properties": {
+        "id": 53,
+        "barangay": "San Jose",
+        "facility": "San Jose Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.9933863,
+          14.6390684
+        ]
+      },
+      "properties": {
+        "id": 54,
+        "barangay": "San Jose",
+        "facility": "Basketball Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0053357,
+          14.6379623
+        ]
+      },
+      "properties": {
+        "id": 55,
+        "barangay": "Siena",
+        "facility": "Siena Barangay Hall (4th Floor)",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0053357,
+          14.6379623
+        ]
+      },
+      "properties": {
+        "id": 56,
+        "barangay": "Siena",
+        "facility": "Siena College of Quezon City (Open Space)",
+        "type": "School",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0264564,
+          14.6562364
+        ]
+      },
+      "properties": {
+        "id": 57,
+        "barangay": "St. Peter",
+        "facility": "Barangay Multipurpose Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0198918,
+          14.6381117
+        ]
+      },
+      "properties": {
+        "id": 58,
+        "barangay": "Sta Cruz",
+        "facility": "Barangay Multipurpose Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0198918,
+          14.6381117
+        ]
+      },
+      "properties": {
+        "id": 59,
+        "barangay": "Sta Cruz",
+        "facility": "Day Care Center (3rd Floor)",
+        "type": "Other",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0025851,
+          14.624814
+        ]
+      },
+      "properties": {
+        "id": 60,
+        "barangay": "Sta Teresita",
+        "facility": "Sta. Teresita Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0101576,
+          14.6266829
+        ]
+      },
+      "properties": {
+        "id": 62,
+        "barangay": "Sto Domingo",
+        "facility": "The Santo Domingo Church and Convent",
+        "type": "Church",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0110391,
+          14.6349093
+        ]
+      },
+      "properties": {
+        "id": 63,
+        "barangay": "Talayan",
+        "facility": "Talayan Village Park",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0451088,
+          14.6572073
+        ]
+      },
+      "properties": {
+        "id": 64,
+        "barangay": "Vasra",
+        "facility": "Barangay hall (3rd Floor)",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0451088,
+          14.6572073
+        ]
+      },
+      "properties": {
+        "id": 65,
+        "barangay": "Vasra",
+        "facility": "VMMC Hospital Open Space",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0244647,
+          14.6543407
+        ]
+      },
+      "properties": {
+        "id": 66,
+        "barangay": "Veterans Village",
+        "facility": "Esteban Abada Elementary School",
+        "type": "School",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0239002,
+          14.6540634
+        ]
+      },
+      "properties": {
+        "id": 67,
+        "barangay": "Veterans Village",
+        "facility": "Lucresia Kasilag High School",
+        "type": "School",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.023759,
+          14.6546479
+        ]
+      },
+      "properties": {
+        "id": 68,
+        "barangay": "Veterans Village",
+        "facility": "Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0308148,
+          14.6432727
+        ]
+      },
+      "properties": {
+        "id": 69,
+        "barangay": "West Triangle",
+        "facility": "Barangay Hall Multipurpose Hall",
+        "type": "Barangay Hall",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0308148,
+          14.6432727
+        ]
+      },
+      "properties": {
+        "id": 70,
+        "barangay": "West Triangle",
+        "facility": "Basketball Covered Court",
+        "type": "Court/Gymnasium",
+        "geocoded": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          121.0308148,
+          14.6432727
+        ]
+      },
+      "properties": {
+        "id": 71,
+        "barangay": "West Triangle",
+        "facility": "Open Space (JASMS compound)",
+        "type": "Open Space",
+        "geocoded": false
+      }
+    }
+  ]
+}

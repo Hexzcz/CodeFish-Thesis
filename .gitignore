@@ -1,0 +1,33 @@
+# General artifacts
+__pycache__/
+*.pyc
+*.pyo
+.env
+node_modules/
+.DS_Store
+*.egg-info/
+dist/
+build/
+.venv/
+cache/
+tmp/
+*.log
+
+# Heavy root-level data & training files
+/*.pkl
+*.tif
+/*.csv
+/*.png
+/ESA_WorldCover_*/
+/hotosm_phl_waterways_lines_shp/
+/ph137404000_fh*/
+/rasters_COP30/
+/terrain_features/
+
+# Explicitly ignore any heavy model or raster files that shouldn't be tracked globally
+*.tfrecord
+*.h5
+
+# DO NOT ignore out-of-the-box app data
+!backend/data/models/*.pkl
+!backend/data/geojson/*.geojson
