@@ -371,7 +371,7 @@ def yens_k_shortest_paths(
     Generates alternative paths by penalizing edges of previously found paths,
     ensuring spatial diversity instead of simple detours.
     """
-    PENALTY_FACTOR = 4.0  # Significant jump to push for different corridors
+    PENALTY_FACTOR = 1.5  # Lowered penalty to keep alternative paths competitive
     
     # 1. Find Initial Optimal Path (P1)
     cost1, path1 = dijkstra(g, source, target, scenario, weights)

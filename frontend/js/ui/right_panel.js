@@ -140,9 +140,17 @@ function populateSegmentList(segs, routeIndex) {
         const color = getRiskColorHex(seg.flood_proba || 0);
         const label = getRiskLabel(seg.flood_proba || 0);
         const dist = ((seg.length || 0) / 1000).toFixed(3);
-        const pct = Math.round((seg.flood_proba || 0) * 100);
         const hw = (seg.highway || 'road').replace(/_/g, ' ');
         const mapIdx = (seg._origIdx !== undefined) ? seg._origIdx : i;
+
+        
+        // Extract probabilities
+        const pArr = seg.flood_proba_array || [1, 0, 0, 0];
+        const w0 = (pArr[0] * 100).toFixed(1);
+        const w1 = (pArr[1] * 100).toFixed(1);
+        const w2 = (pArr[2] * 100).toFixed(1);
+        const w3 = (pArr[3] * 100).toFixed(1);
+
         return `
         <div class="segment-item"
              style="border-left-color:${color}"
@@ -154,9 +162,19 @@ function populateSegmentList(segs, routeIndex) {
                 <span class="seg-name">${seg.name || 'Unnamed Road'}</span>
                 <span class="seg-length">${dist} km</span>
             </div>
-            <div class="seg-bar-wrap">
-                <div class="seg-bar-fill" style="width:${pct}%;background:${color}"></div>
+            
+            <div class="seg-bar-wrap" style="display: flex; overflow: hidden; border-radius: 4px; height: 6px; background: #222;">
+                <div title="Safe: ${w0}%" style="width:${w0}%; background:var(--safe); height:100%;"></div>
+                <div title="Low Risk: ${w1}%" style="width:${w1}%; background:var(--low); height:100%;"></div>
+                <div title="Moderate Risk: ${w2}%" style="width:${w2}%; background:var(--moderate); height:100%;"></div>
+                <div title="High/Critical Risk: ${w3}%" style="width:${w3}%; background:var(--critical); height:100%;"></div>
             </div>
+            
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-tertiary); margin-top:4px;">
+                <span>XGBoost Probability Distribution</span>
+                <span style="color:${color}; font-weight:600;">Exp: ${Math.round((seg.flood_proba || 0) * 100)}%</span>
+            </div>
+            
             <div class="seg-meta">
                 <span style="color:${color}">${label}</span>
                 <span>${hw}</span>

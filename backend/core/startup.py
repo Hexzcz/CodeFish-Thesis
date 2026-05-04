@@ -28,8 +28,8 @@ async def startup():
     print("[4/6] Loading models...")
     models = load_models()
     
-    print("[5/6] Computing predictions...")
-    graph = precompute_predictions(graph, models)
+    print("[5/6] Computing predictions (disabled for on-the-fly inference)...")
+    # graph = precompute_predictions(graph, models)
     
     print("[6/6] Loading centers...")
     centers = load_centers()
@@ -56,5 +56,6 @@ async def startup():
         'centers': centers,
         'road_geojson': road_geojson,
         'evac_geojson': evac_geojson,
-        'max_edge_length': MAX_EDGE_LENGTH
+        'max_edge_length': MAX_EDGE_LENGTH,
+        'predicted_scenarios': set(),   # tracks which scenarios have had on-the-fly inference run
     }

@@ -2,11 +2,12 @@ import time
 from typing import Optional, Dict
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
-from backend.graph.nearest_node import get_nearest_node
+from backend.graph.snap import snap_point_to_graph
 from backend.routing.dijkstra import dijkstra
 from backend.routing.yens import yens_k_shortest_paths
 from backend.routing.scorer import score_routes
 from backend.routing.geojson_builder import find_top_n_evacuation_centers, routes_to_geojson
+from backend.prediction.flood_predictor import predict_scenario_on_the_fly
 from backend.core.config import SCENARIOS
 
 router = APIRouter()
@@ -39,10 +40,25 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
     if request.scenario not in SCENARIOS:
         raise HTTPException(400, f"scenario must be one of: {SCENARIOS}")
 
+    # LAZY INFERENCE: Use a set (initialised in startup) to track predicted scenarios.
+    # This is guaranteed correct unlike scanning edge dicts.
+    predicted = state.setdefault('predicted_scenarios', set())
+    if request.scenario not in predicted:
+        print(f"[DEBUG] Running on-the-fly inference for scenario={request.scenario}")
+        predict_scenario_on_the_fly(graph, state['models'], request.scenario)
+        predicted.add(request.scenario)
+        sample = [round(e.get(f'flood_proba_{request.scenario}', -1), 4)
+                  for e in list(graph.edges.values())[:5]]
+        print(f"[DEBUG] Post-inference sample flood_proba: {sample}")
+    else:
+        print(f"[DEBUG] Scenario {request.scenario} already predicted, skipping inference.")
+
     K = min(max(request.k or 3, 1), 5)
 
     try:
-        origin_node, origin_dist = get_nearest_node(graph, request.origin_lat, request.origin_lon)
+        origin_node, origin_dist = snap_point_to_graph(
+            graph, request.origin_lat, request.origin_lon
+        )
     except ValueError as e:
         raise HTTPException(400, str(e))
 
@@ -62,7 +78,9 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
 
     for center in target_centers:
         try:
-            d_node, d_dist = get_nearest_node(graph, center['lat'], center['lon'])
+            d_node, d_dist = snap_point_to_graph(
+                graph, center['lat'], center['lon']
+            )
             if d_node == origin_node: continue
             
             cost, path = dijkstra(graph, origin_node, d_node, request.scenario, w, max_edge_length)
@@ -82,7 +100,9 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
     if len(raw_routes) < K and target_centers:
         main_center = target_centers[0]
         try:
-            d_node, d_dist = get_nearest_node(graph, main_center['lat'], main_center['lon'])
+            d_node, d_dist = snap_point_to_graph(
+                graph, main_center['lat'], main_center['lon']
+            )
             alts = yens_k_shortest_paths(graph, origin_node, d_node, K, request.scenario, w, max_edge_length)
             for alt in alts:
                 pt = tuple(alt['path'])
@@ -98,7 +118,11 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
         raise HTTPException(404, "No evacuation route found to any nearby center.")
 
     scored = score_routes(raw_routes[:K], graph, request.scenario, w, max_edge_length)
-    
+    if scored:
+        r0 = scored[0]
+        s0 = r0.get('segments', [{}])[0]
+        print(f"[DEBUG] scored[0] flood_exposure={r0['flood_exposure']} seg0_proba={s0.get('flood_proba')}")
+
     origin_node_data = graph.nodes.get(origin_node, {})
     origin_info = {
         'lat': request.origin_lat,

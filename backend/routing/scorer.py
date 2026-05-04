@@ -32,6 +32,8 @@ def score_routes(routes: List[Dict], g: Graph, scenario: str, weights_map: Dict[
             flood_proba = float(edge.get(f'flood_proba_{scenario}', 0.0) or 0.0)
             elevation = float(edge.get('elevation', 0.0) or 0.0)
 
+            flood_proba_array = edge.get(f'flood_proba_array_{scenario}', [1.0, 0.0, 0.0, 0.0])
+
             total_length += length
             total_flood_proba += flood_proba
             max_flood_class = max(max_flood_class, flood_class)
@@ -44,9 +46,11 @@ def score_routes(routes: List[Dict], g: Graph, scenario: str, weights_map: Dict[
                 'length': round(length, 2),
                 'flood_class': flood_class,
                 'flood_proba': round(flood_proba, 4),
+                'flood_proba_array': [round(p, 3) for p in flood_proba_array],
                 'elevation': round(elevation, 2),
                 'wsm_cost': round(compute_wsm_weight(edge, scenario, weights_map, max_edge_length), 4)
             })
+
 
         avg_flood_proba = total_flood_proba / segment_count if segment_count > 0 else 0.0
 

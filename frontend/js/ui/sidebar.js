@@ -30,6 +30,7 @@ async function findRoutes() {
         k: K_ROUTES,
         weights: window.appState.weights
     };
+    console.log('[CodeFish] Routing with scenario:', window.appState.scenario, body);
 
     try {
         const res = await fetch('/route', {
