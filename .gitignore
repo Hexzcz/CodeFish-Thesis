@@ -31,3 +31,4 @@ tmp/
 # DO NOT ignore out-of-the-box app data
 !backend/data/models/*.pkl
 !backend/data/geojson/*.geojson
+!backend/data/rasters/*.tif

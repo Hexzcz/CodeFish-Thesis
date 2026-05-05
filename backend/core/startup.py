@@ -3,10 +3,7 @@ from backend.graph.connectivity import ensure_connected
 from backend.prediction.raster_sampler import sample_rasters
 from backend.prediction.loader import load_models
 from backend.prediction.flood_predictor import precompute_predictions
-from backend.api.centers_loader import load_centers
-import os
-import json
-from backend.core.config import GEOJSON_PATHS
+from backend.api.centers_loader import load_centers, load_centers_geojson
 
 async def startup():
     print("=" * 52)
@@ -34,16 +31,31 @@ async def startup():
     print("[6/6] Loading centers...")
     centers = load_centers()
     
-    # Load raw GeoJSONs for API passthrough
-    road_geojson = None
-    if os.path.exists(GEOJSON_PATHS['road_edges']):
-        with open(GEOJSON_PATHS['road_edges'], encoding='utf-8') as f:
-            road_geojson = json.load(f)
+    # Construct raw GeoJSONs for API passthrough
+    from backend.core.database import get_db_connection
+    from sqlalchemy import text
+    import json
+    
+    print("[7/7] Fetching GeoJSONs from DB...")
+    road_geojson = {"type": "FeatureCollection", "features": []}
+    try:
+        with get_db_connection() as conn:
+            result = conn.execute(text("SELECT osmid, name, highway, length, ST_AsGeoJSON(geom) FROM road_edges"))
+            for row in result:
+                road_geojson["features"].append({
+                    "type": "Feature",
+                    "geometry": json.loads(row[4]),
+                    "properties": {
+                        "osmid": str(row[0]),
+                        "name": str(row[1] or 'Unnamed Road'),
+                        "highway": str(row[2] or 'unclassified'),
+                        "length": float(row[3] or 0.0)
+                    }
+                })
+    except Exception as e:
+        print(f"Error fetching road_geojson from DB: {e}")
             
-    evac_geojson = None
-    if os.path.exists(GEOJSON_PATHS['centers']):
-        with open(GEOJSON_PATHS['centers'], encoding='utf-8') as f:
-            evac_geojson = json.load(f)
+    evac_geojson = load_centers_geojson()
 
     print()
     print("Application ready.")

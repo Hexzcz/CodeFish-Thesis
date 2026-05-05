@@ -14,3 +14,7 @@ python-multipart
 matplotlib
 pillow
 networkx
+psycopg2-binary
+geoalchemy2
+SQLAlchemy
+python-dotenv

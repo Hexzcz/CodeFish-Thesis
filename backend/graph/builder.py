@@ -47,83 +47,60 @@ class Graph:
         return len(self.edges) // 2
 
 def build_graph() -> Graph:
-    """Load road_edges.geojson and build Graph."""
+    """Load road_nodes and road_edges from Supabase and build Graph."""
+    from backend.core.database import get_db_connection
+    from sqlalchemy import text
+    import json
+    
     graph = Graph()
-    road_file = GEOJSON_PATHS['road_edges']
-    
-    if not os.path.exists(road_file):
-        print(f"      ERROR: {road_file} not found!")
-        return graph
-
-    with open(road_file, encoding='utf-8') as f:
-        road_geojson = json.load(f)
-    features = road_geojson.get('features', [])
-    
-    node_counter = 0
-    node_map: Dict[Tuple, Any] = {}  # (lon_r, lat_r) -> node_id
-
     max_edge_length_found = 0.0
-
-    for feat in features:
-        geom = feat.get('geometry', {})
-        coords_raw = geom.get('coordinates', [])
-        props = feat.get('properties', {})
-
-        # Flatten MultiLineString → longest LineString
-        if geom.get('type') == 'MultiLineString':
-            if not coords_raw:
-                continue
-            coords_raw = max(coords_raw, key=lambda c: len(c))
-        elif geom.get('type') != 'LineString':
-            continue
-
-        if len(coords_raw) < 2:
-            continue
-
-        # Round to 6 dp for stable node deduplication
-        start = (round(coords_raw[0][0], 6), round(coords_raw[0][1], 6))
-        end   = (round(coords_raw[-1][0], 6), round(coords_raw[-1][1], 6))
-
-        if start == end:  # skip self-loops
-            continue
-
-        for pt in (start, end):
-            if pt not in node_map:
-                node_map[pt] = node_counter
-                graph.add_node(node_counter, lat=pt[1], lon=pt[0])
-                node_counter += 1
-
-        u = node_map[start]
-        v = node_map[end]
-
-        name = props.get('name', 'Unnamed Road')
-        if isinstance(name, float) and math.isnan(name):
-            name = 'Unnamed Road'
-
-        l_val = float(props.get('length', 0.0) or 0.0)
-        if l_val <= 0:
-            l_val = (len(coords_raw) - 1) * 10.0
-
-        if l_val > max_edge_length_found:
-            max_edge_length_found = l_val
-
-        graph.add_edge(u, v, {
-            'osmid': props.get('osmid', ''),
-            'name': str(name),
-            'highway': props.get('highway', 'unclassified'),
-            'length': l_val,
-            'geometry': coords_raw,
-            'flood_class_5yr':   None,
-            'flood_class_25yr':  None,
-            'flood_class_100yr': None,
-            'flood_proba_5yr':   None,
-            'flood_proba_25yr':  None,
-            'flood_proba_100yr': None,
-            'elevation': None,
-            'features': None,
-        })
     
-    # Store the max edge length in the graph object or as a module variable if needed
-    # For now, we'll just return the graph and let the caller handle global MAX_EDGE_LENGTH
+    try:
+        with get_db_connection() as conn:
+            # 1. Load Nodes
+            print("Fetching nodes from Supabase...")
+            nodes_result = conn.execute(text("SELECT osmid, lat, lon FROM road_nodes"))
+            for row in nodes_result:
+                osmid_str = str(row[0])
+                graph.add_node(osmid_str, lat=row[1], lon=row[2])
+                
+            # 2. Load Edges
+            print("Fetching edges from Supabase...")
+            edges_result = conn.execute(text("SELECT u, v, osmid, name, highway, length, ST_AsGeoJSON(geom) as geom_json FROM road_edges"))
+            for row in edges_result:
+                u = str(row[0])
+                v = str(row[1])
+                
+                # If nodes don't exist, we can't create the edge
+                if not graph.has_node(u) or not graph.has_node(v):
+                    continue
+                    
+                l_val = float(row[5] or 0.0)
+                if l_val > max_edge_length_found:
+                    max_edge_length_found = l_val
+                    
+                geom_json = json.loads(row[6])
+                coords_raw = geom_json.get('coordinates', [])
+                
+                graph.add_edge(u, v, {
+                    'osmid': str(row[2]),
+                    'name': str(row[3] or 'Unnamed Road'),
+                    'highway': str(row[4] or 'unclassified'),
+                    'length': l_val,
+                    'geometry': coords_raw,
+                    'flood_class_5yr':   None,
+                    'flood_class_25yr':  None,
+                    'flood_class_100yr': None,
+                    'flood_proba_5yr':   None,
+                    'flood_proba_25yr':  None,
+                    'flood_proba_100yr': None,
+                    'elevation': None,
+                    'features': None,
+                })
+                
+        print(f"Graph built with {graph.node_count()} nodes and {graph.edge_count()} edges.")
+    except Exception as e:
+        print(f"Error building graph from DB: {e}")
+        
     graph.max_edge_length = max_edge_length_found
     return graph
