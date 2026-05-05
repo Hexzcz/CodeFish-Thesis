@@ -40,16 +40,18 @@ async def startup():
     road_geojson = {"type": "FeatureCollection", "features": []}
     try:
         with get_db_connection() as conn:
-            result = conn.execute(text("SELECT osmid, name, highway, length, ST_AsGeoJSON(geom) FROM road_edges"))
+            result = conn.execute(text("SELECT u, v, osmid, name, highway, length, ST_AsGeoJSON(geom) FROM road_edges"))
             for row in result:
                 road_geojson["features"].append({
                     "type": "Feature",
-                    "geometry": json.loads(row[4]),
+                    "geometry": json.loads(row[6]),
                     "properties": {
-                        "osmid": str(row[0]),
-                        "name": str(row[1] or 'Unnamed Road'),
-                        "highway": str(row[2] or 'unclassified'),
-                        "length": float(row[3] or 0.0)
+                        "u": str(row[0]),
+                        "v": str(row[1]),
+                        "osmid": str(row[2]),
+                        "name": str(row[3] or 'Unnamed Road'),
+                        "highway": str(row[4] or 'unclassified'),
+                        "length": float(row[5] or 0.0)
                     }
                 })
     except Exception as e:
