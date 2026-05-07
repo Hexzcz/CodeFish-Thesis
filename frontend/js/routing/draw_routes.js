@@ -263,19 +263,19 @@ function updateRouteVisibility() {
             </svg>`;
         }
         window._bgPolylines.forEach((segs, i) => {
-            segs.forEach(p => p.setStyle({ opacity: i === actIdx ? 0 : 0.1, weight: 3 }));
+            segs.forEach(p => p.setStyle({ opacity: 0, weight: 3 }));
         });
         window._segmentPolylines.forEach((segs, i) => {
             segs.forEach(p => p.setStyle({ opacity: i === actIdx ? 0.9 : 0, weight: 5 }));
             if (i === actIdx) segs.forEach(p => p.bringToFront());
         });
         window._connectorLines.forEach((conns, i) => {
-            conns.forEach(p => p.setStyle({ opacity: i === actIdx ? 0.6 : 0.1 }));
+            conns.forEach(p => p.setStyle({ opacity: i === actIdx ? 0.6 : 0 }));
         });
         window._destMarkers.forEach((m, i) => {
             if (!m) return;
             const el = m.getElement();
-            if (el) el.style.opacity = i === actIdx ? '1' : '0.1';
+            if (el) el.style.opacity = i === actIdx ? '1' : '0';
         });
     } else { // focusMode === 'all'
         if (btnFoc) {

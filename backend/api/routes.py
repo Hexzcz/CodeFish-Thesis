@@ -53,11 +53,16 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
     else:
         print(f"[DEBUG] Scenario {request.scenario} already predicted, skipping inference.")
 
+    # Snapping may split edges by inserting temporary snap nodes. Use a
+    # per-request graph copy so repeated identical route requests do not
+    # accumulate graph mutations and drift to different paths.
+    route_graph = graph.clone()
+
     K = min(max(request.k or 3, 1), 5)
 
     try:
         origin_node, origin_dist = snap_point_to_graph(
-            graph, request.origin_lat, request.origin_lon
+            route_graph, request.origin_lat, request.origin_lon
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -79,11 +84,11 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
     for center in target_centers:
         try:
             d_node, d_dist = snap_point_to_graph(
-                graph, center['lat'], center['lon']
+                route_graph, center['lat'], center['lon']
             )
             if d_node == origin_node: continue
             
-            cost, path = dijkstra(graph, origin_node, d_node, request.scenario, w, max_edge_length)
+            cost, path = dijkstra(route_graph, origin_node, d_node, request.scenario, w, max_edge_length)
             if path:
                 pt = tuple(path)
                 if pt not in seen_paths:
@@ -101,9 +106,9 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
         main_center = target_centers[0]
         try:
             d_node, d_dist = snap_point_to_graph(
-                graph, main_center['lat'], main_center['lon']
+                route_graph, main_center['lat'], main_center['lon']
             )
-            alts = yens_k_shortest_paths(graph, origin_node, d_node, K, request.scenario, w, max_edge_length)
+            alts = yens_k_shortest_paths(route_graph, origin_node, d_node, K, request.scenario, w, max_edge_length)
             for alt in alts:
                 pt = tuple(alt['path'])
                 if pt not in seen_paths:
@@ -117,13 +122,13 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
     if not raw_routes:
         raise HTTPException(404, "No evacuation route found to any nearby center.")
 
-    scored = score_routes(raw_routes[:K], graph, request.scenario, w, max_edge_length)
+    scored = score_routes(raw_routes[:K], route_graph, request.scenario, w, max_edge_length)
     if scored:
         r0 = scored[0]
         s0 = r0.get('segments', [{}])[0]
         print(f"[DEBUG] scored[0] flood_exposure={r0['flood_exposure']} seg0_proba={s0.get('flood_proba')}")
 
-    origin_node_data = graph.nodes.get(origin_node, {})
+    origin_node_data = route_graph.nodes.get(origin_node, {})
     origin_info = {
         'lat': request.origin_lat,
         'lon': request.origin_lon,
@@ -133,6 +138,6 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
         'snap_distance_m': round(origin_dist, 1),
     }
 
-    result = routes_to_geojson(scored, graph, request.scenario, origin_info)
+    result = routes_to_geojson(scored, route_graph, request.scenario, origin_info)
     result['computation_time_ms'] = round((time.time() - t0) * 1000, 2)
     return result

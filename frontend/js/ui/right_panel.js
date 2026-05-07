@@ -1,4 +1,6 @@
 function openRightPanel(routeIndex) {
+    const nextIndex = Number.isInteger(routeIndex) ? routeIndex : (window.appState.activeRouteIndex || 0);
+    window.appState.activeRouteIndex = nextIndex;
     document.getElementById('app').classList.add('right-panel-open');
     window.appState.rightPanelOpen = true;
 
@@ -11,7 +13,7 @@ function openRightPanel(routeIndex) {
 
     if (typeof updateRouteVisibility === 'function') updateRouteVisibility();
 
-    populateRightPanel(routeIndex);
+    populateRightPanel(nextIndex);
 }
 
 function closeRightPanel() {
@@ -31,14 +33,15 @@ function closeRightPanel() {
 function populateRightPanel(routeIndex) {
     if (!window.appState.routeData) return;
     const routes = window.appState.routeData.routes;
-    window.appState.activeRouteIndex = routeIndex;
+    const safeIndex = Math.max(0, Math.min(routes.length - 1, Number.isInteger(routeIndex) ? routeIndex : 0));
+    window.appState.activeRouteIndex = safeIndex;
 
-    populateOverview(routes, routeIndex);
+    populateOverview(routes, safeIndex);
 
     // Stamp _origIdx so map hover always targets the correct polyline edge
-    const rawSegs = routes[routeIndex]?.properties?.segments || [];
+    const rawSegs = routes[safeIndex]?.properties?.segments || [];
     const stampedSegs = rawSegs.map((s, i) => ({ ...s, _origIdx: i }));
-    populateSegmentList(stampedSegs, routeIndex);
+    populateSegmentList(stampedSegs, safeIndex);
 
     populateCompare(routes);
 }
@@ -144,12 +147,30 @@ function populateSegmentList(segs, routeIndex) {
         const mapIdx = (seg._origIdx !== undefined) ? seg._origIdx : i;
 
         
-        // Extract probabilities
-        const pArr = seg.flood_proba_array || [1, 0, 0, 0];
-        const w0 = (pArr[0] * 100).toFixed(1);
-        const w1 = (pArr[1] * 100).toFixed(1);
-        const w2 = (pArr[2] * 100).toFixed(1);
-        const w3 = (pArr[3] * 100).toFixed(1);
+        const pct = Math.round((seg.flood_proba || 0) * 100);
+        const pArr = Array.isArray(seg.flood_proba_array) && seg.flood_proba_array.length
+            ? seg.flood_proba_array
+            : [1, 0, 0];
+        const p0 = Number(pArr[0] || 0);
+        const p1 = Number(pArr[1] || 0);
+        const p2 = Number(pArr[2] || 0);
+        const p3 = Number(pArr[3] || 0);
+        const probabilityBlocks = pArr.length >= 4
+            ? [
+                ['Safe', p0, 'var(--safe)'],
+                ['Low Risk', p1, 'var(--low)'],
+                ['Moderate Risk', p2, 'var(--moderate)'],
+                ['High Risk', p3, 'var(--critical)'],
+            ]
+            : [
+                ['No Risk', p0, 'var(--safe)'],
+                ['Low-Moderate Risk', p1, 'var(--moderate)'],
+                ['High Risk', p2, 'var(--critical)'],
+            ];
+        const probabilityBar = probabilityBlocks.map(([title, value, bg]) => {
+            const width = (value * 100).toFixed(1);
+            return `<div title="${title}: ${width}%" style="width:${width}%; background:${bg}; height:100%;"></div>`;
+        }).join('');
 
         return `
         <div class="segment-item"
@@ -164,10 +185,7 @@ function populateSegmentList(segs, routeIndex) {
             </div>
             
             <div class="seg-bar-wrap" style="display: flex; overflow: hidden; border-radius: 4px; height: 6px; background: #222;">
-                <div title="Safe: ${w0}%" style="width:${w0}%; background:var(--safe); height:100%;"></div>
-                <div title="Low Risk: ${w1}%" style="width:${w1}%; background:var(--low); height:100%;"></div>
-                <div title="Moderate Risk: ${w2}%" style="width:${w2}%; background:var(--moderate); height:100%;"></div>
-                <div title="High/Critical Risk: ${w3}%" style="width:${w3}%; background:var(--critical); height:100%;"></div>
+                ${probabilityBar}
             </div>
             
             <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-tertiary); margin-top:4px;">

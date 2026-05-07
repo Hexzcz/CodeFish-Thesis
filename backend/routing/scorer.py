@@ -19,7 +19,7 @@ def score_routes(routes: List[Dict], g: Graph, scenario: str, weights_map: Dict[
         total_flood_proba = 0.0
         max_flood_class = 0
         segment_count = 0
-        flood_class_counts = {0: 0, 1: 0, 2: 0, 3: 0}
+        flood_class_counts = {0: 0, 1: 0, 2: 0}
         segments = []
 
         for i in range(len(path) - 1):
@@ -32,12 +32,12 @@ def score_routes(routes: List[Dict], g: Graph, scenario: str, weights_map: Dict[
             flood_proba = float(edge.get(f'flood_proba_{scenario}', 0.0) or 0.0)
             elevation = float(edge.get('elevation', 0.0) or 0.0)
 
-            flood_proba_array = edge.get(f'flood_proba_array_{scenario}', [1.0, 0.0, 0.0, 0.0])
+            flood_proba_array = edge.get(f'flood_proba_array_{scenario}', [1.0, 0.0, 0.0])
 
             total_length += length
             total_flood_proba += flood_proba
             max_flood_class = max(max_flood_class, flood_class)
-            flood_class_counts[min(flood_class, 3)] += 1
+            flood_class_counts[min(flood_class, 2)] += 1
             segment_count += 1
 
             segments.append({
@@ -118,7 +118,13 @@ def score_routes(routes: List[Dict], g: Graph, scenario: str, weights_map: Dict[
             }
             r['wsm_path_cost'] = round(r['cost'], 2)
 
-    scored.sort(key=lambda x: x.get('topsis_score', 0), reverse=True)
+    scored.sort(key=lambda x: (
+        -float(x.get('topsis_score', 0.0) or 0.0),
+        float(x.get('flood_exposure', 0.0) or 0.0),
+        float(x.get('total_length_m', 0.0) or 0.0),
+        str(x.get('destination_info', {}).get('facility', '')),
+        tuple(str(node) for node in x.get('path', [])),
+    ))
 
     for i, r in enumerate(scored):
         r['rank'] = i + 1

@@ -1,6 +1,7 @@
 import os
 import math
 import rasterio
+from rasterio.warp import transform
 from typing import Dict
 from backend.graph.builder import Graph
 from backend.core.config import RASTER_PATHS, DEFAULT_FEATURES
@@ -9,13 +10,17 @@ def _sample_raster(path: str, lat: float, lon: float, default: float) -> float:
     """Sample a single raster value at (lat, lon). Returns default on error."""
     try:
         with rasterio.open(path) as src:
-            row, col = src.index(lon, lat)
+            x, y = lon, lat
+            if src.crs and src.crs.to_epsg() != 4326:
+                xs, ys = transform("EPSG:4326", src.crs, [lon], [lat])
+                x, y = xs[0], ys[0]
+            row, col = src.index(x, y)
             if row < 0 or col < 0 or row >= src.height or col >= src.width:
                 return default
             val = src.read(1, window=((row, row + 1), (col, col + 1)))
             if val.size > 0:
                 v = float(val.flat[0])
-                if not math.isnan(v):
+                if not math.isnan(v) and (src.nodata is None or v != src.nodata):
                     return v
     except Exception:
         pass

@@ -22,7 +22,30 @@ RASTER_PATHS = {
     'slope':         RASTERS_DIR / 'viz.hh_slope.tif',
     'land_cover':    RASTERS_DIR / 'land_cover_aligned.tif',
     'dist_waterway': RASTERS_DIR / 'distance_to_waterways.tif',
+    'twi':           BASE_DIR.parent / 'terrain_features' / 'twi_aligned.tif',
+    'flow_accumulation': BASE_DIR.parent / 'terrain_features' / 'flow_acc_aligned.tif',
+    'aspect':        BASE_DIR.parent / 'terrain_features' / 'aspect_aligned.tif',
+    'profile_curvature': BASE_DIR.parent / 'terrain_features' / 'profile_curvature_aligned.tif',
+    'plan_curvature': BASE_DIR.parent / 'terrain_features' / 'plan_curvature_aligned.tif',
+    'spi':           BASE_DIR.parent / 'terrain_features' / 'spi_aligned.tif',
+    'sti':           BASE_DIR.parent / 'terrain_features' / 'sti_aligned.tif',
+    'HAND':          BASE_DIR.parent / 'terrain_features' / 'hand_aligned.tif',
 }
+
+MODEL_FEATURES = [
+    'elevation',
+    'slope',
+    'land_cover',
+    'dist_waterway',
+    'twi',
+    'flow_accumulation',
+    'aspect',
+    'profile_curvature',
+    'plan_curvature',
+    'spi',
+    'sti',
+    'HAND',
+]
 
 FLOOD_RASTERS = {
     '5yr':   RASTERS_DIR / 'flood_hazard_fh5yr_aligned.tif',
@@ -43,6 +66,14 @@ DEFAULT_FEATURES = {
     'slope': 2.2,
     'land_cover': 50.0,
     'dist_waterway': 275.0,
+    'twi': 0.0,
+    'flow_accumulation': 0.0,
+    'aspect': 0.0,
+    'profile_curvature': 0.0,
+    'plan_curvature': 0.0,
+    'spi': 0.0,
+    'sti': 0.0,
+    'HAND': 0.0,
 }
 
 LAYERS_MAP = {
@@ -50,9 +81,9 @@ LAYERS_MAP = {
     "flood_25yr":   (str(FLOOD_RASTERS['25yr']),  "flood",   255.0),
     "flood_100yr":  (str(FLOOD_RASTERS['100yr']), "flood",   255.0),
     "land_cover":   (str(RASTER_PATHS['land_cover']),            "tab20",   0.0),
-    "dist_waterway":(str(RASTER_PATHS['dist_waterway']),         "Blues_r", None),
-    "elevation":    (str(RASTER_PATHS['elevation']),       "terrain", None),
-    "slope":        (str(RASTER_PATHS['slope']),              "YlOrRd",  None),
+    "dist_waterway":(str(RASTER_PATHS['dist_waterway']),         "Blues_r", -9999.0),
+    "elevation":    (str(RASTER_PATHS['elevation']),       "terrain", -9999.0),
+    "slope":        (str(RASTER_PATHS['slope']),              "YlOrRd",  -9999.0),
 }
 
 FLOOD_COLORMAP = {

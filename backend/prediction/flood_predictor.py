@@ -1,7 +1,11 @@
-import numpy as np
+import pandas as pd
 from typing import Dict, Any
 from backend.graph.builder import Graph
-from backend.core.config import SCENARIOS
+from backend.core.config import SCENARIOS, MODEL_FEATURES
+
+
+def _feature_row(feats: Dict[str, float]) -> list[float]:
+    return [feats[name] for name in MODEL_FEATURES]
 
 def precompute_predictions(graph: Graph, models: Dict[str, Any]) -> Graph:
     """Pre-compute flood predictions for all edges × scenarios."""
@@ -31,16 +35,11 @@ def precompute_predictions(graph: Graph, models: Dict[str, Any]) -> Graph:
                 continue
 
             try:
-                X = np.array([[
-                    feats['elevation'],
-                    feats['slope'],
-                    feats['land_cover'],
-                    feats['dist_waterway'],
-                ]])
+                X = pd.DataFrame([_feature_row(feats)], columns=MODEL_FEATURES)
                 flood_class = int(model.predict(X)[0])
                 proba = model.predict_proba(X)[0]
-                # Use P(class 3) = high flood probability
-                flood_proba = float(proba[3] if len(proba) > 3 else max(proba))
+                # Use the highest hazard class probability when available.
+                flood_proba = float(proba[len(proba) - 1] if len(proba) > 1 else max(proba))
             except Exception:
                 flood_class = 0
                 flood_proba = 0.0
@@ -74,28 +73,23 @@ def predict_scenario_on_the_fly(graph: Graph, models: Dict[str, Any], scenario: 
         feats = edge.get('features')
         if feats:
             edges_to_update.append((u, v, edge))
-            X_batch.append([
-                feats['elevation'],
-                feats['slope'],
-                feats['land_cover'],
-                feats['dist_waterway']
-            ])
+            X_batch.append(_feature_row(feats))
         else:
             edge[f'flood_class_{scenario}'] = 0
             edge[f'flood_proba_{scenario}'] = 0.0
-            edge[f'flood_proba_array_{scenario}'] = [1.0, 0.0, 0.0, 0.0]
+            edge[f'flood_proba_array_{scenario}'] = [1.0, 0.0, 0.0]
             rev = graph.edges.get((v, u))
             if rev:
                 rev[f'flood_class_{scenario}'] = 0
                 rev[f'flood_proba_{scenario}'] = 0.0
-                rev[f'flood_proba_array_{scenario}'] = [1.0, 0.0, 0.0, 0.0]
+                rev[f'flood_proba_array_{scenario}'] = [1.0, 0.0, 0.0]
 
     if not X_batch:
         return
 
     # 2. Batch predict
     try:
-        X_array = np.array(X_batch)
+        X_array = pd.DataFrame(X_batch, columns=MODEL_FEATURES)
         predictions = model.predict(X_array)
         probabilities = model.predict_proba(X_array)
         

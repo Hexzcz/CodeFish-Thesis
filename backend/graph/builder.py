@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import Optional, Dict, List, Tuple, Any
+import copy
 import json
 import math
 import os
@@ -45,6 +46,23 @@ class Graph:
 
     def edge_count(self) -> int:
         return len(self.edges) // 2
+
+    def clone(self) -> "Graph":
+        """Return an isolated copy safe for request-local graph mutations."""
+        cloned = Graph()
+        cloned.nodes = {node_id: dict(data) for node_id, data in self.nodes.items()}
+
+        seen = set()
+        for (u, v), edge_data in self.edges.items():
+            key = frozenset((u, v))
+            if key in seen:
+                continue
+            seen.add(key)
+            cloned.add_edge(u, v, copy.deepcopy(edge_data))
+
+        if hasattr(self, "max_edge_length"):
+            cloned.max_edge_length = self.max_edge_length
+        return cloned
 
 def build_graph() -> Graph:
     """Load road_nodes and road_edges from Supabase and build Graph."""
