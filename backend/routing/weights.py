@@ -36,9 +36,9 @@ def compute_wsm_weight(edge_data: Dict, scenario: str, weights: Dict[str, float]
     norm_rank = rank / MAX_RANK
     
     # WSM Calculation
-    wf = weights.get('flood', 0.5)
-    wd = weights.get('distance', 0.3)
-    wr = weights.get('road_class', 0.2)
+    wf = weights.get('flood', 0.764)
+    wd = weights.get('distance', 0.112)
+    wr = weights.get('road_class', 0.124)
     
     # Scaling factor (e.g. 100) to keep costs as meaningful numbers for Dijkstra
     wsm_cost = (wf * flood_proba + wd * norm_length + wr * norm_rank) * 100.0
