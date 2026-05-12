@@ -258,7 +258,7 @@ body {
 
 .panel {
     display: none;
-    padding: var(--sp-5) var(--sp-4);
+    padding: var(--sp-5) var(--sp-4) 0 var(--sp-4);
     animation: panel-in 0.15s ease;
 }
 
@@ -274,21 +274,6 @@ body {
     to {
         opacity: 1;
     }
-}
-
-/* ── Sidebar Footer ── */
-.sidebar-footer {
-    padding: var(--sp-3) var(--sp-4);
-    border-top: 1px solid var(--border-subtle);
-    flex-shrink: 0;
-}
-
-.sidebar-footer span {
-    display: block;
-    font-size: 10px;
-    color: var(--text-tertiary);
-    letter-spacing: 0.5px;
-    line-height: 1.6;
 }
 
 /* ── Icon Button ── */
@@ -328,4 +313,15 @@ body {
     display: flex;
     flex-direction: column;
     gap: var(--sp-2);
+}
+
+/* ── Sticky Bottom Controls ── */
+.sticky-bottom-controls {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg-1);
+    padding-top: var(--sp-3);
+    padding-bottom: var(--sp-3);
+    border-top: 1px solid var(--border-subtle);
+    z-index: 10;
 }

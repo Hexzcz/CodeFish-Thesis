@@ -10,7 +10,9 @@ function buildRouteTab(route, index) {
     <div class="route-tab ${index === 0 ? 'active' : ''}"
          data-route="${index}"
          style="--tab-color:${colorVar}"
-         onclick="selectRouteTab(${index})">
+         onclick="selectRouteTab(${index})"
+         onmouseover="highlightRouteFromTab(${index})"
+         onmouseout="unhighlightRouteFromTab()">
         <div class="tab-top">
             <span class="tab-rank">R${index + 1}</span>
             <span class="tab-badge">${badge}</span>
@@ -27,6 +29,25 @@ function buildRouteTab(route, index) {
 
 function selectRouteTab(index) {
     selectRoute(index);
+}
+
+function highlightRouteFromTab(index) {
+    // In selected mode, only highlight the active route
+    if (window.appState.routeFocusMode === 'selected' && index !== window.appState.activeRouteIndex) {
+        return;
+    }
+    if (typeof _getRouteLatLngs === 'function' && typeof _showEdgeHalo === 'function') {
+        const latlngs = _getRouteLatLngs(index);
+        if (latlngs && latlngs.length > 0) {
+            _showEdgeHalo(latlngs, 5);
+        }
+    }
+}
+
+function unhighlightRouteFromTab() {
+    if (typeof _removeEdgeHalo === 'function') {
+        _removeEdgeHalo();
+    }
 }
 
 function showBottomBar(routes) {

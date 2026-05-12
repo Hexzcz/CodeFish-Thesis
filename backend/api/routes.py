@@ -2,6 +2,8 @@ import time
 from typing import Optional, Dict
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
+import heapq
+from typing import List
 from backend.graph.snap import snap_point_to_graph
 from backend.routing.dijkstra import dijkstra
 from backend.routing.yens import yens_k_shortest_paths
@@ -17,14 +19,226 @@ class RouteRequest(BaseModel):
     origin_lon: float
     scenario: str = "25yr"
     k: Optional[int] = 3
+
     weights: Optional[Dict[str, float]] = {
-        'flood': 0.5,
-        'distance': 0.3,
-        'road_class': 0.2
+        'flood': 0.764,
+        'distance': 0.112,
+        'road_class': 0.124
     }
 
 def get_app_state(request: Request):
     return request.app.state.data
+
+def _dijkstra_distance_m(g, source, target) -> float:
+    """Distance-only Dijkstra using edge_data['length'] in meters."""
+    if not g.has_node(source) or not g.has_node(target):
+        return float('inf')
+    if source == target:
+        return 0.0
+
+    dist = {source: 0.0}
+    heap = [(0.0, source)]
+    visited = set()
+
+    while heap:
+        cur_d, u = heapq.heappop(heap)
+        if u in visited:
+            continue
+        visited.add(u)
+        if u == target:
+            return cur_d
+
+        for v, edge_data in g.get_neighbors(u):
+            if v in visited:
+                continue
+            length_m = float(edge_data.get('length', 0.0) or 0.0)
+            nd = cur_d + max(length_m, 0.0)
+            if v not in dist or nd < dist[v]:
+                dist[v] = nd
+                heapq.heappush(heap, (nd, v))
+
+    return float('inf')
+
+
+def _dijkstra_distance_path(g, source, target) -> tuple:
+    """Distance-only Dijkstra that also returns the node path."""
+    if not g.has_node(source) or not g.has_node(target):
+        return float('inf'), []
+    if source == target:
+        return 0.0, [source]
+
+    dist = {source: 0.0}
+    prev = {source: None}
+    heap = [(0.0, source)]
+    visited = set()
+
+    while heap:
+        cur_d, u = heapq.heappop(heap)
+        if u in visited:
+            continue
+        visited.add(u)
+        if u == target:
+            break
+
+        for v, edge_data in g.get_neighbors(u):
+            if v in visited:
+                continue
+            length_m = float(edge_data.get('length', 0.0) or 0.0)
+            nd = cur_d + max(length_m, 0.0)
+            if v not in dist or nd < dist[v]:
+                dist[v] = nd
+                prev[v] = u
+                heapq.heappush(heap, (nd, v))
+
+    if target not in visited:
+        return float('inf'), []
+
+    path = []
+    cur = target
+    while cur is not None:
+        path.append(cur)
+        cur = prev.get(cur)
+    path.reverse()
+    if not path or path[0] != source:
+        return float('inf'), []
+    return dist[target], path
+
+class DestinationPoint(BaseModel):
+    lat: float
+    lon: float
+
+class ShortestDistanceRequest(BaseModel):
+    origin_lat: float
+    origin_lon: float
+    destinations: List[DestinationPoint]
+
+
+class ShortestPathRequest(BaseModel):
+    origin_lat: float
+    origin_lon: float
+    destination_lat: float
+    destination_lon: float
+    scenario: str = "25yr"
+
+@router.post("/route/shortest-distance")
+async def shortest_distance_baseline(req: ShortestDistanceRequest, state: dict = Depends(get_app_state)):
+    """Compute pure distance-only shortest path (Dijkstra) to each destination."""
+    graph = state['graph']
+
+    # Snap may mutate graph: use clone
+    route_graph = graph.clone()
+
+    try:
+        origin_node, _ = snap_point_to_graph(route_graph, req.origin_lat, req.origin_lon)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    results = []
+    for dest in req.destinations:
+        try:
+            d_node, _ = snap_point_to_graph(route_graph, dest.lat, dest.lon)
+            dist_m = _dijkstra_distance_m(route_graph, origin_node, d_node)
+            results.append({
+                'destination_lat': dest.lat,
+                'destination_lon': dest.lon,
+                'distance_m': None if dist_m == float('inf') else round(dist_m, 2),
+                'distance_km': None if dist_m == float('inf') else round(dist_m / 1000.0, 4),
+            })
+        except Exception:
+            results.append({
+                'destination_lat': dest.lat,
+                'destination_lon': dest.lon,
+                'distance_m': None,
+                'distance_km': None,
+            })
+
+    return {'baselines': results}
+
+
+@router.post("/route/shortest-path")
+async def shortest_path_baseline(req: ShortestPathRequest, state: dict = Depends(get_app_state)):
+    """Return distance-only shortest path geometry + metrics for interactive compare."""
+    if req.scenario not in SCENARIOS:
+        raise HTTPException(400, f"scenario must be one of: {SCENARIOS}")
+
+    graph = state['graph']
+    max_edge_length = state['max_edge_length']
+
+    route_graph = graph.clone()
+
+    try:
+        origin_node, _ = snap_point_to_graph(route_graph, req.origin_lat, req.origin_lon)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    try:
+        dest_node, _ = snap_point_to_graph(route_graph, req.destination_lat, req.destination_lon)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    dist_m, path = _dijkstra_distance_path(route_graph, origin_node, dest_node)
+    if not path:
+        raise HTTPException(404, "No path found")
+
+    # Score the baseline path to get comparable metrics (segments, flood exposure, etc.)
+    baseline_weights = {'flood': 0.0, 'distance': 1.0, 'road_class': 0.0}
+    scored = score_routes([
+        {
+            'path': path,
+            'cost': dist_m,
+            'destination_info': {
+                'lat': req.destination_lat,
+                'lon': req.destination_lon,
+                'facility': 'Shortest Path',
+                'barangay': ''
+            },
+            'dest_node': dest_node
+        }
+    ], route_graph, req.scenario, baseline_weights, max_edge_length)
+
+    if not scored:
+        raise HTTPException(500, "Failed to score baseline path")
+
+    r = scored[0]
+
+    # Build geometry (MultiLineString) similar to routes_to_geojson
+    coordinates = []
+    for i in range(len(path) - 1):
+        u = path[i]
+        v = path[i + 1]
+        edge = route_graph.get_edge(u, v)
+        if edge and edge.get('geometry'):
+            coordinates.append(edge['geometry'])
+        else:
+            nu = route_graph.nodes.get(u, {})
+            nv = route_graph.nodes.get(v, {})
+            coordinates.append([
+                [nu.get('lon', 0), nu.get('lat', 0)],
+                [nv.get('lon', 0), nv.get('lat', 0)],
+            ])
+
+    feature = {
+        'type': 'Feature',
+        'geometry': {'type': 'MultiLineString', 'coordinates': coordinates},
+        'properties': {
+            'kind': 'shortest_distance_only',
+            'scenario': req.scenario,
+            'total_length_m': r.get('total_length_m'),
+            'total_length_km': r.get('total_length_km'),
+            'flood_exposure': r.get('flood_exposure'),
+            'segment_count': r.get('segment_count'),
+            'segments': r.get('segments', []),
+        }
+    }
+
+    return {
+        'feature': feature,
+        'metrics': {
+            'distance_km': r.get('total_length_km'),
+            'flood_susceptibility': r.get('flood_exposure'),
+            'segment_count': r.get('segment_count'),
+        }
+    }
 
 @router.post("/route")
 async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)):
@@ -77,7 +291,7 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
                 target_centers.append(c)
                 if len(target_centers) >= 3: break
     
-    w = request.weights or {'flood': 0.5, 'distance': 0.3, 'road_class': 0.2}
+    w = request.weights or {'flood': 0.764, 'distance': 0.112, 'road_class': 0.124}
     raw_routes = []
     seen_paths = set()
 
