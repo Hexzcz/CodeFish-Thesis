@@ -7,7 +7,7 @@ from typing import List
 from backend.graph.snap import snap_point_to_graph
 from backend.routing.dijkstra import dijkstra
 from backend.routing.yens import yens_k_shortest_paths
-from backend.routing.scorer import score_routes
+from backend.routing.scorer import score_routes, _log_baseline_comparison
 from backend.routing.geojson_builder import find_top_n_evacuation_centers, routes_to_geojson
 from backend.prediction.flood_predictor import predict_scenario_on_the_fly
 from backend.core.config import SCENARIOS
@@ -19,6 +19,7 @@ class RouteRequest(BaseModel):
     origin_lon: float
     scenario: str = "25yr"
     k: Optional[int] = 3
+    penalty_factor: Optional[float] = 3.0
 
     weights: Optional[Dict[str, float]] = {
         'flood': 0.764,
@@ -180,10 +181,8 @@ async def shortest_path_baseline(req: ShortestPathRequest, state: dict = Depends
     if not path:
         raise HTTPException(404, "No path found")
 
-    # Score the baseline path to get comparable metrics (segments, flood exposure, etc.)
-    baseline_weights = {'flood': 0.0, 'distance': 1.0, 'road_class': 0.0}
-    scored = score_routes([
-        {
+    baseline_weights = {'flood': 0.764, 'distance': 0.112, 'road_class': 0.124}
+    scored = score_routes([{
             'path': path,
             'cost': dist_m,
             'destination_info': {
@@ -194,7 +193,7 @@ async def shortest_path_baseline(req: ShortestPathRequest, state: dict = Depends
             },
             'dest_node': dest_node
         }
-    ], route_graph, req.scenario, baseline_weights, max_edge_length)
+    ], route_graph, req.scenario, baseline_weights, max_edge_length, _log=False)
 
     if not scored:
         raise HTTPException(500, "Failed to score baseline path")
@@ -281,27 +280,50 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    candidates = find_top_n_evacuation_centers(request.origin_lat, request.origin_lon, evacuation_centers, n=5)
-    
+    candidates = find_top_n_evacuation_centers(request.origin_lat, request.origin_lon, evacuation_centers, n=10)
+
+    # Re-rank candidates by actual network distance instead of straight-line
+    network_scored = []
+    for c in candidates:
+        try:
+            c_node, _ = snap_point_to_graph(route_graph, c['lat'], c['lon'])
+            if c_node == origin_node:
+                continue
+            net_dist = _dijkstra_distance_m(route_graph, origin_node, c_node)
+            if net_dist < float('inf'):
+                network_scored.append({**c, 'distance_m': round(net_dist, 1), '_snap_node': c_node})
+        except Exception:
+            continue
+    network_scored.sort(key=lambda x: x['distance_m'])
+
     target_centers = []
-    if candidates:
-        d_min = candidates[0]['distance_m']
-        for c in candidates:
+    if network_scored:
+        d_min = network_scored[0]['distance_m']
+        for c in network_scored:
             if c['distance_m'] < 2000 or c['distance_m'] < d_min * 3.0:
                 target_centers.append(c)
-                if len(target_centers) >= 3: break
+                if len(target_centers) >= 5: break
+    
+    if not target_centers and network_scored:
+        target_centers = network_scored[:3]
     
     w = request.weights or {'flood': 0.764, 'distance': 0.112, 'road_class': 0.124}
+    penalty_factor = request.penalty_factor if request.penalty_factor and request.penalty_factor > 0 else 3.0
+    print(f"[DEBUG] Routing penalty_factor={penalty_factor}")
     raw_routes = []
     seen_paths = set()
 
+    main_center = target_centers[0] if target_centers else None
+
     for center in target_centers:
+        if len(raw_routes) >= K:
+            break
         try:
             d_node, d_dist = snap_point_to_graph(
                 route_graph, center['lat'], center['lon']
             )
             if d_node == origin_node: continue
-            
+
             cost, path = dijkstra(route_graph, origin_node, d_node, request.scenario, w, max_edge_length)
             if path:
                 pt = tuple(path)
@@ -316,13 +338,12 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
         except:
             continue
 
-    if len(raw_routes) < K and target_centers:
-        main_center = target_centers[0]
+    if len(raw_routes) < K and main_center:
         try:
             d_node, d_dist = snap_point_to_graph(
                 route_graph, main_center['lat'], main_center['lon']
             )
-            alts = yens_k_shortest_paths(route_graph, origin_node, d_node, K, request.scenario, w, max_edge_length)
+            alts = yens_k_shortest_paths(route_graph, origin_node, d_node, K, request.scenario, w, max_edge_length, penalty_factor)
             for alt in alts:
                 pt = tuple(alt['path'])
                 if pt not in seen_paths:
@@ -341,6 +362,25 @@ async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)
         r0 = scored[0]
         s0 = r0.get('segments', [{}])[0]
         print(f"[DEBUG] scored[0] flood_exposure={r0['flood_exposure']} seg0_proba={s0.get('flood_proba')}")
+
+    # --- Compute distance-only Dijkstra baselines for terminal comparison ---
+    paired_baselines = []
+    for route in scored:
+        d_node = route.get('dest_node')
+        if d_node and d_node != origin_node:
+            base_dist, base_path = _dijkstra_distance_path(route_graph, origin_node, d_node)
+            if base_path:
+                bl = score_routes([{
+                    'path': base_path,
+                    'cost': base_dist,
+                    'destination_info': route.get('destination_info', {}),
+                    'dest_node': d_node
+                }], route_graph, request.scenario, w, max_edge_length, _log=False)
+                paired_baselines.append(bl[0] if bl else None)
+                continue
+        paired_baselines.append(None)
+
+    _log_baseline_comparison(scored, paired_baselines, request.scenario, w, max_edge_length)
 
     origin_node_data = route_graph.nodes.get(origin_node, {})
     origin_info = {

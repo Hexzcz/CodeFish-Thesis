@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from backend.core.startup import startup
-from backend.api import routes, layers, network, centers, rainfall
+from backend.api import routes, layers, network, centers, rainfall, geocode
 import os
 
 # Base directory for static files (frontend)
@@ -35,6 +35,7 @@ app.include_router(layers.router)
 app.include_router(network.router)
 app.include_router(centers.router)
 app.include_router(rainfall.router)
+app.include_router(geocode.router)
 
 # Mount frontend as static files
 # Ensure frontend directory exists

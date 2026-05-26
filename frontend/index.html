@@ -154,6 +154,29 @@
                                         onclick="setSimulation('high')">HIGH<span
                                             class="rf-opt-sub">100-Year</span></button>
                                 </div>
+
+                                <!-- Manual mm/hr input -->
+                                <div style="margin-top:8px; background:var(--bg-2); border:1px solid var(--border-subtle); border-radius:4px; padding:8px 10px;">
+                                    <div style="font-size:9px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">Manual Rainfall Input</div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <input
+                                            type="number"
+                                            id="sim-mmhr-input"
+                                            min="0" max="300" step="0.1"
+                                            placeholder="0.0"
+                                            oninput="onSimMmhrInput(this.value)"
+                                            style="
+                                                flex:1; background:var(--bg-3);
+                                                border:1px solid var(--border-default);
+                                                color:var(--text-primary); font-size:13px;
+                                                font-family:var(--font-mono); font-weight:600;
+                                                padding:5px 8px; border-radius:4px;
+                                                outline:none; width:0;
+                                            "
+                                        >
+                                        <span style="font-size:10px; color:var(--text-tertiary); white-space:nowrap;">mm/hr</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -362,6 +385,11 @@
                                 <span class="toggle-label">Road Classification</span>
                                 <input type="number" id="winput-road_class" min="0" max="1" step="0.001" value="0.124"
                                     oninput="onWeightInput()" class="weight-input">
+                            </div>
+                            <div class="toggle-row weight-row">
+                                <span class="toggle-label">Penalty Multiplier (λ)</span>
+                                <input type="number" id="penalty-factor-input" min="0.001" step="0.1" value="3.0"
+                                    class="weight-input">
                             </div>
                             <!-- Sum indicator -->
                             <div class="toggle-row weight-total-row">
@@ -594,7 +622,7 @@
     <script src="js/routing/segment_hover.js?v=5"></script>
     <script src="js/ui/tabs.js?v=5"></script>
     <script src="js/ui/sidebar.js?v=7"></script>
-    <script src="js/ui/rainfall.js?v=5"></script>
+    <script src="js/ui/rainfall.js?v=6"></script>
     <script src="js/ui/bottom_bar.js?v=7"></script>
     <script src="js/ui/right_panel.js?v=16"></script>
     <script src="js/app.js?v=5"></script>

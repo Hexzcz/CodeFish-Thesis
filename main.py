@@ -30,6 +30,8 @@ import ftplib
 import gzip
 import datetime
 
+from backend.api.geocode import router as geocode_router
+
 app = FastAPI(title="CodeFish Flood-Aware Evacuation Routing")
 
 app.add_middleware(
@@ -39,6 +41,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(geocode_router)
 
 # ─────────────────────────────────────────────
 # Boundary loading for raster clipping
@@ -837,17 +841,14 @@ async def get_jaxa_data(
         
     value, message = get_jaxa_rainfall(mode, dt, range)
     
-    # Map to scenario
-    # Thresholds (mm/hr):
-    # < 10 -> 5yr (but maybe "No Flood" is better? User said map to 5,25,100)
-    # 10 - 25 -> 5yr
-    # 25 - 50 -> 25yr
-    # > 50 -> 100yr
-    
+    # Rainfall → Return Period mapping (PAGASA intensity classification)
+    # Low:      < 7.5 mm/hr  → 5-year
+    # Moderate: 7.5–30 mm/hr → 25-year
+    # High:     > 30 mm/hr   → 100-year
     mapping = "5yr"
-    if value >= 50:
+    if value > 30:
         mapping = "100yr"
-    elif value >= 25:
+    elif value >= 7.5:
         mapping = "25yr"
     else:
         mapping = "5yr"

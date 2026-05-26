@@ -6,6 +6,7 @@ window.appState = {
     forecastRange: 'short', // 'short' | 'medium'
     activeRouteIndex: 0,
     weights: { flood: 0.764, distance: 0.112, road_class: 0.124 },
+    penaltyFactor: 3.0,
 
     // Routing
     originCoords: null,

@@ -1022,276 +1022,6 @@
         .compare-val.rank {
             color: var(--c-cyan);
         }
-
-        /* ── Rainfall Scenario UI ── */
-        .rainfall-mode-selector {
-            display: flex;
-            background: var(--c-bg-card);
-            border-radius: 8px;
-            padding: 4px;
-            margin-bottom: 16px;
-            gap: 4px;
-        }
-
-        .mini-tab-bar {
-            display: flex;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 2px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            gap: 2px;
-        }
-
-        .mini-tab {
-            flex: 1;
-            padding: 6px;
-            border: none;
-            background: none;
-            color: var(--c-text-dim);
-            font-family: var(--font-h);
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: 0.2s;
-        }
-
-        .mini-tab.active {
-            background: var(--c-surface);
-            color: var(--c-cyan);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .form-select,
-        .form-input {
-            width: 100%;
-            height: 36px;
-            background: var(--c-bg-card);
-            border: 1px solid var(--c-border);
-            border-radius: 6px;
-            color: var(--c-text-bright);
-            font-family: var(--font-b);
-            font-size: 12px;
-            padding: 0 10px;
-            margin-bottom: 12px;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        .form-select:focus,
-        .form-input:focus {
-            border-color: var(--c-cyan);
-            background: rgba(0, 188, 212, 0.05);
-        }
-
-        .jaxa-status-box {
-            background: rgba(0, 188, 212, 0.05);
-            border: 1px solid var(--c-border-accent);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 8px;
-        }
-
-        .jaxa-int-val {
-            font-family: var(--font-h);
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--c-cyan);
-        }
-
-        .jaxa-map-val {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--c-text-bright);
-            text-transform: uppercase;
-        }
-
-        /* -- Rainfall Scenario -- */
-        .rs-source-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 14px;
-        }
-
-        .rs-source-btn {
-            height: 38px;
-            background: var(--c-bg-card);
-            border: 1px solid var(--c-border);
-            border-radius: 7px;
-            color: var(--c-text-dim);
-            font-family: var(--font-h);
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            padding: 2px 8px;
-            background: rgba(0, 188, 212, 0.12);
-            color: var(--c-cyan);
-            border: 1px solid rgba(0, 188, 212, 0.3);
-            border-radius: 4px;
-            font-size: 8px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px rgba(0, 188, 212, 0.1);
-            transition: 0.3s;
-        }
-
-        .status-pill:hover {
-            background: rgba(0, 188, 212, 0.2);
-            box-shadow: 0 0 15px rgba(0, 188, 212, 0.2);
-        }
-
-        .rs-source-btn.active {
-            background: var(--c-cyan);
-            border-color: var(--c-cyan);
-            color: var(--c-bg);
-            box-shadow: 0 0 20px rgba(0, 188, 212, 0.35);
-            transform: translateY(-1px);
-        }
-
-        .rs-source-btn.active i {
-            color: var(--c-bg);
-        }
-
-        .rs-source-btn:hover:not(.active) {
-            border-color: rgba(255, 255, 255, 0.2);
-            color: var(--c-text-bright);
-        }
-
-        .rs-tab-row {
-            display: flex;
-            border-bottom: 1px solid var(--c-border);
-            margin-bottom: 12px;
-        }
-
-        .rs-tab {
-            flex: 1;
-            height: 32px;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-            color: var(--c-text-dim);
-            font-family: var(--font-h);
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .rs-tab.active {
-            color: var(--c-cyan);
-            border-bottom-color: var(--c-cyan);
-            text-shadow: 0 0 8px rgba(0, 188, 212, 0.4);
-        }
-
-        .rs-tab:hover:not(.active) {
-            color: var(--c-text);
-        }
-
-        .rs-option-row {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 12px;
-        }
-
-        .rs-option-btn {
-            flex: 1;
-            background: var(--c-bg-card);
-            border: 1px solid var(--c-border);
-            border-radius: 6px;
-            color: var(--c-text-dim);
-            font-family: var(--font-h);
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 7px 4px;
-            text-align: center;
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            line-height: 1;
-        }
-
-        .rs-option-btn.active {
-            background: rgba(0, 188, 212, 0.15);
-            border-color: var(--c-cyan);
-            color: var(--c-cyan);
-            box-shadow: inset 0 0 8px rgba(0, 188, 212, 0.1), 0 0 12px rgba(0, 188, 212, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .rs-option-btn:hover:not(.active) {
-            border-color: rgba(255, 255, 255, 0.2);
-            color: var(--c-text-bright);
-        }
-
-        .rs-opt-sub {
-            display: block;
-            font-size: 8px;
-            font-weight: 500;
-            text-transform: none;
-            letter-spacing: 0;
-            color: var(--c-text-dim);
-            margin-top: 3px;
-        }
-
-        .rs-option-btn.active .rs-opt-sub {
-            color: rgba(0, 188, 212, 0.65);
-        }
-
-        .rs-field-label {
-            font-size: 9px;
-            color: var(--c-text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin: 8px 0 5px;
-        }
-
-        .scenario-btn {
-            padding: 10px;
-            border: none;
-            background: none;
-            color: var(--c-text-dim);
-            font-family: var(--font-h);
-            font-size: 10px;
-            font-weight: 800;
-            cursor: pointer;
-            border-radius: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid transparent;
-        }
-
-        .scenario-btn.active {
-            background: var(--c-cyan);
-            color: var(--c-bg);
-            box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
-            transform: translateY(-1px);
-        }
-
-        .scenario-btn:not(.active):hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--c-text-bright);
-        }
     </style>
 </head>
 
@@ -1312,387 +1042,347 @@
             <div class="sidebar-panels">
                 <!-- ROUTING PANEL -->
                 <div class="panel active" id="panel-routing">
-                    <div class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>Rainfall Scenario</span>
-                        <div id="scenario-status" class="status-pill">JAXA | FORECAST</div>
+                    <div class="section-label">Scenario Selection</div>
+                    <div class="scenario-grid">
+                        <button class="scenario-btn" data-scenario="5yr" onclick="selectScenario('5yr')">5-Year</button>
+                        <button class="scenario-btn active" data-scenario="25yr"
+                            onclick="selectScenario('25yr')">25-Year</button>
+                        <button class="scenario-btn" data-scenario="100yr"
+                            onclick="selectScenario('100yr')">100-Year</button>
                     </div>
 
-                    <!-- Source -->
-                    <div class="rs-source-row">
-                        <button id="mode-jaxa-btn" class="rs-source-btn active" onclick="setRainfallMode('jaxa')">
-                            <i class="bi bi-broadcast"></i> JAXA
+                    <div class="section-label">Origin Location</div>
+                    <button id="place-origin-btn" class="action-btn secondary" onclick="toggleOriginPlacement()">
+                        <span class="ico" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></span>
+                        Set Start Point
+                    </button>
+                    <div id="origin-coords-display"
+                        style="display:none; text-align:center; margin-top:10px; font-size:11px; color:var(--c-text-dim);">
+                        <span id="origin-lat"></span>N, <span id="origin-lon"></span>E
+                    </div>
+
+                    <div class="section-label">Route Selection Criteria</div>
+                    <div style="background:var(--c-bg-card); padding:16px; border-radius:10px; margin-bottom:20px; border:1px solid var(--c-border);">
+
+                        <!-- Weight number inputs -->
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label style="font-size:10px; color:var(--c-text-dim); text-transform:uppercase; letter-spacing:0.4px;">Flood Risk</label>
+                            <input type="number" id="winput-flood" min="0" max="1" step="0.001" value="0.500"
+                                oninput="onWeightInput()"
+                                style="width:70px; background:var(--c-bg); border:1px solid var(--c-border); border-radius:5px; color:#fff; padding:4px 6px; font-family:monospace; font-size:12px; text-align:right; outline:none; transition:0.2s;"
+                                onfocus="this.style.borderColor='var(--c-cyan)'" onblur="this.style.borderColor='var(--c-border)'">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                            <label style="font-size:10px; color:var(--c-text-dim); text-transform:uppercase; letter-spacing:0.4px;">Path Distance</label>
+                            <input type="number" id="winput-distance" min="0" max="1" step="0.001" value="0.300"
+                                oninput="onWeightInput()"
+                                style="width:70px; background:var(--c-bg); border:1px solid var(--c-border); border-radius:5px; color:#fff; padding:4px 6px; font-family:monospace; font-size:12px; text-align:right; outline:none; transition:0.2s;"
+                                onfocus="this.style.borderColor='var(--c-cyan)'" onblur="this.style.borderColor='var(--c-border)'">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                            <label style="font-size:10px; color:var(--c-text-dim); text-transform:uppercase; letter-spacing:0.4px;">Road Hierarchy</label>
+                            <input type="number" id="winput-road_class" min="0" max="1" step="0.001" value="0.200"
+                                oninput="onWeightInput()"
+                                style="width:70px; background:var(--c-bg); border:1px solid var(--c-border); border-radius:5px; color:#fff; padding:4px 6px; font-family:monospace; font-size:12px; text-align:right; outline:none; transition:0.2s;"
+                                onfocus="this.style.borderColor='var(--c-cyan)'" onblur="this.style.borderColor='var(--c-border)'">
+                        </div>
+
+                        <!-- Sum row -->
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:11px; border-top:1px solid var(--c-border);">
+                            <span style="font-size:9px; color:var(--c-text-dim); text-transform:uppercase; letter-spacing:0.5px;">Sum</span>
+                            <span id="weight-sum-badge" style="font-family:var(--font-h); font-size:13px; font-weight:700; padding:2px 12px; border-radius:20px; background:rgba(0,188,212,0.12); color:var(--c-cyan); border:1px solid rgba(0,188,212,0.3); transition:0.2s;">1.000</span>
+                        </div>
+
+                        <!-- Warning -->
+                        <div id="weight-warning" style="display:none; margin-top:10px; background:rgba(255,170,0,0.08); border:1px solid rgba(255,170,0,0.35); border-radius:7px; padding:8px 10px; font-size:10px; color:#ffaa00; line-height:1.6;">
+                            <strong>&#9888; Weights must sum to 1.000</strong><br>
+                            <span id="weight-warning-detail">Current sum: 1.000</span>
+                        </div>
+
+                        <!-- Save button -->
+                        <button id="save-weights-btn" onclick="saveWeights()"
+                            style="margin-top:12px; width:100%; height:34px; background:var(--c-cyan); border:none; border-radius:7px; color:var(--c-bg); font-family:var(--font-h); font-size:11px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; cursor:pointer; transition:0.2s; box-shadow:0 0 14px rgba(0,188,212,0.25);">
+                            &#10003; Save Changes
                         </button>
-                        <button id="mode-sim-btn" class="rs-source-btn" onclick="setRainfallMode('simulation')">
-                            <i class="bi bi-sliders"></i> Simulation
+                    </div>
+
+                    <div style="margin-top:24px;">
+                        <button id="find-routes-btn" class="action-btn" disabled onclick="findRoutes()">
+                            <span class="ico" aria-hidden="true"><i class="bi bi-search"></i></span>
+                            Find Evacuation Routes
                         </button>
+                        <button class="action-btn secondary" onclick="clearRouting()">Clear All</button>
                     </div>
 
-                    <!-- JAXA Panel -->
-                    <div id="jaxa-panel">
-                        <div class="rs-tab-row">
-                            <button id="jaxa-tab-forecast" class="rs-tab active"
-                                onclick="setJaxaTab('forecast')">Forecast</button>
-                            <button id="jaxa-tab-historical" class="rs-tab"
-                                onclick="setJaxaTab('historical')">Historical</button>
-                        </div>
-                        <div id="jaxa-forecast-controls">
-                            <div class="rs-field-label">Range</div>
-                            <div class="rs-option-row">
-                                <button id="range-short-btn" class="rs-option-btn active"
-                                    onclick="setForecastRange('short')">Short<span class="rs-opt-sub">1-6
-                                        hrs</span></button>
-                                <button id="range-medium-btn" class="rs-option-btn"
-                                    onclick="setForecastRange('medium')">Medium<span class="rs-opt-sub">1-5
-                                        days</span></button>
-                            </div>
-                        </div>
-                        <div id="jaxa-historical-controls" style="display:none;">
-                            <div class="rs-field-label">Date &amp; Hour (UTC)</div>
-                            <input type="datetime-local" id="jaxa-historical-time" class="form-input">
-                        </div>
-                        <div class="jaxa-status-box">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span
-                                    style="font-size:10px; color:var(--c-text-dim); text-transform:uppercase;">Intensity</span>
-                                <span class="jaxa-int-val"><span id="jaxa-intensity">&#8212;</span> <small
-                                        style="font-size:10px; font-weight:400;">mm/hr</small></span>
-                            </div>
-                            <div
-                                style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.03);">
-                                <span style="font-size:10px; color:var(--c-text-dim); text-transform:uppercase;">Flood
-                                    Model</span>
-                                <span class="jaxa-map-val" id="jaxa-mapping">&#8212;</span>
-                            </div>
-                            <div id="jaxa-last-update"
-                                style="font-size:8px; color:var(--c-text-dim); margin-top:10px; text-align:right;">
-                                Updated: &#8212;</div>
-                        </div>
-                    </div>
-
-                    <!-- Simulation Panel -->
-                    <div id="sim-panel" style="display:none;">
-                        <div class="rs-field-label">Rainfall Intensity</div>
-                        <div class="rs-option-row">
-                            <button id="sim-btn-low" class="rs-option-btn" onclick="setSimulation('low')">Low<span
-                                    class="rs-opt-sub">5-Year</span></button>
-                            <button id="sim-btn-medium" class="rs-option-btn active"
-                                onclick="setSimulation('medium')">Medium<span class="rs-opt-sub">25-Year</span></button>
-                            <button id="sim-btn-high" class="rs-option-btn" onclick="setSimulation('high')">High<span
-                                    class="rs-opt-sub">100-Year</span></button>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="section-label">Origin Location</div>
-                <button id="place-origin-btn" class="action-btn secondary" onclick="toggleOriginPlacement()">
-                    <span class="ico" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></span>
-                    Set Start Point
-                </button>
-                <div id="origin-coords-display"
-                    style="display:none; text-align:center; margin-top:10px; font-size:11px; color:var(--c-text-dim);">
-                    <span id="origin-lat"></span>N, <span id="origin-lon"></span>E
-                </div>
+                <!-- LAYERS PANEL -->
+                <div class="panel" id="panel-layers">
+                    <div class="section-label">Map Configuration</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Clip to District Boundary</span>
+                        <label class="switch">
+                            <input type="checkbox" id="clip-toggle" checked onchange="toggleClip(this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
 
-                <div class="section-label">Route Selection Criteria</div>
-                <div
-                    style="background:var(--c-bg-card); padding:16px; border-radius:10px; margin-bottom:20px; border: 1px solid var(--c-border);">
-                    <div class="weight-slider-container">
-                        <div class="weight-label"><span>Flood Risk</span><span id="weight-val-flood">50%</span>
+                    <div class="section-label">Flood Hazard Scenario</div>
+                    <div class="switch-row">
+                        <span class="switch-label">5-Year Return Period</span>
+                        <label class="switch">
+                            <input type="checkbox" class="flood-toggle" id="toggle-flood_5yr"
+                                onchange="updateLayer('flood_5yr', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-flood_5yr">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_5yr">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('flood_5yr', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">25-Year Return Period</span>
+                        <label class="switch">
+                            <input type="checkbox" class="flood-toggle" id="toggle-flood_25yr"
+                                onchange="updateLayer('flood_25yr', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-flood_25yr">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_25yr">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('flood_25yr', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">100-Year Return Period</span>
+                        <label class="switch">
+                            <input type="checkbox" class="flood-toggle" id="toggle-flood_100yr"
+                                onchange="updateLayer('flood_100yr', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-flood_100yr">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span
+                                id="opacity-val-flood_100yr">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('flood_100yr', this.value)">
+                    </div>
+
+                    <div class="section-label">Topographic & Hydrologic</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Waterway Hazard Map</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-dist_waterway"
+                                onchange="updateLayer('dist_waterway', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-dist_waterway">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span
+                                id="opacity-val-dist_waterway">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('dist_waterway', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">Elevation Map</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-elevation"
+                                onchange="updateLayer('elevation', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-elevation">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-elevation">70%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="70" class="opacity-slider"
+                            oninput="updateLayerOpacity('elevation', this.value)">
+                    </div>
+
+                    <div class="switch-row">
+                        <span class="switch-label">Slope Map</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-slope" onchange="updateLayer('slope', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-slope">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-slope">50%</span>
                         </div>
                         <input type="range" min="0" max="100" value="50" class="opacity-slider"
-                            oninput="adjustWeights('flood', this.value)">
+                            oninput="updateLayerOpacity('slope', this.value)">
                     </div>
-                    <div class="weight-slider-container" style="margin-top:12px;">
-                        <div class="weight-label"><span>Path Distance</span><span id="weight-val-distance">30%</span>
+
+                    <div class="switch-row">
+                        <span class="switch-label">Land Cover</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-land_cover"
+                                onchange="updateLayer('land_cover', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="opacity-container" id="opacity-cnt-land_cover">
+                        <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-land_cover">60%</span>
                         </div>
-                        <input type="range" min="0" max="100" value="30" class="opacity-slider"
-                            oninput="adjustWeights('distance', this.value)">
+                        <input type="range" min="0" max="100" value="60" class="opacity-slider"
+                            oninput="updateLayerOpacity('land_cover', this.value)">
                     </div>
-                    <div class="weight-slider-container" style="margin-top:12px;">
-                        <div class="weight-label"><span>Road Hierarchy</span><span id="weight-val-road_class">20%</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="20" class="opacity-slider"
-                            oninput="adjustWeights('road_class', this.value)">
+
+                    <div class="section-label">Vector Overlays</div>
+                    <div class="switch-row">
+                        <span class="switch-label">Road Network</span>
+                        <label class="switch">
+                            <input type="checkbox" id="road-master-toggle" onchange="toggleRoadMaster(this.checked)">
+                            <span class="slider"></span>
+                        </label>
                     </div>
-                    <div
-                        style="font-size:9px; color:var(--c-text-dim); margin-top:8px; text-transform:uppercase; letter-spacing:0.5px;">
-                        Auto-balanced to 100% total</div>
-                </div>
-
-                <div style="margin-top:24px;">
-                    <button id="find-routes-btn" class="action-btn" disabled onclick="findRoutes()">
-                        <span class="ico" aria-hidden="true"><i class="bi bi-search"></i></span>
-                        Find Evacuation Routes
-                    </button>
-                    <button class="action-btn secondary" onclick="clearRouting()">Clear All</button>
-                </div>
-
-            </div>
-
-            <!-- LAYERS PANEL -->
-            <div class="panel" id="panel-layers">
-                <div class="section-label">Map Configuration</div>
-                <div class="switch-row">
-                    <span class="switch-label">Clip to District Boundary</span>
-                    <label class="switch">
-                        <input type="checkbox" id="clip-toggle" checked onchange="toggleClip(this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="section-label">Flood Hazard Scenario</div>
-                <div class="switch-row">
-                    <span class="switch-label">5-Year Return Period</span>
-                    <label class="switch">
-                        <input type="checkbox" class="flood-toggle" id="toggle-flood_5yr"
-                            onchange="updateLayer('flood_5yr', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-flood_5yr">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_5yr">70%</span>
+                    <div class="switch-row">
+                        <span class="switch-label">Evacuation Centers</span>
+                        <label class="switch">
+                            <input type="checkbox" checked onchange="toggleEvacCenters(this.checked)">
+                            <span class="slider"></span>
+                        </label>
                     </div>
-                    <input type="range" min="0" max="100" value="70" class="opacity-slider"
-                        oninput="updateLayerOpacity('flood_5yr', this.value)">
-                </div>
 
-                <div class="switch-row">
-                    <span class="switch-label">25-Year Return Period</span>
-                    <label class="switch">
-                        <input type="checkbox" class="flood-toggle" id="toggle-flood_25yr"
-                            onchange="updateLayer('flood_25yr', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-flood_25yr">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_25yr">70%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="70" class="opacity-slider"
-                        oninput="updateLayerOpacity('flood_25yr', this.value)">
-                </div>
-
-                <div class="switch-row">
-                    <span class="switch-label">100-Year Return Period</span>
-                    <label class="switch">
-                        <input type="checkbox" class="flood-toggle" id="toggle-flood_100yr"
-                            onchange="updateLayer('flood_100yr', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-flood_100yr">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-flood_100yr">70%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="70" class="opacity-slider"
-                        oninput="updateLayerOpacity('flood_100yr', this.value)">
-                </div>
-
-                <div class="section-label">Topographic & Hydrologic</div>
-                <div class="switch-row">
-                    <span class="switch-label">Waterway Hazard Map</span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggle-dist_waterway"
-                            onchange="updateLayer('dist_waterway', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-dist_waterway">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-dist_waterway">70%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="70" class="opacity-slider"
-                        oninput="updateLayerOpacity('dist_waterway', this.value)">
-                </div>
-
-                <div class="switch-row">
-                    <span class="switch-label">Elevation Map</span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggle-elevation" onchange="updateLayer('elevation', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-elevation">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-elevation">70%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="70" class="opacity-slider"
-                        oninput="updateLayerOpacity('elevation', this.value)">
-                </div>
-
-                <div class="switch-row">
-                    <span class="switch-label">Slope Map</span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggle-slope" onchange="updateLayer('slope', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-slope">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-slope">50%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="50" class="opacity-slider"
-                        oninput="updateLayerOpacity('slope', this.value)">
-                </div>
-
-                <div class="switch-row">
-                    <span class="switch-label">Land Cover</span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggle-land_cover"
-                            onchange="updateLayer('land_cover', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="opacity-container" id="opacity-cnt-land_cover">
-                    <div class="opacity-meta"><span>Layer Opacity</span><span id="opacity-val-land_cover">60%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="60" class="opacity-slider"
-                        oninput="updateLayerOpacity('land_cover', this.value)">
-                </div>
-
-                <div class="section-label">Vector Overlays</div>
-                <div class="switch-row">
-                    <span class="switch-label">Road Network</span>
-                    <label class="switch">
-                        <input type="checkbox" id="road-master-toggle" onchange="toggleRoadMaster(this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div class="switch-row">
-                    <span class="switch-label">Evacuation Centers</span>
-                    <label class="switch">
-                        <input type="checkbox" checked onchange="toggleEvacCenters(this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div id="road-info-panel" style="display:none;">
-                    <div class="road-info-card">
-                        <div class="road-name" id="road-info-name">Unnamed Road</div>
-                        <div class="road-meta" id="road-info-meta">Primary Road · 1.2km</div>
-                        <div class="metrics-grid">
-                            <div class="metric">
-                                <div class="metric-label">Hazard Level</div>
-                                <div id="road-risk-badge" class="risk-badge risk-low">Low</div>
-                            </div>
-                            <div class="metric">
-                                <div class="metric-label">OSM ID</div>
-                                <div id="road-info-osmid" style="font-family:monospace; font-size:11px;">—</div>
+                    <div id="road-info-panel" style="display:none;">
+                        <div class="road-info-card">
+                            <div class="road-name" id="road-info-name">Unnamed Road</div>
+                            <div class="road-meta" id="road-info-meta">Primary Road · 1.2km</div>
+                            <div class="metrics-grid">
+                                <div class="metric">
+                                    <div class="metric-label">Hazard Level</div>
+                                    <div id="road-risk-badge" class="risk-badge risk-low">Low</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">OSM ID</div>
+                                    <div id="road-info-osmid" style="font-family:monospace; font-size:11px;">—</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- OTHER PANEL -->
-            <div class="panel" id="panel-other">
-                <div class="section-label">System Information</div>
-                <div class="switch-row"><span class="switch-label">Target Area</span><span
-                        style="font-size:12px; font-weight:600;">District 1, QC</span></div>
-                <div class="switch-row"><span class="switch-label">Base Scale</span><span
-                        style="font-size:12px; font-weight:600;">1:5,000</span></div>
+                <!-- OTHER PANEL -->
+                <div class="panel" id="panel-other">
+                    <div class="section-label">System Information</div>
+                    <div class="switch-row"><span class="switch-label">Target Area</span><span
+                            style="font-size:12px; font-weight:600;">District 1, QC</span></div>
+                    <div class="switch-row"><span class="switch-label">Base Scale</span><span
+                            style="font-size:12px; font-weight:600;">1:5,000</span></div>
 
-                <div class="section-label">Data Sources</div>
-                <div style="font-size:11px; line-height:1.6; color:var(--c-text-dim);">
-                    • OSM Road Network (2024)<br>
-                    • UP LiPAD Flood Hazard Models<br>
-                    • PhilGIS District Boundaries
+                    <div class="section-label">Data Sources</div>
+                    <div style="font-size:11px; line-height:1.6; color:var(--c-text-dim);">
+                        • OSM Road Network (2024)<br>
+                        • UP LiPAD Flood Hazard Models<br>
+                        • PhilGIS District Boundaries
+                    </div>
                 </div>
             </div>
-    </div>
 
-    <div class="sidebar-tabbar">
-        <button class="tab active" data-panel="routing">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-            <span>Routing</span>
-        </button>
-        <button class="tab" data-panel="layers">
-            <svg viewBox="0 0 24 24">
-                <path d="M3 12h18M3 12l4-4m-4 4l4 4M21 12l-4-4m4 4l-4 4" />
-            </svg>
-            <span>Layers</span>
-        </button>
-        <button class="tab" data-panel="other">
-            <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="3" />
-                <path
-                    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-            <span>System</span>
-        </button>
-    </div>
-    </aside>
-
-    <!-- DETAILS SIDEBAR (RIGHT) -->
-    <aside id="sidebar-details">
-        <div class="details-header">
-            <div>
-                <div id="details-title"
-                    style="font-family:var(--font-h); font-size:22px; font-weight:700; color:var(--c-cyan);">Route
-                    Details</div>
+            <div class="sidebar-tabbar">
+                <button class="tab active" data-panel="routing">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    <span>Routing</span>
+                </button>
+                <button class="tab" data-panel="layers">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 12h18M3 12l4-4m-4 4l4 4M21 12l-4-4m4 4l-4 4" />
+                    </svg>
+                    <span>Layers</span>
+                </button>
+                <button class="tab" data-panel="other">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+                    </svg>
+                    <span>System</span>
+                </button>
             </div>
-            <button class="details-close" onclick="closeDetails()">×</button>
-        </div>
-        <div class="details-content" id="details-content">
-            <!-- Populated by JS -->
-        </div>
-    </aside>
+        </aside>
 
-    <button id="sidebar-toggle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M15 18l-6-6 6-6" />
-        </svg>
-    </button>
-
-    <div id="map"></div>
-
-    <!-- ROUTE RESULTS BOTTOM BAR -->
-    <div id="results-bottom-bar">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:0 10px;">
-            <div>
-                <div class="section-label" style="margin:0; color:var(--c-cyan);">Search Results</div>
-                <div style="font-size:10px; color:var(--c-text-dim);">Click a route to highlight and view detailed
-                    analysis</div>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-details"
-                    style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:#fff;"
-                    onclick="openComparison()">📊 COMPARE ALL</button>
-                <button id="toggle-all-btn" class="btn-details" onclick="toggleAllRoutes()">HIDE ALL</button>
-            </div>
-        </div>
-        <div id="route-cards-horizontal"></div>
-    </div>
-
-    <!-- COMPARISON OVERLAY -->
-    <div id="comparison-overlay">
-        <div class="comparison-modal">
-            <div class="comparison-header">
+        <!-- DETAILS SIDEBAR (RIGHT) -->
+        <aside id="sidebar-details">
+            <div class="details-header">
                 <div>
-                    <h2 style="font-family:var(--font-h); font-size:24px; color:var(--c-cyan); margin:0;">Route
-                        Decision Matrix</h2>
-                    <p style="font-size:12px; color:var(--c-text-dim); margin:4px 0 0 0;">Multi-Criteria Analysis of
-                        Evacuation Paths</p>
+                    <div id="details-title"
+                        style="font-family:var(--font-h); font-size:22px; font-weight:700; color:var(--c-cyan);">Route
+                        Details</div>
                 </div>
-                <button class="details-close" onclick="closeComparison()">×</button>
+                <button class="details-close" onclick="closeDetails()">×</button>
             </div>
-            <div class="comparison-grid" id="comparison-grid">
-                <!-- Cards populated by JS -->
+            <div class="details-content" id="details-content">
+                <!-- Populated by JS -->
             </div>
-            <div
-                style="padding: 20px 32px; border-top: 1px solid var(--c-border); font-size: 11px; color: var(--c-text-dim);">
-                * Path Optimality is determined using the <strong>Technique for Order of Preference by Similarity to
-                    Ideal Solution (TOPSIS)</strong>.
+        </aside>
+
+        <button id="sidebar-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M15 18l-6-6 6-6" />
+            </svg>
+        </button>
+
+        <div id="map"></div>
+
+        <!-- ROUTE RESULTS BOTTOM BAR -->
+        <div id="results-bottom-bar">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:0 10px;">
+                <div>
+                    <div class="section-label" style="margin:0; color:var(--c-cyan);">Search Results</div>
+                    <div style="font-size:10px; color:var(--c-text-dim);">Click a route to highlight and view detailed
+                        analysis</div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-details"
+                        style="background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:#fff;"
+                        onclick="openComparison()">📊 COMPARE ALL</button>
+                    <button id="toggle-all-btn" class="btn-details" onclick="toggleAllRoutes()">HIDE ALL</button>
+                </div>
+            </div>
+            <div id="route-cards-horizontal"></div>
+        </div>
+
+        <!-- COMPARISON OVERLAY -->
+        <div id="comparison-overlay">
+            <div class="comparison-modal">
+                <div class="comparison-header">
+                    <div>
+                        <h2 style="font-family:var(--font-h); font-size:24px; color:var(--c-cyan); margin:0;">Route
+                            Decision Matrix</h2>
+                        <p style="font-size:12px; color:var(--c-text-dim); margin:4px 0 0 0;">Multi-Criteria Analysis of
+                            Evacuation Paths</p>
+                    </div>
+                    <button class="details-close" onclick="closeComparison()">×</button>
+                </div>
+                    <div class="comparison-grid" id="comparison-grid">
+                    <!-- Cards populated by JS -->
+                </div>
+                <div
+                    style="padding: 20px 32px; border-top: 1px solid var(--c-border); font-size: 11px; color: var(--c-text-dim);">
+                    * Path Optimality is determined using the <strong>Technique for Order of Preference by Similarity to
+                        Ideal Solution (TOPSIS)</strong>.
+                </div>
             </div>
         </div>
-    </div>
-    <div id="road-tooltip">
-        <div id="road-tooltip-name" style="font-weight:700; color:var(--c-cyan);">Road Name</div>
-        <div id="road-tooltip-meta" style="font-size:11px; margin-top:2px;">Type · Length</div>
-    </div>
-    <div id="toast" class="toast">Message here</div>
+        <div id="road-tooltip">
+            <div id="road-tooltip-name" style="font-weight:700; color:var(--c-cyan);">Road Name</div>
+            <div id="road-tooltip-meta" style="font-size:11px; margin-top:2px;">Type · Length</div>
+        </div>
+        <div id="toast" class="toast">Message here</div>
 
-    <div id="map-legend">
-        <div class="legend-tabs" id="legend-tabs"></div>
-        <div class="legend-body" id="legend-body"></div>
-    </div>
+        <div id="map-legend">
+            <div class="legend-tabs" id="legend-tabs"></div>
+            <div class="legend-body" id="legend-body"></div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1701,9 +1391,6 @@
         // ── STATE ──
         const state = {
             routing: {
-                rainfallMode: 'jaxa',
-                jaxaTab: 'forecast',
-                forecastRange: 'short',
                 scenario: '25yr',
                 placingOrigin: false,
                 originCoords: null,
@@ -2037,103 +1724,11 @@
         }
 
         // ── ROUTING ──
-        // ── RAINFALL SCENARIO LOGIC ──
-        function setRainfallMode(mode) {
-            state.routing.rainfallMode = mode;
-            document.getElementById('mode-jaxa-btn').classList.toggle('active', mode === 'jaxa');
-            document.getElementById('mode-sim-btn').classList.toggle('active', mode === 'simulation');
-            document.getElementById('jaxa-panel').style.display = mode === 'jaxa' ? 'block' : 'none';
-            document.getElementById('sim-panel').style.display = mode === 'simulation' ? 'block' : 'none';
-
-            if (mode === 'jaxa') {
-                fetchJaxaRainfall();
-            }
-            updateScenarioBadge();
-        }
-
-        function setJaxaTab(tab) {
-            state.routing.jaxaTab = tab;
-            document.getElementById('jaxa-tab-forecast').classList.toggle('active', tab === 'forecast');
-            document.getElementById('jaxa-tab-historical').classList.toggle('active', tab === 'historical');
-            document.getElementById('jaxa-forecast-controls').style.display = tab === 'forecast' ? 'block' : 'none';
-            document.getElementById('jaxa-historical-controls').style.display = tab === 'historical' ? 'block' : 'none';
-            updateScenarioBadge();
-        }
-
-        function setForecastRange(range) {
-            state.routing.forecastRange = range;
-            document.getElementById('range-short-btn').classList.toggle('active', range === 'short');
-            document.getElementById('range-medium-btn').classList.toggle('active', range === 'medium');
-        }
-
-        function setSimulation(level) {
-            const mapping = { 'low': '5yr', 'medium': '25yr', 'high': '100yr' };
-            state.routing.scenario = mapping[level];
-            document.getElementById('sim-btn-low').classList.toggle('active', level === 'low');
-            document.getElementById('sim-btn-medium').classList.toggle('active', level === 'medium');
-            document.getElementById('sim-btn-high').classList.toggle('active', level === 'high');
-            updateScenarioBadge();
-        }
-
-        function updateScenarioBadge() {
-            const badge = document.getElementById('scenario-status');
-            if (!badge) return;
-            if (state.routing.rainfallMode === 'jaxa') {
-                badge.textContent = `JAXA | ${state.routing.jaxaTab.toUpperCase()}`;
-            } else {
-                const s = state.routing.scenario;
-                const lbl = s === '5yr' ? 'LOW' : (s === '25yr' ? 'MED' : 'HIGH');
-                badge.textContent = `SIM | ${lbl}`;
-            }
-        }
-
-        async function fetchJaxaRainfall() {
-            const mode = state.routing.jaxaTab; // forecast or historical
-            const timestamp = (mode === 'historical') ? document.getElementById('jaxa-historical-time').value : null;
-            const range = state.routing.forecastRange || 'short';
-
-            const intensityEl = document.getElementById('jaxa-intensity');
-            const mappingEl = document.getElementById('jaxa-mapping');
-
-            intensityEl.textContent = '...';
-
-            try {
-                let url = `/rainfall/jaxa?mode=${mode}&range=${range}`;
-                if (timestamp) url += `&timestamp=${timestamp}`;
-
-                const res = await fetch(url);
-                const data = await res.json();
-
-                intensityEl.textContent = data.intensity.toFixed(2);
-                mappingEl.textContent = data.mapping.replace('yr', '-Year Period');
-                state.routing.scenario = data.mapping;
-                document.getElementById('jaxa-last-update').textContent = `Status: ${data.message}`;
-
-                console.log("JAXA Data Received:", data);
-            } catch (e) {
-                intensityEl.textContent = 'Err';
-                mappingEl.textContent = 'Connection Error';
-                console.error("JAXA Fetch Error:", e);
-            }
-        }
-
-        // Initialize JAXA if it's the default
-        window.addEventListener('load', () => {
-            if (state.routing.rainfallMode === 'jaxa') {
-                fetchJaxaRainfall();
-            }
-            updateScenarioBadge();
-
-            // Set default date for historical to now
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('jaxa-historical-time').value = now.toISOString().slice(0, 16);
-        });
-
         function selectScenario(s) {
-            // This is for manual scenario mapping if needed, 
-            // but now handled by setSimulation and fetchJaxaRainfall
             state.routing.scenario = s;
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.scenario === s);
+            });
         }
 
         function toggleOriginPlacement() {
@@ -2157,38 +1752,63 @@
             toggleOriginPlacement();
         });
 
-        function adjustWeights(changedKey, val) {
-            val = parseInt(val);
-            const keys = ['flood', 'distance', 'road_class'];
-            const others = keys.filter(k => k !== changedKey);
+        function onWeightInput() {
+            const wf = parseFloat(document.getElementById('winput-flood').value) || 0;
+            const wd = parseFloat(document.getElementById('winput-distance').value) || 0;
+            const wr = parseFloat(document.getElementById('winput-road_class').value) || 0;
+            const sum = Math.round((wf + wd + wr) * 1000) / 1000;
 
-            // Current total of others
-            let currentOtherTotal = 0;
-            others.forEach(k => currentOtherTotal += state.routing.weights[k] * 100);
+            const badge = document.getElementById('weight-sum-badge');
+            const warning = document.getElementById('weight-warning');
+            const warningDetail = document.getElementById('weight-warning-detail');
+            const saveBtn = document.getElementById('save-weights-btn');
 
-            const remaining = 100 - val;
+            badge.textContent = sum.toFixed(3);
 
-            if (currentOtherTotal === 0) {
-                // Split equally if others were zero
-                others.forEach(k => state.routing.weights[k] = remaining / (others.length * 100));
+            const isValid = Math.abs(sum - 1.0) < 0.0005;
+            if (isValid) {
+                badge.style.background = 'rgba(0,188,212,0.12)';
+                badge.style.color = 'var(--c-cyan)';
+                badge.style.borderColor = 'rgba(0,188,212,0.3)';
+                warning.style.display = 'none';
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
+                saveBtn.style.background = 'var(--c-cyan)';
             } else {
-                // Distribute proportionally
-                others.forEach(k => {
-                    const proportion = (state.routing.weights[k] * 100) / currentOtherTotal;
-                    state.routing.weights[k] = (remaining * proportion) / 100;
-                });
+                badge.style.background = 'rgba(255,170,0,0.12)';
+                badge.style.color = '#ffaa00';
+                badge.style.borderColor = 'rgba(255,170,0,0.4)';
+                warningDetail.textContent = 'Current sum: ' + sum.toFixed(3) + ' \u2014 must equal 1.000';
+                warning.style.display = 'block';
+                saveBtn.disabled = true;
+                saveBtn.style.opacity = '0.4';
+                saveBtn.style.cursor = 'not-allowed';
+                saveBtn.style.background = 'rgba(255,170,0,0.4)';
             }
+        }
 
-            state.routing.weights[changedKey] = val / 100;
+        function saveWeights() {
+            const wf = Math.round(parseFloat(document.getElementById('winput-flood').value) * 1000) / 1000;
+            const wd = Math.round(parseFloat(document.getElementById('winput-distance').value) * 1000) / 1000;
+            const wr = Math.round(parseFloat(document.getElementById('winput-road_class').value) * 1000) / 1000;
+            if (Math.abs(wf + wd + wr - 1.0) >= 0.0005) return;
 
-            // Update UI
-            keys.forEach(k => {
-                const perc = Math.round(state.routing.weights[k] * 100);
-                document.getElementById('weight-val-' + k).textContent = perc + '%';
-                // Find and update the range input if it's not the one being dragged
-                const input = document.querySelector(`.weight-slider-container input[oninput*="'${k}'"]`);
-                if (input && k !== changedKey) input.value = perc;
-            });
+            state.routing.weights.flood = wf;
+            state.routing.weights.distance = wd;
+            state.routing.weights.road_class = wr;
+
+            const saveBtn = document.getElementById('save-weights-btn');
+            saveBtn.textContent = '\u2713 Saved!';
+            saveBtn.style.background = '#22c55e';
+            saveBtn.style.boxShadow = '0 0 18px rgba(34,197,94,0.45)';
+            setTimeout(() => {
+                saveBtn.textContent = '\u2713 Save Changes';
+                saveBtn.style.background = 'var(--c-cyan)';
+                saveBtn.style.boxShadow = '0 0 14px rgba(0,188,212,0.25)';
+            }, 1600);
+
+            showToast('Weights saved \u2014 Flood ' + (wf*100).toFixed(1) + '% / Distance ' + (wd*100).toFixed(1) + '% / Road ' + (wr*100).toFixed(1) + '%');
         }
 
         async function findRoutes() {

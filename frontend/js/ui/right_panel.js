@@ -432,7 +432,33 @@ function populateSegmentList(segs, routeIndex) {
         el.innerHTML = '<div style="color:var(--text-tertiary);font-size:11px;padding:var(--sp-2)">No segment data.</div>';
         return;
     }
-    el.innerHTML = segs.map((seg, i) => {
+    const colorLegend = `
+        <div style="
+            font-size:10.5px; color:var(--text-tertiary);
+            padding:7px 10px 10px 10px;
+            border-bottom:1px solid var(--border-subtle);
+            margin-bottom:6px;
+            line-height:1.6;
+        ">
+            <span style="font-weight:600; color:var(--text-secondary);">Flood Susceptibility Score</span><br>
+            <span>
+                Each segment's score (0–100%) is predicted by the XGBoost model based on the road's
+                terrain features — elevation, slope, HAND, TWI, and proximity to waterways.
+                A higher score means the road sits in terrain <em>more prone</em> to flood inundation
+                under the selected return period. It reflects <strong>spatial hazard susceptibility</strong>,
+                not a real-time flood forecast.
+            </span>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                <span style="color:var(--text-tertiary); font-size:10px; margin-right:2px;">Color coding —</span>
+                <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;"><span style="width:9px;height:9px;border-radius:2px;background:#4caf7d;display:inline-block;"></span>Safe (&lt;10%)</span>
+                <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;"><span style="width:9px;height:9px;border-radius:2px;background:#8bc34a;display:inline-block;"></span>Low (10–25%)</span>
+                <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;"><span style="width:9px;height:9px;border-radius:2px;background:#ffc107;display:inline-block;"></span>Moderate (25–45%)</span>
+                <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;"><span style="width:9px;height:9px;border-radius:2px;background:#ff7043;display:inline-block;"></span>High (45–65%)</span>
+                <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;"><span style="width:9px;height:9px;border-radius:2px;background:#e53935;display:inline-block;"></span>Critical (&gt;65%)</span>
+            </div>
+        </div>`;
+
+    el.innerHTML = colorLegend + segs.map((seg, i) => {
         const color = getRiskColorHex(seg.flood_proba || 0);
         const label = getRiskLabel(seg.flood_proba || 0);
         const dist = ((seg.length || 0) / 1000).toFixed(3);

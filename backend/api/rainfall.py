@@ -21,9 +21,15 @@ _PIXEL_OFFSET = (_LAT_IDX * 3600 + _LON_IDX) * 4
 
 
 def _intensity_to_mapping(value: float) -> str:
-    if value >= 50:
+    """Map JAXA GSMaP rainfall intensity to CODEFISH return period scenario.
+    Thresholds based on PAGASA rainfall intensity classification:
+      Low:      < 7.5 mm/hr  → 5-year return period
+      Moderate: 7.5–30 mm/hr → 25-year return period
+      High:     > 30 mm/hr   → 100-year return period
+    """
+    if value > 30:
         return "100yr"
-    elif value >= 25:
+    elif value >= 7.5:
         return "25yr"
     return "5yr"
 

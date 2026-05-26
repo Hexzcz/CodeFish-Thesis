@@ -4,6 +4,8 @@ from backend.prediction.raster_sampler import sample_rasters
 from backend.prediction.loader import load_models
 from backend.prediction.flood_predictor import precompute_predictions
 from backend.api.centers_loader import load_centers, load_centers_geojson
+from backend.core.config import GEOJSON_PATHS
+import json
 
 async def startup():
     print("=" * 52)
@@ -31,12 +33,21 @@ async def startup():
     print("[6/6] Loading centers...")
     centers = load_centers()
     
+    print("[7/7] Loading District 1 boundary...")
+    boundary_geojson = None
+    boundary_path = GEOJSON_PATHS['boundary']
+    try:
+        with open(boundary_path, 'r') as f:
+            boundary_geojson = json.load(f)
+        print(f"  Loaded boundary from {boundary_path}")
+    except Exception as e:
+        print(f"  Warning: Could not load boundary geojson: {e}")
+    
     # Construct raw GeoJSONs for API passthrough
     from backend.core.database import get_db_connection
     from sqlalchemy import text
-    import json
     
-    print("[7/7] Fetching GeoJSONs from DB...")
+    print("[8/8] Fetching GeoJSONs from DB...")
     road_geojson = {"type": "FeatureCollection", "features": []}
     try:
         with get_db_connection() as conn:
@@ -70,6 +81,7 @@ async def startup():
         'centers': centers,
         'road_geojson': road_geojson,
         'evac_geojson': evac_geojson,
+        'boundary_geojson': boundary_geojson,
         'max_edge_length': MAX_EDGE_LENGTH,
         'predicted_scenarios': set(),   # tracks which scenarios have had on-the-fly inference run
     }

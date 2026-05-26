@@ -99,10 +99,11 @@ def find_top_n_evacuation_centers(
     scored.sort(key=lambda x: x['distance_m'])
     return scored[:n]
 
+
 def routes_to_geojson(scored_routes: List[Dict], graph: Graph, scenario: str, origin_info: Dict) -> Dict:
     """Format scored routes into GeoJSON response."""
     features = []
-    
+
     # Primary destination is Rank 1
     primary_route = scored_routes[0]
     primary_center = primary_route.get('destination_info', {})
@@ -115,11 +116,24 @@ def routes_to_geojson(scored_routes: List[Dict], graph: Graph, scenario: str, or
             u = route['path'][i]
             v = route['path'][i + 1]
             edge = graph.get_edge(u, v)
+            nu = graph.nodes.get(u, {})
+            nv = graph.nodes.get(v, {})
             if edge and edge.get('geometry'):
-                coordinates.append(edge['geometry'])
+                geom = edge['geometry']  # [[lon, lat], ...]
+                # Align geometry to traversal direction u→v.
+                # OSM edges can be stored in either direction; check whether
+                # the geometry's start point is closer to u or to v, and
+                # reverse the coordinate list if it is stored backwards.
+                if geom and nu:
+                    u_lon, u_lat = nu.get('lon', 0), nu.get('lat', 0)
+                    sx, sy = geom[0][0], geom[0][1]
+                    ex, ey = geom[-1][0], geom[-1][1]
+                    dist_start_to_u = (sx - u_lon) ** 2 + (sy - u_lat) ** 2
+                    dist_end_to_u   = (ex - u_lon) ** 2 + (ey - u_lat) ** 2
+                    if dist_end_to_u < dist_start_to_u:
+                        geom = list(reversed(geom))
+                coordinates.append(geom)
             else:
-                nu = graph.nodes.get(u, {})
-                nv = graph.nodes.get(v, {})
                 coordinates.append([
                     [nu.get('lon', 0), nu.get('lat', 0)],
                     [nv.get('lon', 0), nv.get('lat', 0)],

@@ -22,14 +22,14 @@ RASTER_PATHS = {
     'slope':         RASTERS_DIR / 'viz.hh_slope.tif',
     'land_cover':    RASTERS_DIR / 'land_cover_aligned.tif',
     'dist_waterway': RASTERS_DIR / 'distance_to_waterways.tif',
-    'twi':           BASE_DIR.parent / 'terrain_features' / 'twi_aligned.tif',
-    'flow_accumulation': BASE_DIR.parent / 'terrain_features' / 'flow_acc_aligned.tif',
-    'aspect':        BASE_DIR.parent / 'terrain_features' / 'aspect_aligned.tif',
-    'profile_curvature': BASE_DIR.parent / 'terrain_features' / 'profile_curvature_aligned.tif',
-    'plan_curvature': BASE_DIR.parent / 'terrain_features' / 'plan_curvature_aligned.tif',
-    'spi':           BASE_DIR.parent / 'terrain_features' / 'spi_aligned.tif',
-    'sti':           BASE_DIR.parent / 'terrain_features' / 'sti_aligned.tif',
-    'HAND':          BASE_DIR.parent / 'terrain_features' / 'hand_aligned.tif',
+    'twi':           RASTERS_DIR / 'twi_aligned.tif',
+    'flow_accumulation': RASTERS_DIR / 'flow_acc_aligned.tif',
+    'aspect':        RASTERS_DIR / 'aspect_aligned.tif',
+    'profile_curvature': RASTERS_DIR / 'profile_curvature_aligned.tif',
+    'plan_curvature': RASTERS_DIR / 'plan_curvature_aligned.tif',
+    'spi':           RASTERS_DIR / 'spi_aligned.tif',
+    'sti':           RASTERS_DIR / 'sti_aligned.tif',
+    'HAND':          RASTERS_DIR / 'hand_aligned.tif',
 }
 
 MODEL_FEATURES = [

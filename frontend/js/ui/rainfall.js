@@ -31,8 +31,48 @@ function setSimulation(level) {
     document.getElementById('sim-btn-low').classList.toggle('active', level === 'low');
     document.getElementById('sim-btn-medium').classList.toggle('active', level === 'medium');
     document.getElementById('sim-btn-high').classList.toggle('active', level === 'high');
+    // Clear mm/hr input when manual button is clicked
+    const inp = document.getElementById('sim-mmhr-input');
+    if (inp) inp.value = '';
+    const mapDiv = document.getElementById('sim-mmhr-mapping');
+    if (mapDiv) mapDiv.style.display = 'none';
     updateScenarioBadge();
 }
+
+/**
+ * Maps a manually entered mm/hr value to the correct XGBoost scenario
+ * using PAGASA rainfall intensity thresholds:
+ *   < 7.5 mm/hr  → Low   → 5-year  model
+ *   7.5–30 mm/hr → Moderate → 25-year model
+ *   > 30 mm/hr   → High  → 100-year model
+ */
+function onSimMmhrInput(rawValue) {
+    const value = parseFloat(rawValue);
+
+    if (isNaN(value) || rawValue === '' || value < 0) {
+        return;
+    }
+
+    let level, scenario;
+    if (value > 30) {
+        level = 'high';   scenario = '100yr';
+    } else if (value >= 7.5) {
+        level = 'medium'; scenario = '25yr';
+    } else {
+        level = 'low';    scenario = '5yr';
+    }
+
+    // Update scenario state
+    window.appState.scenario = scenario;
+
+    // Sync LOW/MED/HIGH buttons
+    document.getElementById('sim-btn-low').classList.toggle('active', level === 'low');
+    document.getElementById('sim-btn-medium').classList.toggle('active', level === 'medium');
+    document.getElementById('sim-btn-high').classList.toggle('active', level === 'high');
+
+    updateScenarioBadge();
+}
+
 
 function setForecastRange(range) {
     window.appState.forecastRange = range;

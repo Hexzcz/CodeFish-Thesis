@@ -197,11 +197,46 @@ def _materialise_split(
     len_um = orig_len * t
     len_mc = orig_len * (1.0 - t)
 
+    # Split the original geometry at the snap point
+    orig_geom = orig_edge_data.get('geometry', [])
+    m_coord = [m_lon, m_lat]
+    geom_um = []
+    geom_mv = []
+
+    if orig_geom and len(orig_geom) >= 2:
+        # Accumulate lengths along the geometry to find the split position
+        seg_lengths = []
+        total_geom_len = 0.0
+        for gi in range(len(orig_geom) - 1):
+            dx = orig_geom[gi + 1][0] - orig_geom[gi][0]
+            dy = orig_geom[gi + 1][1] - orig_geom[gi][1]
+            sl = math.sqrt(dx * dx + dy * dy)
+            seg_lengths.append(sl)
+            total_geom_len += sl
+
+        target_len = t * total_geom_len
+        accum = 0.0
+        split_idx = len(orig_geom) - 1  # fallback: end
+
+        for gi, sl in enumerate(seg_lengths):
+            if accum + sl >= target_len and sl > 0:
+                split_idx = gi
+                break
+            accum += sl
+
+        geom_um = orig_geom[:split_idx + 1] + [m_coord]
+        geom_mv = [m_coord] + orig_geom[split_idx + 1:]
+    else:
+        nu_coord = [nu['lon'], nu['lat']]
+        nv_coord = [nv['lon'], nv['lat']]
+        geom_um = [nu_coord, m_coord]
+        geom_mv = [m_coord, nv_coord]
+
     # Helper to build a split-edge data dict
-    def _split_data(seg_len: float) -> Dict:
+    def _split_data(seg_len: float, geom: list) -> Dict:
         d = dict(orig_edge_data)
         d['length'] = max(seg_len, 0.1)   # never zero
-        d['geometry'] = []                 # geometry is approximate; clear it
+        d['geometry'] = geom
         return d
 
     # Remove old edge (both directions)
@@ -211,8 +246,8 @@ def _materialise_split(
     graph.adj[v] = [(nb, ed) for nb, ed in graph.adj[v] if nb != u]
 
     # Add the two new half-edges
-    graph.add_edge(u, m_id, _split_data(len_um))
-    graph.add_edge(m_id, v,  _split_data(len_mc))
+    graph.add_edge(u, m_id, _split_data(len_um, geom_um))
+    graph.add_edge(m_id, v,  _split_data(len_mc, geom_mv))
 
     return m_id
 

@@ -5,6 +5,18 @@ window._segmentPolylines = []; // [routeIndex][segIdx] → L.polyline (flood-col
 window._bgPolylines = []; // [routeIndex][segIdx] → background solid line
 window._haloPolyline = null; // single shared halo for whichever edge is hovered
 
+// Returns whichever endpoint ([lat,lng]) of segPts is closest to [refLat, refLng].
+// This guards against edge geometries stored in the reverse direction.
+function _closerEndpoint(segPts, refLat, refLng) {
+    if (!segPts || segPts.length === 0) return null;
+    const first = segPts[0];
+    const last  = segPts[segPts.length - 1];
+    if (refLat == null || refLng == null) return first;
+    const dFirst = (first[0] - refLat) ** 2 + (first[1] - refLng) ** 2;
+    const dLast  = (last[0]  - refLat) ** 2 + (last[1]  - refLng) ** 2;
+    return dFirst <= dLast ? first : last;
+}
+
 window._baselineOutlinePolylines = []; // [segIdx] → L.polyline (white dashed outline)
 window._baselineSegmentPolylines = []; // [segIdx] → L.polyline (flood-colored)
 
@@ -79,13 +91,17 @@ function drawAllRoutes(routes) {
         // ── 4. Connector lines (dashed, route-colored) ──
         const firstSeg = latlngsSegments[0];
         const lastSeg = latlngsSegments[latlngsSegments.length - 1];
-        const routeStart = firstSeg?.[0];
-        const routeEnd = lastSeg?.[lastSeg.length - 1];
 
         const destLat = props.destination_lat ?? destRoot?.lat;
         const destLon = props.destination_lon ?? destRoot?.lon;
         const userLat = window.appState.originCoords?.lat;
         const userLng = window.appState.originCoords?.lng;
+
+        // Pick the endpoint of the first/last geometry segment that is
+        // closest to the user / destination — guards against edges whose
+        // coordinates are stored in reverse traversal order.
+        const routeStart = _closerEndpoint(firstSeg, userLat, userLng);
+        const routeEnd   = _closerEndpoint(lastSeg,  destLat, destLon);
 
         const connectors = [];
         

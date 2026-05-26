@@ -10,14 +10,15 @@ def yens_k_shortest_paths(
     K: int,
     scenario: str,
     weights: Dict[str, float],
-    max_edge_length: float
+    max_edge_length: float,
+    penalty_factor: float = 3.0
 ) -> List[Dict]:
     """
     Refactored Iterative Penalized Dijkstra (Dynamic Edge-Weight Penalty).
     Generates alternative paths by penalizing edges of previously found paths,
     ensuring spatial diversity instead of simple detours.
     """
-    PENALTY_FACTOR = 2.5  # Significant jump to push for different corridors
+    PENALTY_FACTOR = penalty_factor
     
     # 1. Find Initial Optimal Path (P1)
     cost1, path1 = dijkstra(g, source, target, scenario, weights, max_edge_length)
