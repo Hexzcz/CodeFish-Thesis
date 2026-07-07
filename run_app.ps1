@@ -35,10 +35,17 @@ Start-Job -ScriptBlock $jobCode -ArgumentList $Url | Out-Null
 Write-Host "Starting the CodeFish server (Backend & Frontend)..." -ForegroundColor Green
 Write-Host "Press Ctrl+C to stop the server." -ForegroundColor Yellow
 
-# Start the Python server in the foreground so you can see the logs
+# Start the Python server in the foreground using the virtual environment if available
 try {
-    python -m uvicorn backend.main:app --reload
+    if (Test-Path ".venv\Scripts\python.exe") {
+        Write-Host "Using virtual environment Python..." -ForegroundColor Green
+        & .venv\Scripts\python -m uvicorn backend.main:app --reload
+    } else {
+        Write-Host "Virtual environment not found, falling back to system python..." -ForegroundColor Yellow
+        python -m uvicorn backend.main:app --reload
+    }
 } finally {
     # Clean up jobs when the server is stopped
     Get-Job | Remove-Job -Force
 }
+
