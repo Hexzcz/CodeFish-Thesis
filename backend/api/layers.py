@@ -3,12 +3,39 @@ import numpy as np
 from fastapi import APIRouter, Response, Query, HTTPException, Request, Depends
 from rio_tiler.io import Reader
 from rio_tiler.errors import TileOutsideBounds
-from backend.adapters.tile_renderer import render_flood, render_continuous, build_clip_mask, get_transparent_tile
-from backend.core.config import LAYERS_MAP, SCENARIOS
+from backend.adapters.tile_renderer import render_flood, render_continuous, render_terrain_rgb, build_clip_mask, get_transparent_tile
+from backend.core.config import LAYERS_MAP, SCENARIOS, TERRAIN_RASTER
 
 from backend.api.dependencies import get_app_state
 
 router = APIRouter()
+
+@router.get("/tiles/terrain-rgb/{z}/{x}/{y}.png")
+async def get_terrain_tile(z: int, x: int, y: int):
+    """Elevation as Terrain-RGB, for the 3D view to drape the map over.
+
+    Unclipped on purpose: terrain cut off at the district boundary would leave
+    a wall around it. Outside the DEM the tile is flat sea level.
+    """
+    if not os.path.exists(TERRAIN_RASTER):
+        return Response(content=get_transparent_tile(), media_type="image/png")
+
+    try:
+        with Reader(str(TERRAIN_RASTER)) as src:
+            try:
+                img = src.tile(x, y, z, tilesize=256, nodata=-9999.0)
+            except TileOutsideBounds:
+                return Response(content=get_transparent_tile(), media_type="image/png")
+
+        raw_mask = img.mask
+        valid = (raw_mask == 255) if raw_mask.dtype == np.uint8 else (raw_mask > 0)
+        content = render_terrain_rgb(img.data[0], valid)
+        return Response(content=content, media_type="image/png",
+                        headers={"Cache-Control": "public, max-age=86400"})
+    except Exception as e:
+        print(f"Terrain tile error {z}/{x}/{y}: {e}")
+        return Response(content=get_transparent_tile(), media_type="image/png")
+
 
 @router.get("/tiles/{layer_name}/{z}/{x}/{y}.png")
 async def get_tile(layer_name: str, z: int, x: int, y: int, clip: bool = Query(True)):

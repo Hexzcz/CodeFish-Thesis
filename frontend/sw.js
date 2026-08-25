@@ -48,6 +48,7 @@ const SHELL = [
     '/css/simple_result.css',
     '/css/simple_phone.css',
     '/css/admin_phone.css',
+    '/css/navigation.css',
     '/js/mode.js',
     '/js/config.js',
     '/js/state.js',
@@ -77,6 +78,12 @@ const SHELL = [
     '/js/simple/result_card.js',
     '/js/simple/directions.js',
     '/js/simple/flow.js',
+    '/js/navigation/live_location.js',
+    '/js/navigation/map_3d.js',
+    '/js/navigation/follow_camera.js',
+    '/js/navigation/follow_2d.js',
+    '/js/navigation/nav_ui.js',
+    '/js/navigation/nav_session.js',
     '/js/pwa.js',
     '/js/app.js',
 ];
@@ -128,6 +135,14 @@ self.addEventListener('fetch', (event) => {
 
     if (url.pathname.startsWith('/tiles/')) {
         event.respondWith(cacheFirstTile(request));
+        return;
+    }
+
+    // The 3D map library and its terrain: not precached (800 KB that a
+    // resident who never opens 3D should not download), but kept once used,
+    // so the second time works offline.
+    if (url.pathname.startsWith('/vendor/maplibre/')) {
+        event.respondWith(cacheFirst(request, SHELL_CACHE));
         return;
     }
 

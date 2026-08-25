@@ -41,6 +41,7 @@
     <link rel="stylesheet" href="css/simple_result.css?v=3">
     <link rel="stylesheet" href="css/simple_phone.css?v=1">
     <link rel="stylesheet" href="css/admin_phone.css?v=3">
+    <link rel="stylesheet" href="css/navigation.css?v=1">
 
 </head>
 
@@ -123,11 +124,36 @@
                     <div id="simple-steps"></div>
                 </ol>
 
+                <button class="simple-primary" id="simple-navigate-btn"
+                    onclick="startNavigation()">Start navigation</button>
+
                 <button class="simple-secondary hidden" id="simple-alternatives-btn"
                     onclick="toggleSimpleAlternatives()"></button>
                 <div class="simple-alternatives hidden" id="simple-alternatives"></div>
 
                 <button class="simple-tertiary" onclick="simpleStartOver()">Start over</button>
+            </div>
+
+            <div id="nav-panel" class="hidden">
+                <div class="nav-head">
+                    <span class="nav-eyebrow">WALKING TO</span>
+                    <h2 class="nav-destination" id="nav-destination"></h2>
+                </div>
+
+                <div class="nav-remaining-block">
+                    <span class="nav-remaining" id="nav-remaining">—</span>
+                    <span class="nav-remaining-walk" id="nav-remaining-walk"></span>
+                </div>
+
+                <p class="nav-status nav-status-neutral" id="nav-status"></p>
+                <p class="nav-accuracy hidden" id="nav-accuracy"></p>
+                <p class="nav-error hidden" id="nav-error"></p>
+
+                <div class="nav-actions">
+                    <button class="simple-secondary hidden" id="nav-recenter-btn"
+                        onclick="recenterNavigation()">Recenter on me</button>
+                    <button class="simple-tertiary" onclick="stopNavigation()">Stop navigation</button>
+                </div>
             </div>
 
             <footer class="simple-footer">
@@ -516,6 +542,12 @@
         <!-- ── MAP ── -->
         <div id="map-container">
             <div id="map"></div>
+            <div id="map-3d" class="hidden"></div>
+
+            <div class="map-mode-switch" id="map-mode-switch">
+                <button id="map-mode-2d" class="active" onclick="switchMapMode('2d')">2D</button>
+                <button id="map-mode-3d" onclick="switchMapMode('3d')">3D</button>
+            </div>
             <div id="map-overlays">
 
                 <div class="decision-header hidden" id="decision-header">
@@ -739,6 +771,12 @@
     <script src="js/simple/result_card.js?v=5"></script>
     <script src="js/simple/directions.js?v=2"></script>
     <script src="js/simple/flow.js?v=5"></script>
+    <script src="js/navigation/live_location.js?v=1"></script>
+    <script src="js/navigation/map_3d.js?v=2"></script>
+    <script src="js/navigation/follow_camera.js?v=1"></script>
+    <script src="js/navigation/follow_2d.js?v=1"></script>
+    <script src="js/navigation/nav_ui.js?v=2"></script>
+    <script src="js/navigation/nav_session.js?v=3"></script>
     <script src="js/pwa.js?v=1"></script>
     <script src="js/app.js?v=6"></script>
 </body>

@@ -89,3 +89,27 @@ def render_continuous(data, valid, cmap_name):
     buf = io.BytesIO()
     Image.fromarray(rgba).save(buf, format="PNG")
     return buf.getvalue()
+
+
+def render_terrain_rgb(data, valid):
+    """Encode elevation as a Terrain-RGB tile for the 3D map.
+
+    MapLibre reads height from the pixel as
+
+        height = -10000 + ((R * 256 * 256 + G * 256 + B) * 0.1)
+
+    so the DEM's metres are packed into three channels at 0.1 m precision.
+    Pixels with no data are encoded as sea level rather than left transparent:
+    a hole in a terrain source renders as a cliff.
+    """
+    heights = np.where(valid, data, 0.0).astype(np.float64)
+    packed = np.clip((heights + 10000.0) * 10.0, 0, 256 ** 3 - 1).astype(np.uint32)
+
+    rgb = np.zeros((packed.shape[0], packed.shape[1], 3), dtype=np.uint8)
+    rgb[:, :, 0] = (packed >> 16) & 0xFF
+    rgb[:, :, 1] = (packed >> 8) & 0xFF
+    rgb[:, :, 2] = packed & 0xFF
+
+    buf = io.BytesIO()
+    Image.fromarray(rgb, mode='RGB').save(buf, format='PNG')
+    return buf.getvalue()

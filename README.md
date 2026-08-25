@@ -46,6 +46,19 @@ the app says so rather than failing quietly. Service workers also require
 HTTPS: over plain `http://` from another machine it stays an ordinary website.
 See [ADR-0006](docs/decisions/0006-installable-and-offline.md).
 
+## Walking a route
+
+After a route is chosen, **Start navigation** follows the walker live: the map
+tilts into a 3D heading-up view, the position marker moves with them, and the
+panel shows the distance left. Straying from the route asks the same
+flood-aware router for a new one from where they now are — never a shorter,
+riskier path.
+
+Live location needs HTTPS (or localhost). If the device cannot run the 3D view,
+navigation continues on the flat map. Offline it keeps following the position
+but cannot check progress or reroute, and says so. See
+[ADR-0007](docs/decisions/0007-live-navigation.md).
+
 ## Checking it
 
 ```bash

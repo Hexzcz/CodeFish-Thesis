@@ -50,6 +50,7 @@ backend/
 │   │   ├── edge_split.py    inserting a node partway along a road
 │   │   ├── connectivity.py  keeping the graph one piece
 │   │   └── scoring/         what a route costs, and which one wins
+│   ├── navigation/          where you are along a route you were given
 │   ├── prediction/          flood class per edge; rainfall → which model
 │   └── services/            the use cases: plan routes, choose centers
 ├── adapters/                THE EDGES — the only I/O
@@ -106,6 +107,8 @@ frontend/
 ├── layers/       raster overlays and the road layer
 ├── centers/      evacuation center markers
 ├── routing/      the request, drawing routes, visibility, the baseline
+├── navigation/   walking it: the GPS watch, the 3D map, the follow camera,
+│                 the session that reroutes when someone strays
 ├── simple/       the resident's view: the flow, the card, the way there,
 │                 and the one file that turns model output into sentences
 └── ui/           the console: sidebar, rainfall controls, and
@@ -115,6 +118,11 @@ frontend/
 Two views, one page. `<html data-mode="simple|admin">` decides what is shown;
 both share the same map and the same `requestRoutes()`. See
 [ADR-0005](decisions/0005-two-views.md).
+
+A second map — MapLibre GL — provides the tilted 3D navigation view; Leaflet
+still owns 2D. Following a route live, including how deviation is detected and
+why rerouting calls the ordinary router, is
+[ADR-0007](decisions/0007-live-navigation.md).
 
 The resident's view reflows to a bottom sheet below 768px and the app installs
 to a home screen. Routing still needs the server — what does and does not

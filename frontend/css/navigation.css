@@ -1,0 +1,213 @@
+/* Live navigation: the 3D map, the walking panel, and the 2D/3D switch.
+ *
+ * Read while moving, so everything here is larger and higher-contrast than
+ * the rest of the resident's view — the distance remaining is the biggest
+ * number in the app.
+ */
+
+/* ── The second map ─────────────────────────────────────────────────────── */
+#map-3d {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#map-3d.hidden,
+#map.hidden {
+    display: none;
+}
+
+/* ── 2D / 3D switch ─────────────────────────────────────────────────────── */
+.map-mode-switch {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 1100;
+    display: flex;
+    background: var(--bg-1);
+    border: 1px solid var(--border-default);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.map-mode-switch button {
+    min-width: 46px;
+    min-height: 40px;
+    padding: 8px 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.map-mode-switch button.active {
+    background: var(--accent);
+    color: #1a1a1a;
+}
+
+/* The console keeps its own controls; this belongs to the resident's view. */
+[data-mode="admin"] .map-mode-switch {
+    display: none;
+}
+
+/* Leaflet's zoom control would sit under the switch. */
+[data-mode="simple"] .leaflet-control-zoom {
+    display: none;
+}
+
+/* ── The walking panel ──────────────────────────────────────────────────── */
+#nav-panel {
+    padding: 20px 24px 16px;
+}
+
+#nav-panel.hidden {
+    display: none;
+}
+
+/* While navigating, the answer card's own steps stay out of the way. */
+body.navigating #simple-result > *:not(#nav-panel) {
+    display: none;
+}
+
+.nav-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--text-tertiary);
+}
+
+.nav-destination {
+    margin: 4px 0 14px;
+    font-size: 19px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.nav-remaining-block {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.nav-remaining {
+    font-size: 40px;
+    line-height: 1;
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.nav-remaining-walk {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ── Status, accuracy, failures ─────────────────────────────────────────── */
+.nav-status {
+    margin: 0 0 6px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border-left: 3px solid;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.nav-status-good {
+    background: rgba(76, 175, 125, 0.10);
+    border-color: var(--safe);
+    color: #8fe0b4;
+}
+
+.nav-status-warn {
+    background: rgba(255, 193, 7, 0.10);
+    border-color: var(--moderate);
+    color: #ffd863;
+}
+
+.nav-status-neutral {
+    background: var(--bg-3);
+    border-color: var(--text-tertiary);
+    color: var(--text-secondary);
+}
+
+.nav-accuracy {
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.nav-error {
+    margin: 6px 0 0;
+    padding: 10px 12px;
+    background: rgba(229, 57, 53, 0.10);
+    border: 1px solid rgba(229, 57, 53, 0.35);
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ffb4b2;
+}
+
+.nav-accuracy.hidden,
+.nav-error.hidden {
+    display: none;
+}
+
+.nav-actions {
+    margin-top: 14px;
+}
+
+/* ── "You are here" ─────────────────────────────────────────────────────── */
+.nav-user-marker {
+    position: relative;
+    width: 26px;
+    height: 26px;
+}
+
+.num-accuracy {
+    position: absolute;
+    inset: -9px;
+    border-radius: 50%;
+    background: rgba(41, 182, 246, 0.18);
+    border: 1px solid rgba(41, 182, 246, 0.45);
+}
+
+/* A cone, so which way you are facing is obvious at a glance. */
+.num-arrow {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #29b6f6;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 10px rgba(41, 182, 246, 0.7);
+    transition: transform 0.3s ease;
+}
+
+.num-arrow::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 11px solid #29b6f6;
+}
+
+@media (max-width: 767px) {
+    .nav-remaining {
+        font-size: 34px;
+    }
+
+    .map-mode-switch {
+        top: 12px;
+        right: 12px;
+    }
+}
