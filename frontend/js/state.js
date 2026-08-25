@@ -2,8 +2,8 @@ window.appState = {
     map: null,
     scenario: '25yr',
     rainfallMode: 'jaxa',  // 'jaxa' | 'simulation'
-    jaxaTab: 'forecast',   // 'forecast' | 'historical'
-    forecastRange: 'short', // 'short' | 'medium'
+    jaxaTab: 'forecast',   // 'forecast' (GSMaP_NOW latest) | 'historical'
+    forecastStep: 1,       // hours back from the latest GSMaP_NOW file (1 = latest)
     activeRouteIndex: 0,
     weights: { flood: 0.764, distance: 0.112, road_class: 0.124 },
     penaltyFactor: 3.0,

@@ -74,30 +74,19 @@ function onSimMmhrInput(rawValue) {
 }
 
 
-function setForecastRange(range) {
-    window.appState.forecastRange = range;
-    document.getElementById('range-short-btn').classList.toggle('active', range === 'short');
-    document.getElementById('range-medium-btn').classList.toggle('active', range === 'medium');
-
-    // Show/hide the step selector panels (use 'flex' — .rf-step-block is a flex container)
-    document.getElementById('jaxa-short-selector').style.display = range === 'short' ? 'flex' : 'none';
-    document.getElementById('jaxa-medium-selector').style.display = range === 'medium' ? 'flex' : 'none';
-}
-
 /**
- * Set a specific forecast step (hour for short, day for medium).
- * @param {'short'|'medium'} range
+ * Select which GSMaP_NOW half-hourly file to read.
+ * step is 1-based hours back: 1 = latest available, 2 = one hour earlier, ...
  * @param {number} step
  */
-function setForecastStep(range, step) {
+function setForecastStep(step) {
     window.appState.forecastStep = step;
 
-    const pillsId = range === 'short' ? 'short-hour-pills' : 'medium-day-pills';
-    const container = document.getElementById(pillsId);
+    const container = document.getElementById('short-hour-pills');
     if (container) {
-        container.querySelectorAll('.rf-step-btn').forEach(btn => btn.classList.remove('active'));
-        // Activate by index (step is 1-based)
         const btns = container.querySelectorAll('.rf-step-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
+        // Activate by index (step is 1-based)
         if (btns[step - 1]) btns[step - 1].classList.add('active');
     }
 }
@@ -139,7 +128,6 @@ async function fetchJaxaFromFTP() {
     _showJaxaSpinner();
 
     const mode = window.appState.jaxaTab || 'forecast';
-    const range = window.appState.forecastRange || 'short';
     const step = window.appState.forecastStep || 1;
     const timestamp = (mode === 'historical')
         ? document.getElementById('jaxa-historical-time').value
@@ -149,11 +137,12 @@ async function fetchJaxaFromFTP() {
     const mappingEl = document.getElementById('jaxa-mapping');
 
     try {
-        let url = `/rainfall/jaxa/ftp?mode=${mode}&range=${range}&step=${step}`;
+        let url = `/rainfall/jaxa/ftp?mode=${mode}&step=${step}`;
         if (timestamp) url += `&timestamp=${timestamp}`;
 
         const res = await fetch(url);
         const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
 
         if (intensityEl) intensityEl.textContent = data.intensity.toFixed(2);
         if (mappingEl) mappingEl.textContent = data.mapping.replace('yr', '-Year');
@@ -173,7 +162,6 @@ async function fetchJaxaFromFTP() {
 // ── Regular auto-fetch ───────────────────────────────────────────────────────
 async function fetchJaxaRainfall() {
     const mode = window.appState.jaxaTab || 'forecast';
-    const range = window.appState.forecastRange || 'short';
     const step = window.appState.forecastStep || 1;
     const timestamp = (mode === 'historical')
         ? document.getElementById('jaxa-historical-time').value
@@ -187,11 +175,12 @@ async function fetchJaxaRainfall() {
     _showJaxaSpinner();
 
     try {
-        let url = `/rainfall/jaxa?mode=${mode}&range=${range}&step=${step}`;
+        let url = `/rainfall/jaxa?mode=${mode}&step=${step}`;
         if (timestamp) url += `&timestamp=${timestamp}`;
 
         const res = await fetch(url);
         const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
 
         if (intensityEl) intensityEl.textContent = data.intensity.toFixed(2);
         if (mappingEl) mappingEl.textContent = data.mapping.replace('yr', '-Year');
@@ -216,9 +205,8 @@ window.addEventListener('DOMContentLoaded', () => {
         histInput.value = now.toISOString().slice(0, 16);
     }
 
-    // Default step values
+    // Default step value
     if (!window.appState.forecastStep) window.appState.forecastStep = 1;
-    if (!window.appState.forecastRange) window.appState.forecastRange = 'short';
 
     if (window.appState.rainfallMode === 'jaxa') {
         fetchJaxaRainfall();

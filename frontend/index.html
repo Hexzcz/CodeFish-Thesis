@@ -49,46 +49,22 @@
                             <div id="jaxa-panel">
                                 <div class="rf-tab-bar">
                                     <button id="jaxa-tab-forecast" class="rf-tab active"
-                                        onclick="setJaxaTab('forecast')">FORECAST</button>
+                                        onclick="setJaxaTab('forecast')">LATEST</button>
                                     <button id="jaxa-tab-historical" class="rf-tab"
                                         onclick="setJaxaTab('historical')">HISTORICAL</button>
                                 </div>
                                 <div id="jaxa-forecast-controls">
-                                    <div class="rf-opt-row">
-                                        <button id="range-short-btn" class="rf-opt-btn active"
-                                            onclick="setForecastRange('short')">SHORT<span class="rf-opt-sub">1–6
-                                                hrs</span></button>
-                                        <button id="range-medium-btn" class="rf-opt-btn"
-                                            onclick="setForecastRange('medium')">MEDIUM<span class="rf-opt-sub">1–5
-                                                days</span></button>
-                                    </div>
-                                    <!-- Short range hour selector -->
+                                    <!-- GSMaP_NOW: latest observed rain rate, hourly steps back -->
                                     <div id="jaxa-short-selector" class="rf-step-block">
-                                        <span class="rf-step-label">Hour</span>
+                                        <span class="rf-step-label">Observed</span>
                                         <div class="rf-step-row" id="short-hour-pills">
                                             <button class="rf-step-btn active"
-                                                onclick="setForecastStep('short',1)">1h</button>
-                                            <button class="rf-step-btn" onclick="setForecastStep('short',2)">2h</button>
-                                            <button class="rf-step-btn" onclick="setForecastStep('short',3)">3h</button>
-                                            <button class="rf-step-btn" onclick="setForecastStep('short',4)">4h</button>
-                                            <button class="rf-step-btn" onclick="setForecastStep('short',5)">5h</button>
-                                            <button class="rf-step-btn" onclick="setForecastStep('short',6)">6h</button>
-                                        </div>
-                                    </div>
-                                    <!-- Medium range day selector -->
-                                    <div id="jaxa-medium-selector" class="rf-step-block" style="display:none;">
-                                        <span class="rf-step-label">Day</span>
-                                        <div class="rf-step-row" id="medium-day-pills">
-                                            <button class="rf-step-btn active"
-                                                onclick="setForecastStep('medium',1)">1d</button>
-                                            <button class="rf-step-btn"
-                                                onclick="setForecastStep('medium',2)">2d</button>
-                                            <button class="rf-step-btn"
-                                                onclick="setForecastStep('medium',3)">3d</button>
-                                            <button class="rf-step-btn"
-                                                onclick="setForecastStep('medium',4)">4d</button>
-                                            <button class="rf-step-btn"
-                                                onclick="setForecastStep('medium',5)">5d</button>
+                                                onclick="setForecastStep(1)">Now</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep(2)">-1h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep(3)">-2h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep(4)">-3h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep(5)">-4h</button>
+                                            <button class="rf-step-btn" onclick="setForecastStep(6)">-5h</button>
                                         </div>
                                     </div>
                                     <!-- Fetch FTP button -->
@@ -610,7 +586,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/config.js?v=5"></script>
-    <script src="js/state.js?v=6"></script>
+    <script src="js/state.js?v=7"></script>
     <script src="js/ui/utils.js?v=5"></script>
     <script src="js/map/init.js?v=5"></script>
     <script src="js/map/boundary.js?v=5"></script>
@@ -622,7 +598,7 @@
     <script src="js/routing/segment_hover.js?v=5"></script>
     <script src="js/ui/tabs.js?v=5"></script>
     <script src="js/ui/sidebar.js?v=7"></script>
-    <script src="js/ui/rainfall.js?v=6"></script>
+    <script src="js/ui/rainfall.js?v=7"></script>
     <script src="js/ui/bottom_bar.js?v=7"></script>
     <script src="js/ui/right_panel.js?v=16"></script>
     <script src="js/app.js?v=5"></script>
