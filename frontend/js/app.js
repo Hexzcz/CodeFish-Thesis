@@ -13,8 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([fetchBoundary(), fetchRoads(), fetchCenters()]);
     setStatus('READY');
 
-    // Default: centers visible
-    toggleEvacCenters(true);
+    // The admin console shows every center from the start. The simple view
+    // waits until there is a route, so the first thing a resident sees is a
+    // question rather than seventy pins.
+    toggleEvacCenters(currentMode() === 'admin');
 
     console.log('CodeFish ready.');
 });

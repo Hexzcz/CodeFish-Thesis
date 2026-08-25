@@ -1,0 +1,176 @@
+/* The resident's view: one question, one answer.
+ *
+ * Deliberately larger and quieter than the admin console — this is read once,
+ * quickly, possibly by someone who is frightened. Type is bigger, targets are
+ * wider, and nothing on screen is optional reading.
+ */
+
+/* ── Mode switching ─────────────────────────────────────────────────────── */
+[data-mode="admin"] #simple-shell {
+    display: none;
+}
+
+[data-mode="simple"] #app {
+    grid-template-columns: 0 1fr 0;
+}
+
+[data-mode="simple"] #sidebar-left,
+[data-mode="simple"] #sidebar-right,
+[data-mode="simple"] #bottom-bar,
+[data-mode="simple"] #decision-header,
+[data-mode="simple"] #risk-legend {
+    display: none;
+}
+
+/* ── The card ───────────────────────────────────────────────────────────── */
+#simple-shell {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 1000;
+    width: 380px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-1);
+    border: 1px solid var(--border-default);
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+    font-family: var(--font-body);
+}
+
+.simple-header {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.simple-brand {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    color: var(--text-primary);
+}
+
+.simple-tagline {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-tertiary);
+}
+
+.simple-step-panel {
+    padding: 24px;
+}
+
+.simple-step-panel.hidden {
+    display: none;
+}
+
+.simple-question {
+    margin: 0 0 20px;
+    font-size: 24px;
+    line-height: 1.25;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.simple-primary,
+.simple-secondary,
+.simple-tertiary {
+    display: block;
+    width: 100%;
+    padding: 15px 18px;
+    margin-bottom: 10px;
+    border-radius: 7px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.simple-primary {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.simple-primary:hover {
+    background: #f0d05f;
+}
+
+.simple-secondary {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-primary);
+}
+
+.simple-secondary:hover {
+    background: var(--bg-3);
+}
+
+.simple-tertiary {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    padding: 10px;
+    margin-bottom: 0;
+}
+
+.simple-tertiary:hover {
+    color: var(--text-secondary);
+}
+
+.simple-primary.hidden,
+.simple-secondary.hidden {
+    display: none;
+}
+
+/* ── Waiting, hints and failures ────────────────────────────────────────── */
+.simple-hint {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: var(--accent);
+}
+
+.simple-error {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    background: rgba(229, 57, 53, 0.10);
+    border: 1px solid rgba(229, 57, 53, 0.35);
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ffb4b2;
+}
+
+.simple-hint.hidden,
+.simple-error.hidden {
+    display: none;
+}
+
+.simple-waiting {
+    margin: 16px 0 0;
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+.simple-spinner {
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: simple-spin 0.8s linear infinite;
+}
+
+@keyframes simple-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

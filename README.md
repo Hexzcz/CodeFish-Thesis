@@ -15,6 +15,16 @@ USE_LOCAL_DATA=1 .venv/bin/python -m uvicorn backend.main:app --reload
 Then open http://localhost:8000. On Windows, `run_app.ps1` does the same;
 on macOS or Linux, `./run.sh`.
 
+## Two views
+
+`http://localhost:8000` opens the **resident's view**: one question — where are
+you — and one answer, with the flood-model vocabulary kept out of it.
+
+`http://localhost:8000/?mode=admin` opens the **console**: rainfall source,
+criteria weights, raster layers, and the full TOPSIS/WSM analysis panel. The
+choice is remembered per browser; each view links to the other. See
+[ADR-0005](docs/decisions/0005-two-views.md).
+
 `USE_LOCAL_DATA=1` runs entirely from the bundled data in `backend/data/`, with
 no database. Without it the app tries Supabase first (`DATABASE_URL`) and falls
 back to the same files if it cannot reach it — so it works either way, it just

@@ -25,6 +25,38 @@ function _closerEndpoint(segPts, refLat, refLng) {
     return dFirst <= dLast ? first : last;
 }
 
+/**
+ * Keep the fitted route clear of whatever is floating over the map.
+ *
+ * In the simple view the answer card sits on the left; fitting to the whole
+ * viewport put the route underneath it, which is the one thing the person
+ * needs to see.
+ */
+function routeFitPadding() {
+    const panel = document.getElementById('simple-shell');
+    if (currentMode() !== 'simple' || !panel) {
+        return { padding: [60, 60] };
+    }
+
+    // Never surrender more than this much of the map to the panel: on a narrow
+    // window the card is most of the width, and fitting a route into the sliver
+    // that is left zooms in far past anything useful.
+    const mapWidth = window.appState.map.getSize().x;
+    const covered = Math.min(panel.getBoundingClientRect().right + 24, mapWidth * 0.45);
+    return {
+        paddingTopLeft: [covered, 60],
+        paddingBottomRight: [60, 60],
+        maxZoom: 17,
+    };
+}
+
+/** Zoom to one route, clear of any floating panel. */
+function fitToRoute(index) {
+    const polys = (window._segmentPolylines[index] || []).filter(p => p.getLatLngs().length > 0);
+    if (!polys.length || !window.appState.map) return;
+    window.appState.map.fitBounds(L.featureGroup(polys).getBounds(), routeFitPadding());
+}
+
 function drawAllRoutes(routes) {
     clearRoutes();
 
@@ -159,10 +191,7 @@ function drawAllRoutes(routes) {
     ].filter(p => p.getLatLngs().length > 0);
 
     if (allPolys.length > 0) {
-        window.appState.map.fitBounds(
-            L.featureGroup(allPolys).getBounds(),
-            { padding: [60, 60] }
-        );
+        window.appState.map.fitBounds(L.featureGroup(allPolys).getBounds(), routeFitPadding());
     }
 
     // Default to "all routes" shown explicitly upon routing

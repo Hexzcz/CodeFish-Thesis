@@ -96,13 +96,20 @@ anything. `pytest tests/` fails the build if this is broken. See
 
 ```
 frontend/js/
+├── mode.js       which face you get: simple, or the admin console
 ├── map/          the Leaflet map and the district outline
 ├── layers/       raster overlays and the road layer
 ├── centers/      evacuation center markers
-├── routing/      drawing routes, visibility, the baseline, highlighting
-└── ui/           the sidebar, the rainfall controls, and
+├── routing/      the request, drawing routes, visibility, the baseline
+├── simple/       the resident's view: the flow, the card, the way there,
+│                 and the one file that turns model output into sentences
+└── ui/           the console: sidebar, rainfall controls, and
     └── panel/    the analysis panel: overview, segments, baseline, compare
 ```
+
+Two views, one page. `<html data-mode="simple|admin">` decides what is shown;
+both share the same map and the same `requestRoutes()`. See
+[ADR-0005](decisions/0005-two-views.md).
 
 Plain scripts on `window`, no build step — deliberately, because this has to
 run from a folder on a laptop during a defense. `index.html` loads them in

@@ -1,0 +1,210 @@
+/* The answer half of the resident's view: destination, verdict, the way
+ * there, and the alternatives. Split from simple.css so the shell and the
+ * result can be restyled independently.
+ */
+
+    letter-spacing: 0.18em;
+    color: var(--text-tertiary);
+}
+
+.simple-destination {
+    margin: 0 0 6px;
+    font-size: 26px;
+    line-height: 1.2;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.simple-distance {
+    margin: 0 0 18px;
+    font-size: 15px;
+    color: var(--text-secondary);
+}
+
+/* ── The verdict: the one thing that must not be missed ─────────────────── */
+.simple-verdict {
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border-radius: 7px;
+    border-left: 3px solid;
+}
+
+.simple-verdict .sv-headline {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 500;
+}
+
+.simple-verdict .sv-detail {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.simple-verdict .sv-detail.hidden {
+    display: none;
+}
+
+.simple-verdict-safe {
+    background: rgba(76, 175, 125, 0.10);
+    border-color: var(--safe);
+}
+
+.simple-verdict-safe .sv-headline {
+    color: #8fe0b4;
+}
+
+.simple-verdict-some {
+    background: rgba(255, 193, 7, 0.10);
+    border-color: var(--moderate);
+}
+
+.simple-verdict-some .sv-headline {
+    color: #ffd863;
+}
+
+.simple-verdict-high {
+    background: rgba(229, 57, 53, 0.12);
+    border-color: var(--critical);
+}
+
+.simple-verdict-high .sv-headline {
+    color: #ff8a87;
+}
+
+/* ── The way there ──────────────────────────────────────────────────────── */
+.simple-steps {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 14px 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 7px;
+}
+
+.simple-steps.hidden,
+.simple-alternatives.hidden {
+    display: none;
+}
+
+.steps-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--text-tertiary);
+    margin-bottom: 10px;
+}
+
+.simple-step {
+    display: grid;
+    grid-template-columns: 22px 1fr auto;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 0;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 14px;
+}
+
+.simple-step:first-of-type {
+    border-top: none;
+}
+
+.step-number {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.step-street {
+    color: var(--text-primary);
+}
+
+.step-distance {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.step-empty {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ── Other options ──────────────────────────────────────────────────────── */
+.simple-alternatives {
+    margin-bottom: 12px;
+}
+
+.simple-alt {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.simple-alt:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-3);
+}
+
+.alt-name {
+    display: block;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+}
+
+.alt-meta {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.simple-footer {
+    margin-top: auto;
+    padding: 12px 24px 14px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.simple-footer a {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+}
+
+.simple-footer a:hover {
+    color: var(--text-secondary);
+}
+
+/* Why the recommendation is not simply the shortest route. Answers the
+ * question the alternatives list otherwise provokes. */
+.simple-why {
+    margin: -8px 0 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.simple-why.hidden {
+    display: none;
+}
+
+/* "2 more evacuation centers are at the same place" — the cluster count, told
+ * quietly rather than wedged into the destination's name. */
+.simple-dest-note {
+    margin: -12px 0 16px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.simple-dest-note.hidden {
+    display: none;
+}

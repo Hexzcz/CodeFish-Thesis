@@ -189,26 +189,45 @@ document.addEventListener('DOMContentLoaded', () => {
     _initOriginAddressSearch();
 });
 
-function handleMapClickForOrigin(latlng) {
+/**
+ * Record where the person is, and tell whoever cares.
+ *
+ * Both views set the origin the same way; they differ only in what they do
+ * next, so each listens for `codefish:origin-set` rather than this function
+ * knowing about anyone's buttons.
+ */
+function setOrigin(latlng) {
     window.appState.originCoords = latlng;
     window.appState.placingOrigin = false;
-    window.appState.map.getContainer().style.cursor = '';
+    if (window.appState.map) window.appState.map.getContainer().style.cursor = '';
 
+    createOriginMarker(latlng);
+    document.dispatchEvent(new CustomEvent('codefish:origin-set', { detail: latlng }));
+}
+
+function handleMapClickForOrigin(latlng) {
+    setOrigin(latlng);
+}
+
+/** Admin-only: reflect the placed origin in the sidebar controls. */
+function _showOriginInSidebar(latlng) {
     const btn = document.getElementById('place-origin-btn');
     const txt = document.getElementById('origin-btn-text');
+    const coord = document.getElementById('coord-display');
+    const findBtn = document.getElementById('find-routes-btn');
+    if (!btn || !txt || !coord || !findBtn) return;
+
     btn.classList.remove('placing');
     btn.classList.add('placed');
     txt.textContent = 'Origin placed';
-
-    const coord = document.getElementById('coord-display');
     coord.textContent = `${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
     coord.classList.add('visible');
-
-    createOriginMarker(latlng);
-    document.getElementById('find-routes-btn').disabled = false;
+    findBtn.disabled = false;
 
     setStatus('READY');
 }
+
+document.addEventListener('codefish:origin-set', (e) => _showOriginInSidebar(e.detail));
 
 function createOriginMarker(latlng) {
     if (window.appState.originMarker) window.appState.map.removeLayer(window.appState.originMarker);
