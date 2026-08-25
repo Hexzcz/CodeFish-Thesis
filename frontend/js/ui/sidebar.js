@@ -90,6 +90,9 @@ async function findRoutes() {
             body: JSON.stringify(body)
         });
         const data = await res.json();
+        // A 400 here is usually "your pin is too far from a road" — a sentence
+        // worth showing, not a TypeError further down.
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
         window.appState.routeData = data;
 
         drawAllRoutes(data.routes);
@@ -102,6 +105,7 @@ async function findRoutes() {
     } catch (err) {
         console.error('Route error:', err);
         setStatus('ERROR');
+        showRoutingMessage(err.message || 'Routing failed.');
     } finally {
         findBtn.disabled = false;
         findBtn.classList.remove('loading');
@@ -143,6 +147,17 @@ function updateRoutingSummary(routes) {
     document.getElementById('route-summary').classList.remove('hidden');
     document.getElementById('summary-count').textContent = `${routes.length} routes found`;
     document.getElementById('summary-best').textContent = `Best → ${props.destination_name || 'Evacuation Center'} · ${(props.total_length_km || 0).toFixed(2)} km`;
+}
+
+/** Show why routing failed, in the place a result would have appeared. */
+function showRoutingMessage(message) {
+    const summary = document.getElementById('route-summary');
+    const count = document.getElementById('summary-count');
+    const best = document.getElementById('summary-best');
+    if (!summary || !count || !best) return;
+    summary.classList.remove('hidden');
+    count.textContent = 'No routes';
+    best.textContent = message;
 }
 
 function updateDecisionHeader(routes) {

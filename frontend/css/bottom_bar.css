@@ -1,0 +1,102 @@
+/* The route cards along the bottom of the map. */
+
+/* ── Bottom Bar ── */
+#bottom-bar {
+    display: flex;
+    align-items: stretch;
+}
+
+.route-tabs {
+    display: flex;
+    flex: 1;
+}
+
+.route-tab {
+    flex: 1;
+    padding: 0 var(--sp-5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    border-top: 2px solid transparent;
+    border-right: 1px solid var(--border-subtle);
+    transition: all 0.15s;
+}
+
+.route-tab:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.route-tab.active {
+    border-top: 2px solid var(--tab-color);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-top {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.tab-rank {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--tab-color);
+}
+
+.tab-badge {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--tab-color) 15%, transparent);
+    color: var(--tab-color);
+}
+
+.tab-bottom {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.tab-dot {
+    color: var(--border-strong);
+}
+
+.bar-controls {
+    display: flex;
+    align-items: stretch;
+    border-left: 1px solid var(--border-subtle);
+}
+
+.bar-btn {
+    width: 48px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border-subtle);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bar-btn:hover {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.bar-btn.active {
+    color: var(--accent);
+}
+
+.bar-divider {
+    width: 1px;
+    background: var(--border-subtle);
+    margin: var(--sp-2) 0;
+}

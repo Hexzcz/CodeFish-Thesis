@@ -1,0 +1,232 @@
+/* Rainfall scenario controls: source, step selector, fetch button. */
+
+/* ── Rainfall Scenario Controls ── */
+.rf-source-btn {
+    flex: 1;
+    height: 30px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.rf-source-btn:hover {
+    color: var(--text-secondary);
+    border-color: var(--border-default);
+}
+
+.rf-source-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0e0e0e;
+    font-weight: 600;
+}
+
+.rf-tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: var(--sp-2);
+}
+
+.rf-tab {
+    flex: 1;
+    height: 28px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.rf-tab:hover {
+    color: var(--text-secondary);
+}
+
+.rf-tab.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--accent);
+}
+
+.rf-opt-row {
+    display: flex;
+    gap: var(--sp-1);
+    margin-bottom: var(--sp-2);
+}
+
+.rf-opt-btn {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 6px var(--sp-1);
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.2;
+}
+
+.rf-opt-btn:hover {
+    color: var(--text-secondary);
+    border-color: var(--border-default);
+}
+
+.rf-opt-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+}
+
+.rf-opt-sub {
+    display: block;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+/* ── Status Pill ── */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+    border-radius: 3px;
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+}
+
+/* ── Forecast Step Block (hour / day selector) ── */
+.rf-step-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-2);
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    margin-bottom: var(--sp-2);
+}
+
+.rf-step-label {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
+}
+
+.rf-step-row {
+    display: flex;
+    gap: var(--sp-1);
+}
+
+.rf-step-btn {
+    flex: 1;
+    height: 22px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    padding: 0;
+}
+
+.rf-step-btn:hover {
+    color: var(--text-secondary);
+    border-color: var(--border-default);
+}
+
+.rf-step-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* ── FTP Fetch Wrapper + Button ── */
+.rf-ftp-wrap {
+    padding-top: var(--sp-1);
+    border-top: 1px solid var(--border-subtle);
+    margin-top: var(--sp-1);
+}
+
+.rf-ftp-btn {
+    width: 100%;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-tertiary);
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.rf-ftp-btn:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.rf-ftp-btn:disabled,
+.rf-ftp-btn.loading {
+    cursor: wait;
+    opacity: 0.4;
+}
+
+/* ── JAXA Fetch Spinner ── */
+@keyframes jaxa-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.jaxa-spinner {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid var(--border-default);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: jaxa-spin 0.65s linear infinite;
+    vertical-align: middle;

@@ -1,0 +1,156 @@
+/* The analysis panel shell and its overview tab. */
+
+/* ── Right Sidebar ── */
+.route-pills {
+    display: flex;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+}
+
+.route-pill {
+    height: 26px;
+    padding: 0 var(--sp-3);
+    border-radius: 100px;
+    border: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.route-pill.active {
+    background: color-mix(in srgb, var(--pill-color) 12%, transparent);
+    border-color: color-mix(in srgb, var(--pill-color) 40%, transparent);
+    color: var(--pill-color);
+}
+
+.recommendation-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-2);
+}
+
+.metric-cell {
+    background: var(--bg-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    padding: var(--sp-3);
+}
+
+.metric-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: var(--sp-2);
+}
+
+.metric-value {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-1);
+}
+
+.metric-num {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.metric-unit {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.hazard-bar {
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    display: flex;
+    margin-bottom: var(--sp-2);
+}
+
+.hazard-legend {
+    display: flex;
+    gap: var(--sp-3);
+    flex-wrap: wrap;
+}
+
+.hazard-legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.criteria-formula {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin-bottom: var(--sp-3);
+}
+
+.criteria-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+}
+
+.criteria-row-label {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    width: 72px;
+    flex-shrink: 0;
+}
+
+.criteria-row-bar {
+    flex: 1;
+    height: 3px;
+    background: var(--bg-4);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.criteria-row-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+}
+
+.criteria-row-score {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    width: 36px;
+    text-align: right;
+}
+
+.criteria-total {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: var(--sp-2);
+    margin-top: var(--sp-1);
+}
+
+.criteria-total .criteria-row-label {
+    color: var(--text-secondary);
+}
+
+.criteria-total .criteria-row-score {
+    color: var(--text-primary);
+}

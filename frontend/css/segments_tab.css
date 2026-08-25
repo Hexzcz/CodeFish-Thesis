@@ -1,0 +1,113 @@
+/* The segment-by-segment listing inside the analysis panel. */
+
+/* ── Segments Tab ── */
+.sort-bar {
+    display: flex;
+    gap: var(--sp-1);
+    margin-bottom: var(--sp-4);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.sort-btn {
+    height: 24px;
+    padding: 0 var(--sp-3);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    color: var(--text-tertiary);
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.sort-btn.active {
+    border-color: var(--border-default);
+    color: var(--text-secondary);
+}
+
+.segment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+}
+
+.segment-item {
+    border-left: 2px solid transparent;
+    background: var(--bg-2);
+    border-radius: 0 4px 4px 0;
+    padding: var(--sp-2) var(--sp-3);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.segment-item:hover {
+    background: var(--bg-3);
+}
+
+.seg-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--sp-1);
+}
+
+.seg-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.seg-length {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.seg-bar-wrap {
+    height: 3px;
+    background: var(--bg-4);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: var(--sp-1);
+}
+
+.seg-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.seg-meta {
+    display: flex;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+.segment-summary {
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.summary-row span:first-child {
+    color: var(--text-tertiary);
+}
+
+.summary-row span:last-child {
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+}

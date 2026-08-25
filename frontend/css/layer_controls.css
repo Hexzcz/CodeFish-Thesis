@@ -1,0 +1,253 @@
+/* Layer toggles, the places list, and the route weight sliders. */
+
+/* ── Layers Panel ── */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-2) 0;
+    gap: var(--sp-3);
+}
+
+.toggle-row.sub {
+    padding-left: var(--sp-4);
+}
+
+.toggle-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.toggle-switch {
+    width: 28px;
+    height: 16px;
+    border-radius: 8px;
+    background: var(--bg-4);
+    border: 1px solid var(--border-default);
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.toggle-switch.active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.toggle-knob {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s, background 0.2s;
+    pointer-events: none;
+}
+
+.toggle-switch.active .toggle-knob {
+    left: 14px;
+    background: #0e0e0e;
+}
+
+.layer-group-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.layer-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-1) 0;
+    height: 30px;
+}
+
+.layer-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.layer-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.opacity-row {
+    padding: 0 0 var(--sp-1) 16px;
+}
+
+.opacity-row.hidden {
+    display: none;
+}
+
+.opacity-slider {
+    width: 100%;
+    height: 2px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--bg-4);
+    border-radius: 1px;
+    outline: none;
+    cursor: pointer;
+}
+
+.opacity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+}
+
+.sub-toggles.hidden {
+    display: none;
+}
+
+/* ── Places Panel ── */
+.center-types.hidden {
+    display: none;
+}
+
+.type-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-1) 0;
+}
+
+.type-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.type-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.type-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+    background: var(--bg-3);
+    padding: 1px 6px;
+    border-radius: 2px;
+}
+
+.centers-stats {
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-tertiary);
+}
+
+/* ── Route Weights ── */
+.weight-row {
+    padding: var(--sp-1) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.weight-total-row {
+    margin-top: var(--sp-2);
+    padding-top: var(--sp-2);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.weight-row .toggle-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.weight-input {
+    width: 68px;
+    background: var(--bg-3);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    color: var(--text-primary);
+    padding: 4px 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: right;
+    outline: none;
+    transition: border-color 0.15s;
+    flex-shrink: 0;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+.weight-input::-webkit-inner-spin-button,
+.weight-input::-webkit-outer-spin-button {
+    opacity: 0.3;
+}
+
+.weight-input:focus {
+    border-color: var(--accent-border);
+}
+
+.weight-input:hover {
+    border-color: var(--border-strong);
+}
+
+.weight-save-btn {
+    margin-top: var(--sp-3);
+    height: 34px;
+    padding: 0;
+    line-height: 34px;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.weight-sum-valid {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 1px 10px;
+    border-radius: 3px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+    transition: all 0.2s;
+}
+
+.weight-sum-invalid {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 1px 10px;
+    border-radius: 3px;
+    background: rgba(255, 112, 67, 0.1);
+    color: var(--high);
+    border: 1px solid rgba(255, 112, 67, 0.3);
+    transition: all 0.2s;
+}
+
+.weight-warning {
+    display: none;
+    margin-top: var(--sp-2);
+    background: rgba(255, 112, 67, 0.06);
+    border: 1px solid rgba(255, 112, 67, 0.2);
+    border-radius: 4px;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: 10px;
+    color: var(--high);
+    line-height: 1.55;
+}
+
+.weight-warning.visible {
+    display: block;
+}
