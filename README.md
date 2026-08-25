@@ -1,46 +1,58 @@
 # CodeFish: Flood-Aware Evacuation Routing
 
-A modular FastAPI + Leaflet system for Philippine flood evacuation routing.
+Given a pin anywhere in District 1, Quezon City, CodeFish ranks three routes to
+nearby evacuation centers — preferring the dry way over the short way, using an
+XGBoost flood-susceptibility model and TOPSIS multi-criteria ranking.
 
-## Structure
-- `backend/`: FastAPI application
-  - `core/`: Config & Startup logic
-  - `graph/`: Network infrastructure
-  - `prediction/`: Flood prediction engine (XGBoost)
-  - `routing/`: Road graph algorithms (Dijkstra, Yen's, TOPSIS)
-  - `tiles/`: Raster tile server logic
-  - `api/`: Endpoint definitions
-  - `data/`: Local storage for models and geo-files
-- `frontend/`: Single-Page Application
-  - `css/`: Modular styling
-  - `js/`: Modular logic (Map, Layers, Routing, UI)
-- `scripts/`: Data fetching and prep utilities
+## Running it
 
-## Setup
-1. `pip install -r requirements.txt`
-2. Run backend: `python backend/main.py`
-3. Access: `http://localhost:8000`
-
-## Offline mode
-Road network, evacuation centers, and their GeoJSON layers are normally read from
-Supabase (`DATABASE_URL`, see `backend/core/database.py`). When the database is
-unreachable, each loader automatically falls back to the bundled files in
-`backend/data/geojson/` (`road_nodes`, `road_edges`, `evacuation_centers`), so the
-app still starts and routes.
-
-To skip the database entirely — and avoid the connection timeouts on startup — set
-`USE_LOCAL_DATA=1`:
-
-```
-USE_LOCAL_DATA=1 python -m uvicorn backend.main:app --reload
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+USE_LOCAL_DATA=1 .venv/bin/python -m uvicorn backend.main:app --reload
 ```
 
-Note: the Esri basemap tiles and the JAXA rainfall fetch still require an internet
-connection. Without one, the map renders without a basemap and rainfall intensity
-stays at 0.00 mm/hr; routing is unaffected.
+Then open http://localhost:8000. On Windows, `run_app.ps1` does the same;
+on macOS or Linux, `./run.sh`.
+
+`USE_LOCAL_DATA=1` runs entirely from the bundled data in `backend/data/`, with
+no database. Without it the app tries Supabase first (`DATABASE_URL`) and falls
+back to the same files if it cannot reach it — so it works either way, it just
+waits for the connection to time out first. See
+[ADR-0002](docs/decisions/0002-local-geojson-fallback.md).
+
+The Esri basemap and the JAXA rainfall fetch need the internet; routing does
+not. Offline, the map draws without a basemap and rainfall reads 0.00 mm/hr.
+
+## Checking it
+
+```bash
+.venv/bin/python -m pytest tests -q
+```
+
+## Where things are
+
+| Directory | What lives there |
+|---|---|
+| `backend/domain/` | the engine: routing, scoring, prediction rules. Imports no framework. |
+| `backend/adapters/` | everything that talks outward: database, files, rasters, FTP, HTTP |
+| `backend/api/` | the HTTP layer — thin routers over the engine |
+| `backend/core/` | configuration, and the startup that wires it all together |
+| `backend/data/` | models, rasters and GeoJSON — the app's whole world |
+| `frontend/` | the map: plain JS and CSS, no build step |
+| `scripts/` | the data pipeline that produced `backend/data/` |
+| `tests/` | the dependency rule, the routing behaviour, the offline data |
+| `docs/` | [architecture](docs/architecture.md) · [coding standards](docs/coding-standards.md) · [decisions](docs/decisions) · [model evaluation](docs/model-evaluation.md) |
+
+Read [docs/architecture.md](docs/architecture.md) before changing anything —
+it explains the one rule the layout depends on.
 
 ## Features
-- Multi-criteria route selection (TOPSIS)
-- Real-time raster tile rendering
-- Flood risk prediction across varied climate scenarios
-- Interactive decision matrix comparison
+
+- Multi-criteria route selection (TOPSIS): flood exposure 0.764, road class
+  0.124, distance 0.112 — see [ADR-0003](docs/decisions/0003-topsis-weights.md)
+- Flood prediction per road segment across 5-, 25- and 100-year return periods
+- Real-time raster tile rendering of hazard, elevation, slope and land cover
+- Live rainfall from JAXA GSMaP, mapped to a return period by PAGASA
+  thresholds — see [ADR-0004](docs/decisions/0004-gsmap-now-rainfall.md)
+- Side-by-side comparison against the plain shortest-distance route
