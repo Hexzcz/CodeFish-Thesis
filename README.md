@@ -21,6 +21,24 @@ A modular FastAPI + Leaflet system for Philippine flood evacuation routing.
 2. Run backend: `python backend/main.py`
 3. Access: `http://localhost:8000`
 
+## Offline mode
+Road network, evacuation centers, and their GeoJSON layers are normally read from
+Supabase (`DATABASE_URL`, see `backend/core/database.py`). When the database is
+unreachable, each loader automatically falls back to the bundled files in
+`backend/data/geojson/` (`road_nodes`, `road_edges`, `evacuation_centers`), so the
+app still starts and routes.
+
+To skip the database entirely — and avoid the connection timeouts on startup — set
+`USE_LOCAL_DATA=1`:
+
+```
+USE_LOCAL_DATA=1 python -m uvicorn backend.main:app --reload
+```
+
+Note: the Esri basemap tiles and the JAXA rainfall fetch still require an internet
+connection. Without one, the map renders without a basemap and rainfall intensity
+stays at 0.00 mm/hr; routing is unaffected.
+
 ## Features
 - Multi-criteria route selection (TOPSIS)
 - Real-time raster tile rendering

@@ -91,3 +91,7 @@ FLOOD_COLORMAP = {
     2: (255, 140,   0, 180),
     3: (255,   0,   0, 180),
 }
+
+# When set, skip all database access and read road/center data from the
+# bundled GeoJSON files in backend/data/geojson (fully offline mode).
+USE_LOCAL_DATA = os.environ.get("USE_LOCAL_DATA", "0").lower() in ("1", "true", "yes")
