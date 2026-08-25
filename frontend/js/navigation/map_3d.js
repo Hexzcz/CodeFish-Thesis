@@ -15,7 +15,10 @@
 
 const NAV_PITCH = 60;
 const NAV_ZOOM = 17.5;
-const TERRAIN_EXAGGERATION = 3;
+// District 1 has about 20 m of relief across 7 km. Exaggeration is what makes
+// any of it readable, but too much warps the streets draped over it into
+// something that looks melted — this is the compromise.
+const TERRAIN_EXAGGERATION = 1.5;
 // If the first render has not happened by now, something in this environment
 // will not run it — a browser without usable WebGL, or a page that is still
 // hidden (background tabs suspend the animation frames MapLibre needs).
@@ -52,12 +55,16 @@ function navigationStyle() {
     return {
         version: 8,
         sources: {
+            // The 2D map's Esri basemap stops having tiles above zoom 16 —
+            // it answers z17+ with the same placeholder — so at walking zoom
+            // every tile was a 3x upscale, which is why the 3D view looked
+            // soft. This one has real tiles to z20, and 512px retina ones.
             basemap: {
                 type: 'raster',
-                tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'],
-                tileSize: 256,
-                maxzoom: 16,
-                attribution: 'Tiles &copy; Esri',
+                tiles: ['https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
+                tileSize: 512,
+                maxzoom: 20,
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
             },
             terrain: {
                 type: 'raster-dem',

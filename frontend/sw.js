@@ -119,7 +119,9 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(request.url);
 
     if (url.origin !== self.location.origin) {
-        if (/tile|arcgis|basemaps/i.test(url.href)) event.respondWith(cacheFirstTile(request));
+        // Basemap tiles from either provider: keep what has been seen so the
+        // map still draws where the signal does not.
+        if (/tile|arcgis|basemaps|cartocdn/i.test(url.href)) event.respondWith(cacheFirstTile(request));
         return;
     }
 

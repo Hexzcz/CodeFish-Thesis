@@ -9,8 +9,9 @@
 
 const FOLLOW_ZOOM = 17.5;
 const FOLLOW_PITCH = 60;
-// Position sits below centre so most of the screen shows what is ahead.
-const FOLLOW_OFFSET = [0, 110];
+// How far down the *visible* map the walker should sit: most of the screen
+// should show what is ahead of them, not behind.
+const FOLLOW_POSITION_RATIO = 0.62;
 const EASE_MS = 900;
 
 let following = true;
@@ -49,7 +50,7 @@ function updateUserPosition(map, fix) {
         zoom: Math.max(map.getZoom(), FOLLOW_ZOOM),
         pitch: FOLLOW_PITCH,
         bearing: fix.heading !== null && fix.heading !== undefined ? fix.heading : map.getBearing(),
-        offset: FOLLOW_OFFSET,
+        offset: _followOffset(map),
         duration: EASE_MS,
         // Do not fight a finger that is already on the map.
         essential: true,
@@ -57,6 +58,31 @@ function updateUserPosition(map, fix) {
 
     // Heading-up means the arrow points at the top of the screen.
     _pointMarker(0);
+}
+
+/**
+ * Where on screen to put the walker.
+ *
+ * The answer panel covers the bottom of a phone and the left of a laptop, so
+ * centring on the map's midpoint buries the marker underneath it. This aims
+ * for the middle of whatever is actually visible.
+ */
+function _followOffset(map) {
+    const panel = document.getElementById('simple-shell');
+    const size = map.getContainer().getBoundingClientRect();
+    if (!panel) return [0, 0];
+
+    const rect = panel.getBoundingClientRect();
+    const isBottomSheet = rect.width >= size.width * 0.9;
+
+    if (isBottomSheet) {
+        const visibleHeight = Math.max(rect.top - size.top, size.height * 0.35);
+        return [0, visibleHeight * FOLLOW_POSITION_RATIO - size.height / 2];
+    }
+
+    // Card on the left: shift the walker right of it, and low in the frame.
+    const covered = Math.min(rect.right - size.left, size.width * 0.45);
+    return [covered / 2, size.height * (FOLLOW_POSITION_RATIO - 0.5)];
 }
 
 function recenterOnUser(map, fix) {
