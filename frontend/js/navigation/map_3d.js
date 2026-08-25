@@ -26,6 +26,7 @@ const MAPLIBRE_CSS = 'vendor/maplibre/maplibre-gl.css';
 
 let map3d = null;
 let libraryPromise = null;
+let destinationMarker = null;
 
 /** Load MapLibre on first use, so the 2D view never pays for it. */
 function loadMapLibre() {
@@ -99,19 +100,6 @@ function navigationStyle() {
                     'circle-stroke-color': '#4caf7d',
                 },
             },
-            {
-                id: 'destination-label',
-                type: 'symbol',
-                source: 'destination',
-                layout: {
-                    'text-field': ['get', 'name'],
-                    'text-size': 13,
-                    'text-offset': [0, -2.2],
-                    'text-anchor': 'bottom',
-                    'text-allow-overlap': true,
-                },
-                paint: { 'text-color': '#ffffff', 'text-halo-color': '#000000', 'text-halo-width': 1.6 },
-            },
         ],
     };
 }
@@ -131,20 +119,33 @@ async function ensure3DMap() {
     });
 
     await new Promise((resolve, reject) => {
+        // Keep whatever the map complained about first: a style that fails to
+        // validate never fires `load`, and without this the only symptom is a
+        // black rectangle fifteen seconds later.
+        let firstError = null;
+
         const timer = setTimeout(() => {
-            reject(new Error('The 3D view could not start on this device.'));
+            reject(new Error(firstError
+                ? `The 3D view could not start: ${firstError}`
+                : 'The 3D view could not start on this device.'));
         }, MAP_LOAD_TIMEOUT_MS);
 
         map3d.on('load', () => {
             clearTimeout(timer);
             resolve();
         });
+
         map3d.on('error', (e) => {
-            // Tile errors are routine (a missing terrain tile is just flat
-            // ground); only a failure to build the map itself is fatal.
-            if (e && e.error && /webgl|context/i.test(e.error.message || '')) {
+            const message = (e && e.error && e.error.message) || 'unknown map error';
+            console.warn('[3d]', message);
+            if (!firstError) firstError = message;
+
+            // A missing tile is routine — flat ground, or a gap in the
+            // basemap. A broken style or a dead WebGL context is not, and
+            // waiting out the timeout for those helps nobody.
+            if (/webgl|context lost|style|glyphs|sprite/i.test(message)) {
                 clearTimeout(timer);
-                reject(new Error('This device cannot show the 3D view.'));
+                reject(new Error(`The 3D view could not start: ${message}`));
             }
         });
     }).catch((e) => {
@@ -153,7 +154,10 @@ async function ensure3DMap() {
     });
 
     map3d.setTerrain({ source: 'terrain', exaggeration: TERRAIN_EXAGGERATION });
-    map3d.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+    // No compass widget: it lands on top of the 2D/3D switch, and this view
+    // already has the controls a resident needs. Dragging still rotates the
+    // map, and "Recenter on me" puts it back.
 
     // A dragged map should stop chasing the walker until they ask again.
     map3d.on('dragstart', () => document.dispatchEvent(new CustomEvent('codefish:map-dragged')));
@@ -178,9 +182,30 @@ function show3DRoute(routeFeature, destinationName) {
         features: end ? [{
             type: 'Feature',
             geometry: { type: 'Point', coordinates: end },
-            properties: { name: destinationName || 'Evacuation center' },
         }] : [],
     });
+
+    if (end) _placeDestinationLabel(end, destinationName || 'Evacuation center');
+}
+
+/**
+ * The destination's name, as an HTML marker.
+ *
+ * MapLibre's own text layers need a `glyphs` font source — a URL serving PBF
+ * font ranges. Hosting one would add assets for a single label, and pointing
+ * at someone else's would break the offline promise. A DOM marker needs
+ * neither.
+ */
+function _placeDestinationLabel(coordinates, name) {
+    if (destinationMarker) destinationMarker.remove();
+
+    const element = document.createElement('div');
+    element.className = 'nav-destination-marker';
+    element.textContent = name;
+
+    destinationMarker = new window.maplibregl.Marker({ element, anchor: 'bottom', offset: [0, -14] })
+        .setLngLat(coordinates)
+        .addTo(map3d);
 }
 
 /**
@@ -200,6 +225,39 @@ function _segmentFeatures(routeFeature) {
     })).filter(f => f.geometry.coordinates.length > 1);
 }
 
+/**
+ * Frame the whole route in the 3D view.
+ *
+ * Switching to 3D outside navigation should show the walk that was planned,
+ * not drop the camera on its first metre. Padding keeps the line clear of the
+ * answer sheet, which covers the lower half of a phone screen.
+ */
+function frame3DRoute(routeFeature) {
+    if (!map3d) return;
+
+    const coordinates = _flatCoordinates(routeFeature);
+    if (coordinates.length < 2) return;
+
+    const bounds = coordinates.reduce(
+        (box, coord) => box.extend(coord),
+        new window.maplibregl.LngLatBounds(coordinates[0], coordinates[0])
+    );
+
+    const panel = document.getElementById('simple-shell');
+    const size = map3d.getContainer().getBoundingClientRect();
+    const sheetAtBottom = panel && panel.getBoundingClientRect().width >= size.width * 0.9;
+    const rect = panel ? panel.getBoundingClientRect() : null;
+
+    map3d.fitBounds(bounds, {
+        padding: sheetAtBottom
+            ? { top: 60, bottom: Math.min(size.height - rect.top + 20, size.height * 0.55), left: 40, right: 40 }
+            : { top: 60, bottom: 60, left: rect ? Math.min(rect.right + 24, size.width * 0.45) : 60, right: 60 },
+        pitch: NAV_PITCH,
+        maxZoom: 17,
+        duration: 0,
+    });
+}
+
 function _flatCoordinates(routeFeature) {
     return ((routeFeature.geometry || {}).coordinates || []).flat();
 }
@@ -209,6 +267,10 @@ function _emptyCollection() {
 }
 
 function destroy3DMap() {
+    if (destinationMarker) {
+        destinationMarker.remove();
+        destinationMarker = null;
+    }
     if (!map3d) return;
     map3d.remove();
     map3d = null;

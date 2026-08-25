@@ -211,3 +211,19 @@ body.navigating #simple-result > *:not(#nav-panel) {
         right: 12px;
     }
 }
+
+/* The destination's name in the 3D view. A DOM marker rather than a MapLibre
+ * text layer, which would need font files hosted just for this one label. */
+.nav-destination-marker {
+    padding: 5px 10px;
+    background: rgba(14, 14, 14, 0.86);
+    border: 1px solid var(--safe);
+    border-radius: 6px;
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}

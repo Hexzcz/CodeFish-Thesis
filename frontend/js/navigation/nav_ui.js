@@ -145,8 +145,7 @@ async function switchMapMode(mode) {
             const route = routes[Math.max(0, window.appState.activeRouteIndex || 0)];
             if (route) {
                 show3DRoute(route, destinationName(route.properties));
-                const coords = ((route.geometry || {}).coordinates || []).flat();
-                if (coords.length) get3DMap().jumpTo({ center: coords[0], zoom: 16.5, pitch: 55 });
+                frame3DRoute(route);
             }
         } catch (e) {
             exit3DMode();
