@@ -1,5 +1,5 @@
 from typing import Set, List
-from backend.graph.builder import Graph
+from backend.domain.graph import Graph
 
 def _get_connected_component(graph: Graph, start_node) -> Set:
     """BFS from start_node. Returns set of reachable node IDs."""

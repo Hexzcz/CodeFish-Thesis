@@ -27,16 +27,15 @@ def load_centers_from_file() -> List[Dict]:
 
 def load_centers() -> List[Dict]:
     """Load evacuation centers from Supabase, falling back to local GeoJSON."""
-    from backend.core.database import get_db_connection
+    from backend.adapters.database import get_db_connection
     from sqlalchemy import text
     import json
 
     if USE_LOCAL_DATA:
-        print("[6/6] Loading evacuation centers from local GeoJSON...")
         return load_centers_from_file()
 
     evacuation_centers = []
-    print("[6/6] Loading evacuation centers from DB...")
+    print("      Reading evacuation centers from DB...")
     try:
         with get_db_connection() as conn:
             result = conn.execute(text("SELECT id, barangay, facility, type, ST_AsGeoJSON(geom) FROM evacuation_centers"))
@@ -61,7 +60,7 @@ def load_centers() -> List[Dict]:
 
 def load_centers_geojson() -> Dict:
     """Load centers GeoJSON from Supabase, falling back to local GeoJSON."""
-    from backend.core.database import get_db_connection
+    from backend.adapters.database import get_db_connection
     from sqlalchemy import text
     import json
 

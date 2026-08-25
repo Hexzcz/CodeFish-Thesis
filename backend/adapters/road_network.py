@@ -1,68 +1,14 @@
-from collections import defaultdict
-from typing import Optional, Dict, List, Tuple, Any
-import copy
+"""Loading the road network — from Supabase, or from the bundled GeoJSON.
+
+Both loaders produce the same `Graph`; the database is tried first and the
+files are the fallback, so the app still runs with no network. See
+`docs/decisions/0002-local-geojson-fallback.md`.
+"""
 import json
-import math
-import os
+from typing import Dict
+
 from backend.core.config import GEOJSON_PATHS
-
-class Graph:
-    """Adjacency list graph for efficient routing."""
-    def __init__(self):
-        # adjacency list: node_id -> [(neighbor_id, edge_data), ...]
-        self.adj: Dict[Any, List[Tuple[Any, Dict]]] = defaultdict(list)
-        # edge lookup: (u, v) -> edge_data  (stored both directions)
-        self.edges: Dict[Tuple, Dict] = {}
-        # node lookup: node_id -> {'id', 'lat', 'lon'}
-        self.nodes: Dict[Any, Dict] = {}
-
-    def add_node(self, node_id, lat: float, lon: float):
-        self.nodes[node_id] = {'id': node_id, 'lat': lat, 'lon': lon}
-
-    def add_edge(self, u, v, edge_data: Dict):
-        """Add a bidirectional edge. Skips self-loops."""
-        if u == v:
-            return
-        # Deduplicate: keep the shorter edge if one already exists
-        existing = self.edges.get((u, v))
-        if existing and existing.get('length', 0) <= edge_data.get('length', float('inf')):
-            return
-        self.adj[u].append((v, edge_data))
-        self.adj[v].append((u, edge_data))
-        self.edges[(u, v)] = edge_data
-        self.edges[(v, u)] = edge_data
-
-    def get_edge(self, u, v) -> Optional[Dict]:
-        return self.edges.get((u, v))
-
-    def get_neighbors(self, node_id) -> List[Tuple]:
-        return self.adj.get(node_id, [])
-
-    def has_node(self, node_id) -> bool:
-        return node_id in self.nodes
-
-    def node_count(self) -> int:
-        return len(self.nodes)
-
-    def edge_count(self) -> int:
-        return len(self.edges) // 2
-
-    def clone(self) -> "Graph":
-        """Return an isolated copy safe for request-local graph mutations."""
-        cloned = Graph()
-        cloned.nodes = {node_id: dict(data) for node_id, data in self.nodes.items()}
-
-        seen = set()
-        for (u, v), edge_data in self.edges.items():
-            key = frozenset((u, v))
-            if key in seen:
-                continue
-            seen.add(key)
-            cloned.add_edge(u, v, copy.deepcopy(edge_data))
-
-        if hasattr(self, "max_edge_length"):
-            cloned.max_edge_length = self.max_edge_length
-        return cloned
+from backend.domain.graph import Graph
 
 
 def _blank_edge_data(osmid, name, highway, length, coords) -> Dict:
@@ -128,7 +74,7 @@ def build_graph_from_files() -> Graph:
 def build_graph() -> Graph:
     """Load road_nodes and road_edges from Supabase, falling back to local GeoJSON."""
     from backend.core.config import USE_LOCAL_DATA
-    from backend.core.database import get_db_connection
+    from backend.adapters.database import get_db_connection
     from sqlalchemy import text
     import json
 
@@ -179,3 +125,48 @@ def build_graph() -> Graph:
 
     graph.max_edge_length = max_edge_length_found
     return graph
+
+
+def load_road_geojson() -> Dict:
+    """The road network as raw GeoJSON, for the map to draw.
+
+    Same fallback as `build_graph`: database first, bundled file otherwise.
+    """
+    from backend.core.config import USE_LOCAL_DATA
+    from backend.adapters.database import get_db_connection
+    from sqlalchemy import text
+
+    if USE_LOCAL_DATA:
+        return _road_geojson_from_file()
+
+    road_geojson = {"type": "FeatureCollection", "features": []}
+    try:
+        with get_db_connection() as conn:
+            result = conn.execute(text(
+                "SELECT u, v, osmid, name, highway, length, ST_AsGeoJSON(geom) FROM road_edges"
+            ))
+            for row in result:
+                road_geojson["features"].append({
+                    "type": "Feature",
+                    "geometry": json.loads(row[6]),
+                    "properties": {
+                        "u": str(row[0]),
+                        "v": str(row[1]),
+                        "osmid": str(row[2]),
+                        "name": str(row[3] or 'Unnamed Road'),
+                        "highway": str(row[4] or 'unclassified'),
+                        "length": float(row[5] or 0.0),
+                    },
+                })
+    except Exception as e:
+        print(f"Error fetching road_geojson from DB: {e}")
+
+    if not road_geojson["features"]:
+        print("  Falling back to local road edges GeoJSON.")
+        return _road_geojson_from_file()
+    return road_geojson
+
+
+def _road_geojson_from_file() -> Dict:
+    with open(GEOJSON_PATHS['road_edges'], 'r') as f:
+        return json.load(f)

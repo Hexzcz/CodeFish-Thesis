@@ -6,7 +6,7 @@ from backend.core.config import SCENARIOS, MODEL_PATHS
 def load_models() -> Dict[str, Any]:
     """Load XGBoost models."""
     models: Dict[str, Any] = {}
-    print("[4/6] Loading XGBoost models...")
+    print("      Loading XGBoost models...")
     loaded = []
     
     for scenario in SCENARIOS:

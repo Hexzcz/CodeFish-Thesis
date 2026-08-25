@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import Dict, Any
-from backend.graph.builder import Graph
+from backend.domain.graph import Graph
 from backend.core.config import SCENARIOS, MODEL_FEATURES
 
 
@@ -9,7 +9,7 @@ def _feature_row(feats: Dict[str, float]) -> list[float]:
 
 def precompute_predictions(graph: Graph, models: Dict[str, Any]) -> Graph:
     """Pre-compute flood predictions for all edges × scenarios."""
-    print("[5/6] Pre-computing flood predictions...")
+    print("      Pre-computing flood predictions...")
 
     if not models:
         print("      Skipped — no models available")

@@ -1,158 +1,11 @@
-import numpy as np
-import logging
-from typing import List, Dict
-from backend.graph.builder import Graph
-from backend.routing.weights import compute_wsm_weight, HIGHWAY_RANK, MAX_RANK
+"""Printing the scoring breakdown to the terminal.
 
-logger = logging.getLogger(__name__)
+This is an output adapter, not a routing rule: the engine computes the
+numbers, this decides how they look on a console. Kept out of
+`domain/routing/scoring/` so the engine stays free of side effects.
+"""
+from backend.domain.routing.weights import HIGHWAY_RANK, MAX_RANK
 
-def score_routes(routes: List[Dict], g: Graph, scenario: str, weights_map: Dict[str, float], max_edge_length: float, _log: bool = True) -> List[Dict]:
-    """
-    Score paths using WSM and TOPSIS ranking with detailed logging.
-    """
-    if not routes:
-        return []
-
-    scored = []
-
-    for route_idx, route_data in enumerate(routes):
-        path = route_data['path']
-
-        total_length = 0.0
-        total_flood_proba = 0.0
-        weighted_flood_proba = 0.0
-        max_flood_class = 0
-        segment_count = 0
-        flood_class_counts = {0: 0, 1: 0, 2: 0}
-        segments = []
-
-        for i in range(len(path) - 1):
-            edge = g.get_edge(path[i], path[i + 1])
-            if not edge:
-                continue
-
-            length = float(edge.get('length', 0.0))
-            flood_class = int(edge.get(f'flood_class_{scenario}', 0) or 0)
-            flood_proba = float(edge.get(f'flood_proba_{scenario}', 0.0) or 0.0)
-            elevation = float(edge.get('elevation', 0.0) or 0.0)
-
-            flood_proba_array = edge.get(f'flood_proba_array_{scenario}', [1.0, 0.0, 0.0])
-
-            total_length += length
-            total_flood_proba += flood_proba
-            weighted_flood_proba += flood_proba * length
-            max_flood_class = max(max_flood_class, flood_class)
-            flood_class_counts[min(flood_class, 2)] += 1
-            segment_count += 1
-
-            segment_data = {
-                'name': edge.get('name', 'Unnamed Road'),
-                'highway': edge.get('highway', 'unclassified'),
-                'length': round(length, 2),
-                'flood_class': flood_class,
-                'flood_proba': round(flood_proba, 4),
-                'flood_proba_array': [round(p, 3) for p in flood_proba_array],
-                'elevation': round(elevation, 2),
-                'wsm_cost': round(compute_wsm_weight(edge, scenario, weights_map, max_edge_length), 4)
-            }
-            segments.append(segment_data)
-            logger.debug(f"Route {route_idx} - Segment {i}: {segment_data['name']} (Flood: {segment_data['flood_proba']})")
-
-
-        avg_flood_proba = weighted_flood_proba / total_length if total_length > 0 else 0.0
-
-        wsm_flood_total = sum(s['flood_proba'] * weights_map['flood'] for s in segments) * 100.0
-        wsm_dist_total = sum((min(s['length'] / max_edge_length, 2.0)) * weights_map['distance'] for s in segments) * 100.0
-        
-        wsm_rank_total = 0.0
-        for s in segments:
-            hw = s['highway']
-            if isinstance(hw, list): hw = hw[0]
-            rank = HIGHWAY_RANK.get(hw, MAX_RANK)
-            wsm_rank_total += (rank / MAX_RANK) * weights_map['road_class'] * 100.0
-
-        r_final = {
-            'path': path,
-            'cost': route_data['cost'],
-            'similarity_score': route_data.get('similarity_score', 0.0),
-            'total_length_m': round(total_length, 2),
-            'total_length_km': round(total_length / 1000, 3),
-            'flood_exposure': round(avg_flood_proba, 4),
-            'max_flood_class': max_flood_class,
-            'flood_class_counts': flood_class_counts,
-            'segment_count': segment_count,
-            'segments': segments,
-            'wsm_breakdown': {
-                'flood': round(wsm_flood_total, 2),
-                'distance': round(wsm_dist_total, 2),
-                'road_class': round(wsm_rank_total, 2)
-            },
-            '_raw_flood': avg_flood_proba,
-            '_raw_length': total_length,
-            'destination_info': route_data.get('destination_info'),
-            'dest_node': route_data.get('dest_node')
-        }
-        scored.append(r_final)
-    
-    # --- TOPSIS RANKING ---
-    if len(scored) > 0:
-        matrix = []
-        for r in scored:
-            avg_hw_rank = sum(HIGHWAY_RANK.get(s['highway'] if not isinstance(s['highway'], list) else s['highway'][0], MAX_RANK) for s in r['segments'])
-            avg_hw_rank /= r['segment_count'] if r['segment_count'] > 0 else 1.0
-            matrix.append([r['_raw_flood'], r['_raw_length'], avg_hw_rank])
-        
-        matrix = np.array(matrix)
-        w = np.array([weights_map['flood'], weights_map['distance'], weights_map['road_class']])
-        
-        norm_matrix = np.zeros_like(matrix)
-        for j in range(matrix.shape[1]):
-            col_sum_sq = np.sqrt(np.sum(matrix[:, j]**2)) + 1e-9
-            norm_matrix[:, j] = matrix[:, j] / col_sum_sq
-                
-        weighted_matrix = norm_matrix * w
-        ideal_best = np.min(weighted_matrix, axis=0)
-        ideal_worst = np.max(weighted_matrix, axis=0)
-        s_best = np.sqrt(np.sum((weighted_matrix - ideal_best)**2, axis=1))
-        s_worst = np.sqrt(np.sum((weighted_matrix - ideal_worst)**2, axis=1))
-        closeness = s_worst / (s_best + s_worst + 1e-9)
-        
-        for i, r in enumerate(scored):
-            r['topsis_score'] = round(float(closeness[i]), 4)
-            r['topsis_breakdown'] = {
-                's_best': round(float(s_best[i]), 4),
-                's_worst': round(float(s_worst[i]), 4)
-            }
-            r['wsm_path_cost'] = round(r['cost'], 2)
-            logger.info(f"Route {i} Topsis Score: {r['topsis_score']} | S_Best: {r['topsis_breakdown']['s_best']} | S_Worst: {r['topsis_breakdown']['s_worst']}")
-
-    scored.sort(key=lambda x: (
-        -float(x.get('topsis_score', 0.0) or 0.0),
-        float(x.get('flood_exposure', 0.0) or 0.0),
-        float(x.get('total_length_m', 0.0) or 0.0),
-        str(x.get('destination_info', {}).get('facility', '')),
-        tuple(str(node) for node in x.get('path', [])),
-    ))
-
-    for i, r in enumerate(scored):
-        r['rank'] = i + 1
-        r['recommended'] = (i == 0)
-        fe = r['flood_exposure']
-        if fe < 0.15: r['risk_label'] = 'Low'
-        elif fe < 0.40: r['risk_label'] = 'Medium'
-        else: r['risk_label'] = 'High'
-        r['safety_score'] = round(r.get('topsis_score', 0) * 100, 1)
-        if '_raw_flood' in r: del r['_raw_flood']
-        if '_raw_length' in r: del r['_raw_length']
-    # --- TERMINAL LOGGING (fires after rank is assigned and TOPSIS is done) ---
-    if _log:
-        _log_routes(scored, scenario, weights_map, max_edge_length)
-
-    return scored
-
-# ---------------------------------------------------------------------------
-# Terminal logging helpers
-# ---------------------------------------------------------------------------
 
 _RISK_LABELS = {0: 'No Risk', 1: 'Low-Moderate', 2: 'High Risk'}
 _DIVIDER     = '=' * 122
@@ -165,7 +18,7 @@ def _rc_norm_for(highway) -> float:
 def _dist_norm_for(length: float, max_edge_length: float) -> float:
     return round(min(length / max_edge_length, 2.0), 6)
 
-def _log_routes(
+def print_route_breakdown(
     scored: list,
     scenario: str,
     weights_map: dict,
@@ -235,7 +88,7 @@ def _log_routes(
     print(_DIVIDER + '\n')
 
 
-def _log_baseline_comparison(
+def print_baseline_comparison(
     scored: list,
     baselines: list,
     scenario: str,

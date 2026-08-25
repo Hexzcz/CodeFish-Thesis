@@ -3,7 +3,7 @@ import math
 import rasterio
 from rasterio.warp import transform
 from typing import Dict
-from backend.graph.builder import Graph
+from backend.domain.graph import Graph
 from backend.core.config import RASTER_PATHS, DEFAULT_FEATURES
 
 def _sample_raster(path: str, lat: float, lon: float, default: float) -> float:
@@ -28,7 +28,6 @@ def _sample_raster(path: str, lat: float, lon: float, default: float) -> float:
 
 def sample_rasters(graph: Graph) -> Graph:
     """Sample rasters at each edge centroid."""
-    print("[3/6] Sampling rasters at road centroids...")
 
     available = {k: v for k, v in RASTER_PATHS.items() if os.path.exists(v)}
     missing = set(RASTER_PATHS) - set(available)

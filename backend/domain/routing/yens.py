@@ -1,7 +1,7 @@
 from typing import List, Dict
-from backend.graph.builder import Graph
-from backend.routing.dijkstra import dijkstra
-from backend.routing.weights import compute_wsm_weight
+from backend.domain.graph import Graph
+from backend.domain.routing.dijkstra import dijkstra
+from backend.domain.routing.weights import compute_wsm_weight
 
 def yens_k_shortest_paths(
     g: Graph,

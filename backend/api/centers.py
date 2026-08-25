@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 
-router = APIRouter()
+from backend.api.dependencies import get_app_state
 
-def get_app_state(request: Request):
-    return request.app.state.data
+router = APIRouter()
 
 @router.get("/evacuation-centers")
 async def get_evacuation_centers(state: dict = Depends(get_app_state)):

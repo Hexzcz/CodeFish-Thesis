@@ -3,13 +3,12 @@ import numpy as np
 from fastapi import APIRouter, Response, Query, HTTPException, Request, Depends
 from rio_tiler.io import Reader
 from rio_tiler.errors import TileOutsideBounds
-from backend.tiles.tile_server import render_flood, render_continuous, build_clip_mask, get_transparent_tile
+from backend.adapters.tile_renderer import render_flood, render_continuous, build_clip_mask, get_transparent_tile
 from backend.core.config import LAYERS_MAP, SCENARIOS
 
-router = APIRouter()
+from backend.api.dependencies import get_app_state
 
-def get_app_state(request: Request):
-    return request.app.state.data
+router = APIRouter()
 
 @router.get("/tiles/{layer_name}/{z}/{x}/{y}.png")
 async def get_tile(layer_name: str, z: int, x: int, y: int, clip: bool = Query(True)):

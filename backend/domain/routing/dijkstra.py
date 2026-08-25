@@ -1,7 +1,7 @@
 import heapq
 from typing import Optional, Set, Dict, List, Tuple, Any
-from backend.graph.builder import Graph
-from backend.routing.weights import compute_wsm_weight
+from backend.domain.graph import Graph
+from backend.domain.routing.weights import compute_wsm_weight
 
 def dijkstra(
     g: Graph,
