@@ -95,8 +95,13 @@ anything. `pytest tests/` fails the build if this is broken. See
 ### The frontend mirrors it
 
 ```
-frontend/js/
+frontend/
+├── sw.js         the service worker: what still works with no signal
+├── manifest.webmanifest, icons/    what makes it installable
+├── vendor/leaflet/                 vendored, so the map needs no CDN
+└── js/
 ├── mode.js       which face you get: simple, or the admin console
+├── pwa.js        registration, the offline banner, the last-route memory
 ├── map/          the Leaflet map and the district outline
 ├── layers/       raster overlays and the road layer
 ├── centers/      evacuation center markers
@@ -110,6 +115,11 @@ frontend/js/
 Two views, one page. `<html data-mode="simple|admin">` decides what is shown;
 both share the same map and the same `requestRoutes()`. See
 [ADR-0005](decisions/0005-two-views.md).
+
+The resident's view reflows to a bottom sheet below 768px and the app installs
+to a home screen. Routing still needs the server — what does and does not
+survive going offline is written down in
+[ADR-0006](decisions/0006-installable-and-offline.md).
 
 Plain scripts on `window`, no build step — deliberately, because this has to
 run from a folder on a laptop during a defense. `index.html` loads them in

@@ -3,8 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CodeFish | Flood-Aware Routing</title>
+    <meta name="description"
+        content="Find the safest way to an evacuation center in Quezon City District 1, avoiding flood-prone roads.">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0e0e0e">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CodeFish">
     <script>
         // Applied before first paint so neither view flashes. The full
         // definition lives in js/mode.js.
@@ -17,7 +25,7 @@
             document.documentElement.dataset.mode = mode;
         })();
     </script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
     <link rel="stylesheet" href="css/base.css?v=9">
     <link rel="stylesheet" href="css/sidebar.css?v=11">
     <link rel="stylesheet" href="css/routing_panel.css?v=10">
@@ -29,14 +37,35 @@
     <link rel="stylesheet" href="css/compare_tab.css?v=10">
     <link rel="stylesheet" href="css/decision_matrix.css?v=10">
     <link rel="stylesheet" href="css/map.css?v=5">
-    <link rel="stylesheet" href="css/simple.css?v=1">
+    <link rel="stylesheet" href="css/simple.css?v=2">
     <link rel="stylesheet" href="css/simple_result.css?v=3">
+    <link rel="stylesheet" href="css/simple_phone.css?v=1">
+    <link rel="stylesheet" href="css/admin_phone.css?v=3">
 
 </head>
 
 <body>
 
     <div id="app">
+
+        <div id="offline-banner" class="hidden">
+            You are offline — a new route needs a connection.
+        </div>
+
+        <div id="admin-small-screen">
+            <h1 class="ass-title">The console needs a wider screen</h1>
+            <p class="ass-body">
+                Layer controls, criteria weights and the decision matrix are built for a
+                laptop. On a phone, the resident's view is the one that works.
+            </p>
+            <div class="ass-actions">
+                <button class="simple-primary" onclick="setMode('simple')">Open the resident view</button>
+                <button class="simple-secondary"
+                    onclick="document.getElementById('admin-small-screen').classList.add('dismissed')">
+                    Show me the console anyway
+                </button>
+            </div>
+        </div>
 
         <!-- ── SIMPLE VIEW (default; admin console is hidden in this mode) ── -->
         <section id="simple-shell" aria-live="polite">
@@ -56,6 +85,8 @@
                 </button>
                 <p class="simple-hint hidden" id="simple-tap-hint">Tap where you are on the map →</p>
                 <p class="simple-error hidden" id="simple-error"></p>
+                <button class="simple-secondary hidden" id="simple-last-route-btn"
+                    onclick="showLastRoute()"></button>
             </div>
 
             <!-- Step 2 and 3: waiting -->
@@ -71,6 +102,7 @@
 
             <!-- Step 4: the answer -->
             <div id="simple-result" class="simple-step-panel hidden">
+                <p class="simple-stale hidden" id="simple-stale"></p>
                 <p class="simple-eyebrow">GO HERE</p>
                 <h1 class="simple-destination" id="simple-destination"></h1>
                 <p class="simple-distance" id="simple-distance"></p>
@@ -677,7 +709,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="vendor/leaflet/leaflet.js"></script>
     <script src="js/mode.js?v=1"></script>
     <script src="js/config.js?v=5"></script>
     <script src="js/state.js?v=7"></script>
@@ -689,7 +721,7 @@
     <script src="js/centers/evacuation_centers.js?v=7"></script>
     <script src="js/routing/origin.js?v=11"></script>
     <script src="js/routing/route_request.js?v=1"></script>
-    <script src="js/routing/route_layer.js?v=12"></script>
+    <script src="js/routing/route_layer.js?v=14"></script>
     <script src="js/routing/route_visibility.js?v=10"></script>
     <script src="js/routing/baseline_layer.js?v=10"></script>
     <script src="js/routing/segment_highlight.js?v=10"></script>
@@ -704,9 +736,10 @@
     <script src="js/ui/panel/baseline.js?v=17"></script>
     <script src="js/ui/panel/compare.js?v=17"></script>
     <script src="js/simple/plain_language.js?v=3"></script>
-    <script src="js/simple/result_card.js?v=4"></script>
+    <script src="js/simple/result_card.js?v=5"></script>
     <script src="js/simple/directions.js?v=2"></script>
-    <script src="js/simple/flow.js?v=3"></script>
+    <script src="js/simple/flow.js?v=5"></script>
+    <script src="js/pwa.js?v=1"></script>
     <script src="js/app.js?v=6"></script>
 </body>
 

@@ -7,6 +7,9 @@
  */
 
 function renderSimpleResult(routes) {
+    const stale = document.getElementById('simple-stale');
+    if (stale && navigator.onLine) stale.classList.add('hidden');
+
     const best = routes.find(r => r.properties.recommended) || routes[0];
     const props = best.properties;
     const verdict = routeVerdict(props);

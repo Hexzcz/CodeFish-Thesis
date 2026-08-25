@@ -38,16 +38,22 @@ function routeFitPadding() {
         return { padding: [60, 60] };
     }
 
-    // Never surrender more than this much of the map to the panel: on a narrow
-    // window the card is most of the width, and fitting a route into the sliver
-    // that is left zooms in far past anything useful.
-    const mapWidth = window.appState.map.getSize().x;
-    const covered = Math.min(panel.getBoundingClientRect().right + 24, mapWidth * 0.45);
-    return {
-        paddingTopLeft: [covered, 60],
-        paddingBottomRight: [60, 60],
-        maxZoom: 17,
-    };
+    const rect = panel.getBoundingClientRect();
+    const map = window.appState.map.getSize();
+
+    // The panel is a card on the left on a laptop and a sheet along the bottom
+    // on a phone. Tell them apart by width — the sheet spans the screen, the
+    // card never does — and pad whichever side it is actually on. Never give
+    // up more than half the map, or a short route fits into a sliver and zooms
+    // to the rooftops.
+    const isBottomSheet = rect.width >= map.x * 0.9;
+    if (isBottomSheet) {
+        const covered = Math.min(map.y - rect.top + 20, map.y * 0.55);
+        return { paddingTopLeft: [30, 50], paddingBottomRight: [30, covered], maxZoom: 17 };
+    }
+
+    const covered = Math.min(rect.right + 24, map.x * 0.45);
+    return { paddingTopLeft: [covered, 60], paddingBottomRight: [60, 60], maxZoom: 17 };
 }
 
 /** Zoom to one route, clear of any floating panel. */

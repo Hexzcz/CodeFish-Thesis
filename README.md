@@ -34,6 +34,18 @@ waits for the connection to time out first. See
 The Esri basemap and the JAXA rainfall fetch need the internet; routing does
 not. Offline, the map draws without a basemap and rainfall reads 0.00 mm/hr.
 
+## Installing it on a phone
+
+The resident's view is a progressive web app: open it in Chrome or Safari and
+choose "Add to Home Screen". It then opens like an app, and keeps working when
+the signal does not — the map, the district, the centers and your last route
+are all still there.
+
+Routing itself needs the server, so a new route cannot be worked out offline;
+the app says so rather than failing quietly. Service workers also require
+HTTPS: over plain `http://` from another machine it stays an ordinary website.
+See [ADR-0006](docs/decisions/0006-installable-and-offline.md).
+
 ## Checking it
 
 ```bash

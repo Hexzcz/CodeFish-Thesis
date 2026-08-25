@@ -93,14 +93,21 @@ async function simpleFindRoute() {
         });
 
         window.appState.routeData = data;
+        rememberLastRoute(data, { lat: origin.lat, lng: origin.lng });
         toggleEvacCenters(true);
         drawAllRoutes(data.routes);
-        renderSimpleResult(data.routes);
+        // Show the panel before fitting the map: the result panel is taller
+        // than the spinner it replaces, and fitting to the smaller one leaves
+        // the route half-hidden under the sheet on a phone.
         simpleShow('result');
+        renderSimpleResult(data.routes);
     } catch (err) {
         console.error('Route error:', err);
         simpleShow('asking');
-        simpleError(err.message || 'Could not find a route from there.');
+        simpleError(navigator.onLine
+            ? (err.message || 'Could not find a route from there.')
+            : 'You are offline, so a new route cannot be worked out. Your last route is below if you had one.');
+        offerLastRoute();
     }
 }
 
@@ -113,12 +120,55 @@ document.addEventListener('codefish:origin-set', () => {
     simpleFindRoute();
 });
 
+/**
+ * Show the route this browser was last given.
+ *
+ * Only ever offered when a fresh one cannot be worked out, and always labelled
+ * with its age — a route from this morning is not advice about right now.
+ */
+function offerLastRoute() {
+    const saved = recallLastRoute();
+    const button = document.getElementById('simple-last-route-btn');
+    if (!button) return;
+
+    if (!saved) {
+        button.classList.add('hidden');
+        return;
+    }
+    button.textContent = `Show my last route (${describeAge(saved.savedAt)})`;
+    button.classList.remove('hidden');
+}
+
+function showLastRoute() {
+    const saved = recallLastRoute();
+    if (!saved) return;
+
+    window.appState.routeData = { routes: saved.routes, destination: saved.destination };
+    if (saved.origin) createOriginMarker(saved.origin);
+    drawAllRoutes(saved.routes);
+    simpleShow('result');
+    renderSimpleResult(saved.routes);
+
+    const stamp = document.getElementById('simple-stale');
+    if (stamp) {
+        stamp.textContent = `Worked out ${describeAge(saved.savedAt)}, before you went offline. Conditions may have changed.`;
+        stamp.classList.remove('hidden');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (currentMode() !== 'simple') return;
 
     if (!navigator.geolocation) {
         const btn = document.getElementById('simple-locate-btn');
         if (btn) btn.classList.add('hidden');
+    }
+
+    // Offline on arrival: there is nothing to ask for, so lead with what we
+    // already know rather than a button that cannot work.
+    if (!navigator.onLine) {
+        simpleError('You are offline. A new route needs a connection.');
+        offerLastRoute();
     }
 
     simpleShow('asking');

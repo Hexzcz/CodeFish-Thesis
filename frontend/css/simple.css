@@ -82,6 +82,12 @@
 .simple-secondary,
 .simple-tertiary {
     display: block;
+    /* A tap should press the button, not select its label, and should not
+       wait 300ms to find out it was not a double-tap. */
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     width: 100%;
     padding: 15px 18px;
     margin-bottom: 10px;
@@ -173,4 +179,25 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+/* ── Offline ────────────────────────────────────────────────────────────── */
+#offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4000;
+    padding: 8px 16px;
+    background: #6b4b12;
+    color: #ffe6a6;
+    font-family: var(--font-body);
+    font-size: 12px;
+    text-align: center;
+    /* Notch phones put the status bar here. */
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+}
+
+#offline-banner.hidden {
+    display: none;
 }

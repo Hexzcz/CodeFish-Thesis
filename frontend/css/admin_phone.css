@@ -1,0 +1,96 @@
+/* The console on a small screen.
+ *
+ * Three columns of controls and a decision matrix do not survive 375px, and
+ * pretending otherwise gives a researcher a broken tool with no explanation.
+ * The console still opens — the notice can be dismissed — but it says what it
+ * is and offers the view that does fit.
+ */
+
+#admin-small-screen {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    [data-mode="admin"] #admin-small-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 14px;
+        padding: 32px 24px;
+        background: var(--bg-0);
+        font-family: var(--font-body);
+    }
+
+    [data-mode="admin"] #admin-small-screen.dismissed {
+        display: none;
+    }
+
+    .ass-title {
+        margin: 0;
+        font-size: 20px;
+        color: var(--text-primary);
+    }
+
+    .ass-body {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--text-secondary);
+    }
+
+    .ass-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    /* The console itself, for anyone who dismisses the notice: one column,
+       controls on top, map below. Cramped, but coherent.
+
+       The desktop layout pins each child to a fixed grid cell — the map to
+       column 2, the analysis panel to column 3 — so stacking means reassigning
+       those cells, not just changing the template. */
+    [data-mode="admin"] #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+
+    [data-mode="admin"] #sidebar-left {
+        grid-column: 1;
+        grid-row: 1;
+        height: auto;
+        max-height: 45vh;
+        overflow-y: auto;
+    }
+
+    [data-mode="admin"] #map-container {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 40vh;
+    }
+
+    /* The analysis panel is a full-screen sheet on a phone — but only once
+       it is opened. Without the guard it covers the console permanently,
+       since the desktop layout hides it with a zero-width grid column rather
+       than with display. */
+    [data-mode="admin"] #sidebar-right {
+        display: none;
+    }
+
+    [data-mode="admin"] #app.right-panel-open #sidebar-right {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        width: 100%;
+    }
+
+    [data-mode="admin"] #bottom-bar {
+        overflow-x: auto;
+    }
+}

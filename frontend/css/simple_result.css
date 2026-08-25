@@ -208,3 +208,20 @@
 .simple-dest-note.hidden {
     display: none;
 }
+
+/* A route worked out before the signal went. Dated on purpose: old advice
+ * presented as current is worse than no advice. */
+.simple-stale {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    background: var(--bg-3);
+    border-left: 3px solid var(--text-tertiary);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.simple-stale.hidden {
+    display: none;
+}

@@ -1,0 +1,94 @@
+/* The resident's view on a phone.
+ *
+ * The likeliest device in an actual flood, and the one where a 380px card
+ * floating over a map makes no sense. Below 768px the card becomes a bottom
+ * sheet: the map keeps the top of the screen, the answer sits under your
+ * thumb, and nothing overlaps.
+ *
+ * Tap targets are 48px minimum — a wet finger on a cracked screen is the
+ * design constraint, not a mouse pointer.
+ */
+
+@media (max-width: 767px) {
+
+    [data-mode="simple"] #simple-shell {
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-height: 62vh;
+        border: none;
+        border-top: 1px solid var(--border-default);
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+        /* Home-indicator gap on iPhones, ignored elsewhere. */
+        padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    /* A grab handle: says "this scrolls" without a word of instruction. */
+    [data-mode="simple"] #simple-shell::before {
+        content: '';
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: block;
+        width: 36px;
+        height: 4px;
+        margin: 8px auto 0;
+        border-radius: 2px;
+        background: var(--border-strong);
+        flex: none;
+    }
+
+    .simple-header {
+        padding: 10px 20px;
+    }
+
+    .simple-tagline {
+        display: none;
+    }
+
+    .simple-step-panel {
+        padding: 16px 20px 20px;
+    }
+
+    .simple-question {
+        font-size: 21px;
+        margin-bottom: 16px;
+    }
+
+    .simple-destination {
+        font-size: 22px;
+    }
+
+    .simple-primary,
+    .simple-secondary {
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .simple-tertiary {
+        min-height: 44px;
+    }
+
+    .simple-alt {
+        min-height: 48px;
+    }
+
+    /* The map gets whatever the sheet is not using. */
+    [data-mode="simple"] #map {
+        height: 100vh;
+    }
+
+    .simple-footer {
+        padding: 10px 20px 12px;
+    }
+}
+
+/* Short landscape phones: the sheet would swallow the map, so cap it harder. */
+@media (max-width: 900px) and (max-height: 480px) {
+    [data-mode="simple"] #simple-shell {
+        max-height: 78vh;
+    }
+}
