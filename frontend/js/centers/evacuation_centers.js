@@ -126,6 +126,19 @@ async function fetchCenters() {
 }
 
 // ── Main draw function ───────────────────────────────────────────────────────
+/**
+ * Give a marker an accessible name.
+ *
+ * Leaflet marks interactive vectors with role="button" but has nothing to name
+ * them with, so a screen reader announces seventy anonymous buttons. The name
+ * has to go on the rendered element, which only exists once it is on the map.
+ */
+function _nameMarker(marker, name) {
+    const element = marker.getElement && marker.getElement();
+    if (element) element.setAttribute('aria-label', name);
+    return marker;
+}
+
 function drawCenters(data) {
     if (window.appState.centersLayer) window.appState.map.removeLayer(window.appState.centersLayer);
 
@@ -190,14 +203,17 @@ function drawCenters(data) {
                 `${nameRows}` +
                 `</div></div>`;
 
-            L.circleMarker([centroidLat, centroidLon], {
-                radius: 8,
-                fillColor: '#e8c547',
-                color: '#ffffff',
-                weight: 2.5,
-                opacity: 1,
-                fillOpacity: 1
-            }).bindPopup(popupHTML, { maxWidth: 220 }).addTo(group);
+            _nameMarker(
+                L.circleMarker([centroidLat, centroidLon], {
+                    radius: 8,
+                    fillColor: '#e8c547',
+                    color: '#ffffff',
+                    weight: 2.5,
+                    opacity: 1,
+                    fillOpacity: 1
+                }).bindPopup(popupHTML, { maxWidth: 220 }).addTo(group),
+                `${members.length} evacuation centers here, including ${members[0].feature.properties.facility || 'one center'}`
+            );
 
             // ── 3. Individual member dots (top layer, registered in registry) ──
             members.forEach((m, i) => {
@@ -215,6 +231,8 @@ function drawCenters(data) {
                     `<span style="font-size:10px;color:#e8c547;">Part of a cluster</span>`
                 ).addTo(group);
 
+                _nameMarker(marker, `Evacuation center: ${p.facility || 'unnamed'}, ${p.barangay || 'District 1'}`);
+
                 // Register so highlight functions can find it
                 window._evacMemberMarkers[memberIds[i]] = marker;
             });
@@ -222,17 +240,20 @@ function drawCenters(data) {
         } else {
             // ── Solo center ───────────────────────────────────────────────────
             const p = members[0].feature.properties;
-            L.circleMarker([members[0].lat, members[0].lon], {
-                radius: 7,
-                fillColor: '#4caf7d',
-                color: '#ffffff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            }).bindPopup(
-                `<strong>${p.facility || 'Center'}</strong><br>` +
-                `<span style="font-size:11px;color:#909090;">${p.barangay || ''}</span>`
-            ).addTo(group);
+            _nameMarker(
+                L.circleMarker([members[0].lat, members[0].lon], {
+                    radius: 7,
+                    fillColor: '#4caf7d',
+                    color: '#ffffff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).bindPopup(
+                    `<strong>${p.facility || 'Center'}</strong><br>` +
+                    `<span style="font-size:11px;color:#909090;">${p.barangay || ''}</span>`
+                ).addTo(group),
+                `Evacuation center: ${p.facility || 'unnamed'}, ${p.barangay || 'District 1'}`
+            );
         }
     });
 

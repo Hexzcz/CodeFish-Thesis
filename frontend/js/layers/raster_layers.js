@@ -1,8 +1,11 @@
 // Raster layer management
 
 function buildTileUrl(layerName) {
+    // `clip` changes what the tile looks like, so it belongs in the URL. The
+    // timestamp that used to be here did not — it defeated the browser cache
+    // on every pan, re-rendering tiles that had not changed.
     const clip = window.appState.clipEnabled ? 'true' : 'false';
-    return `${API_BASE}/tiles/${layerName}/{z}/{x}/{y}.png?clip=${clip}&t=${Date.now()}`;
+    return `${API_BASE}/tiles/${layerName}/{z}/{x}/{y}.png?clip=${clip}`;
 }
 
 function handleLayerToggle(el) {

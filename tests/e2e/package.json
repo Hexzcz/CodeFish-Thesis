@@ -6,6 +6,8 @@
     "test": "node run.js"
   },
   "devDependencies": {
+    "@axe-core/puppeteer": "^4.13.0",
+    "axe-core": "^4.13.0",
     "puppeteer": "^25.9.0"
   }
 }

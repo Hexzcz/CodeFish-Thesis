@@ -3,24 +3,30 @@ import os
 from fastapi import APIRouter, HTTPException, Depends, Request
 from backend.core.config import GEOJSON_PATHS
 
+from backend.api.caching import json_response
 from backend.api.dependencies import get_app_state
 
 router = APIRouter()
 
 @router.get("/boundary")
-async def get_boundary():
-    path = GEOJSON_PATHS['boundary']
-    if os.path.exists(path):
+async def get_boundary(request: Request, state: dict = Depends(get_app_state)):
+    """The district outline. Read once at startup; served from memory."""
+    boundary = state.get('boundary_geojson')
+    if boundary is None:
+        path = GEOJSON_PATHS['boundary']
+        if not os.path.exists(path):
+            raise HTTPException(status_code=404, detail="Boundary not found")
         with open(path, "r") as f:
-            return json.load(f)
-    raise HTTPException(status_code=404, detail="Boundary not found")
+            boundary = json.load(f)
+    return json_response(request, "boundary", boundary)
 
 @router.get("/roads")
-async def get_roads(state: dict = Depends(get_app_state)):
+async def get_roads(request: Request, state: dict = Depends(get_app_state)):
+    """The whole road network — 1.7 MB, and the same 1.7 MB every time."""
     road_geojson = state.get('road_geojson')
     if road_geojson is None:
         raise HTTPException(404, "Road GeoJSON not loaded")
-    return road_geojson
+    return json_response(request, "roads", road_geojson)
 
 @router.get("/graph-stats")
 async def get_graph_stats(state: dict = Depends(get_app_state)):

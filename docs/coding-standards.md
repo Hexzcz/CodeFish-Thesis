@@ -42,6 +42,24 @@ Conventions this project follows. They complement — not replace — the rules 
 
 Each has a test. Changing one means changing the test deliberately.
 
+## Accessibility
+
+This is a public emergency tool, so these are requirements, not preferences:
+
+- **Every control has a name a screen reader can read.** Icon-only buttons and
+  map markers carry `aria-label` or `title`; Leaflet gives markers
+  `role="button"` and nothing to name them with.
+- **Anything the app tells you about your route is announced.** The verdict,
+  the navigation status and errors are `role="status"` or `role="alert"` — a
+  change of state that is only drawn is invisible to someone who cannot see it.
+- **Everything works from a keyboard**, including the switches, which are
+  styled `<div>`s upgraded in `js/ui/a11y.js` rather than rewritten.
+- **Focus is visible.** One `:focus-visible` rule in `base.css`.
+
+`tests/e2e/accessibility.test.js` runs axe over both views and then checks the
+things axe cannot see: whether a control can be reached by keyboard, and
+whether a status change is announced.
+
 ## The frontend
 
 - One file per thing the user can see or do. A panel tab is a file.

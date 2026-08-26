@@ -72,8 +72,10 @@ async def get_tile(layer_name: str, z: int, x: int, y: int, clip: bool = Query(T
             if cmap_or_type == "flood"
             else render_continuous(data, valid, cmap_or_type)
         )
+        # The rasters behind these tiles are static files; a tile for a given
+        # layer and z/x/y is always the same picture. An hour is conservative.
         return Response(content=content, media_type="image/png",
-                        headers={"Cache-Control": "no-cache, no-store"})
+                        headers={"Cache-Control": "public, max-age=3600"})
 
     except Exception as e:
         print(f"Tile error {layer_name} {z}/{x}/{y}: {e}")

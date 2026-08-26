@@ -65,6 +65,7 @@ const SHELL = [
     '/js/routing/baseline_layer.js',
     '/js/routing/segment_highlight.js',
     '/js/routing/segment_hover.js',
+    '/js/ui/a11y.js',
     '/js/ui/tabs.js',
     '/js/ui/sidebar.js',
     '/js/ui/rainfall.js',

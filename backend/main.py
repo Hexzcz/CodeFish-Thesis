@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from backend.core.startup import startup
@@ -19,7 +20,29 @@ async def lifespan(app: FastAPI):
     # Cleanup logic
     app.state.data.clear()
 
+class GZipExceptTiles:
+    """gzip the data, leave the pictures alone.
+
+    The road network compresses from 1.7 MB to about 265 KB, which on mobile
+    data is the difference that matters. Map tiles are PNGs — already
+    compressed, and the most-requested thing here — so spending CPU trying to
+    compress them again on every pan would be a cost with no benefit.
+    """
+
+    def __init__(self, app, **options):
+        self.compressed = GZipMiddleware(app, **options)
+        self.plain = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http" and scope.get("path", "").startswith("/tiles/"):
+            await self.plain(scope, receive, send)
+        else:
+            await self.compressed(scope, receive, send)
+
+
 app = FastAPI(title="CodeFish Flood-Aware Evacuation Routing", lifespan=lifespan)
+
+app.add_middleware(GZipExceptTiles, minimum_size=1024)
 
 app.add_middleware(
     CORSMiddleware,

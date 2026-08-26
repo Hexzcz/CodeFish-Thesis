@@ -181,8 +181,15 @@ function drawAllRoutes(routes) {
                 html: `<div style="width:12px;height:12px;border-radius:2px;background:${color};border:2px solid #fff;box-shadow:0 0 6px ${color}88;transform:rotate(45deg);"></div>`,
                 iconSize: [12, 12], iconAnchor: [6, 6]
             });
-            const dm = L.marker([destLat, destLon], { icon: destIcon })
-                .bindTooltip(props.destination_name || 'Evacuation Center', { permanent: false })
+            // `title` gives the role="button" Leaflet adds an accessible name;
+            // without it a screen reader announces an unnamed button per route.
+            const destinationName = props.destination_name || 'Evacuation Center';
+            const dm = L.marker([destLat, destLon], {
+                icon: destIcon,
+                title: `Destination: ${destinationName}`,
+                alt: `Destination: ${destinationName}`,
+            })
+                .bindTooltip(destinationName, { permanent: false })
                 .addTo(window.appState.map);
             window._destMarkers.push(dm);
         } else {

@@ -27,7 +27,7 @@
         })();
     </script>
     <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-    <link rel="stylesheet" href="css/base.css?v=9">
+    <link rel="stylesheet" href="css/base.css?v=10">
     <link rel="stylesheet" href="css/sidebar.css?v=11">
     <link rel="stylesheet" href="css/routing_panel.css?v=10">
     <link rel="stylesheet" href="css/layer_controls.css?v=10">
@@ -50,7 +50,7 @@
 
     <div id="app">
 
-        <div id="offline-banner" class="hidden">
+        <div id="offline-banner" class="hidden" role="status">
             You are offline — a new route needs a connection.
         </div>
 
@@ -70,7 +70,7 @@
         </div>
 
         <!-- ── SIMPLE VIEW (default; admin console is hidden in this mode) ── -->
-        <section id="simple-shell" aria-live="polite">
+        <section id="simple-shell">
             <header class="simple-header">
                 <span class="simple-brand">CODEFISH</span>
                 <span class="simple-tagline">Flood-aware evacuation routing · Quezon City District 1</span>
@@ -86,7 +86,7 @@
                     Or tap the map
                 </button>
                 <p class="simple-hint hidden" id="simple-tap-hint">Tap where you are on the map →</p>
-                <p class="simple-error hidden" id="simple-error"></p>
+                <p class="simple-error hidden" id="simple-error" role="alert"></p>
                 <button class="simple-secondary hidden" id="simple-last-route-btn"
                     onclick="showLastRoute()"></button>
             </div>
@@ -104,13 +104,13 @@
 
             <!-- Step 4: the answer -->
             <div id="simple-result" class="simple-step-panel hidden">
-                <p class="simple-stale hidden" id="simple-stale"></p>
+                <p class="simple-stale hidden" id="simple-stale" role="status"></p>
                 <p class="simple-eyebrow">GO HERE</p>
                 <h1 class="simple-destination" id="simple-destination"></h1>
                 <p class="simple-distance" id="simple-distance"></p>
                 <p class="simple-dest-note hidden" id="simple-dest-note"></p>
 
-                <div class="simple-verdict" id="simple-verdict">
+                <div class="simple-verdict" id="simple-verdict" role="status">
                     <p class="sv-headline"></p>
                     <p class="sv-detail"></p>
                 </div>
@@ -142,13 +142,13 @@
                 </div>
 
                 <div class="nav-remaining-block">
-                    <span class="nav-remaining" id="nav-remaining">—</span>
+                    <span class="nav-remaining" id="nav-remaining" role="status" aria-label="Distance remaining">—</span>
                     <span class="nav-remaining-walk" id="nav-remaining-walk"></span>
                 </div>
 
-                <p class="nav-status nav-status-neutral" id="nav-status"></p>
+                <p class="nav-status nav-status-neutral" id="nav-status" role="status"></p>
                 <p class="nav-accuracy hidden" id="nav-accuracy"></p>
-                <p class="nav-error hidden" id="nav-error"></p>
+                <p class="nav-error hidden" id="nav-error" role="alert"></p>
 
                 <div class="nav-actions">
                     <button class="simple-secondary hidden" id="nav-recenter-btn"
@@ -200,6 +200,7 @@
                                     <span id="origin-btn-text">Click map to place</span>
                                 </button>
                                 <div class="addr-search">
+                                    <label class="sr-only" for="origin-search-input">Search for your address in District 1</label>
                                     <input id="origin-search-input" class="addr-input" type="text" placeholder="Search address (District 1 only)" autocomplete="off" />
                                     <div id="origin-search-results" class="addr-results hidden"></div>
                                 </div>
@@ -260,7 +261,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-flood_5yr">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="70"
-                                    oninput="updateLayerOpacity('flood_5yr', this.value)">
+                                    oninput="updateLayerOpacity('flood_5yr', this.value)" aria-label="flood 5yr layer opacity">
                             </div>
                             <div class="layer-row">
                                 <span class="layer-swatch" style="background:#ff7043"></span>
@@ -271,7 +272,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-flood_25yr">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="70"
-                                    oninput="updateLayerOpacity('flood_25yr', this.value)">
+                                    oninput="updateLayerOpacity('flood_25yr', this.value)" aria-label="flood 25yr layer opacity">
                             </div>
                             <div class="layer-row">
                                 <span class="layer-swatch" style="background:#ffc107"></span>
@@ -282,7 +283,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-flood_100yr">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="70"
-                                    oninput="updateLayerOpacity('flood_100yr', this.value)">
+                                    oninput="updateLayerOpacity('flood_100yr', this.value)" aria-label="flood 100yr layer opacity">
                             </div>
                         </div>
                     </div>
@@ -299,7 +300,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-elevation">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="70"
-                                    oninput="updateLayerOpacity('elevation', this.value)">
+                                    oninput="updateLayerOpacity('elevation', this.value)" aria-label="elevation layer opacity">
                             </div>
                             <div class="layer-row">
                                 <span class="layer-swatch" style="background:#78909c"></span>
@@ -310,7 +311,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-slope">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="70"
-                                    oninput="updateLayerOpacity('slope', this.value)">
+                                    oninput="updateLayerOpacity('slope', this.value)" aria-label="slope layer opacity">
                             </div>
                         </div>
                     </div>
@@ -327,7 +328,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-dist_waterway">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="70"
-                                    oninput="updateLayerOpacity('dist_waterway', this.value)">
+                                    oninput="updateLayerOpacity('dist_waterway', this.value)" aria-label="dist waterway layer opacity">
                             </div>
                             <div class="layer-row">
                                 <span class="layer-swatch" style="background:#66bb6a"></span>
@@ -338,7 +339,7 @@
                             </div>
                             <div class="opacity-row hidden" id="opacity-cnt-land_cover">
                                 <input type="range" class="opacity-slider" min="0" max="100" value="60"
-                                    oninput="updateLayerOpacity('land_cover', this.value)">
+                                    oninput="updateLayerOpacity('land_cover', this.value)" aria-label="land cover layer opacity">
                             </div>
                         </div>
                     </div>
@@ -542,12 +543,12 @@
 
         <!-- ── MAP ── -->
         <div id="map-container">
-            <div id="map"></div>
-            <div id="map-3d" class="hidden"></div>
+            <div id="map" role="region" aria-label="Map of District 1 with your route"></div>
+            <div id="map-3d" class="hidden" role="region" aria-label="3D navigation map"></div>
 
             <div class="map-mode-switch" id="map-mode-switch">
-                <button id="map-mode-2d" class="active" onclick="switchMapMode('2d')">2D</button>
-                <button id="map-mode-3d" onclick="switchMapMode('3d')">3D</button>
+                <button id="map-mode-2d" class="active" aria-label="Two-dimensional overview map" onclick="switchMapMode('2d')">2D</button>
+                <button id="map-mode-3d" aria-label="Three-dimensional navigation map" onclick="switchMapMode('3d')">3D</button>
             </div>
             <div id="map-overlays">
 
@@ -749,16 +750,17 @@
     <script src="js/ui/utils.js?v=5"></script>
     <script src="js/map/init.js?v=5"></script>
     <script src="js/map/boundary.js?v=5"></script>
-    <script src="js/layers/raster_layers.js?v=5"></script>
+    <script src="js/layers/raster_layers.js?v=6"></script>
     <script src="js/layers/road_layer.js?v=5"></script>
-    <script src="js/centers/evacuation_centers.js?v=7"></script>
-    <script src="js/routing/origin.js?v=11"></script>
+    <script src="js/centers/evacuation_centers.js?v=8"></script>
+    <script src="js/routing/origin.js?v=12"></script>
     <script src="js/routing/route_request.js?v=1"></script>
     <script src="js/routing/route_layer.js?v=14"></script>
     <script src="js/routing/route_visibility.js?v=10"></script>
     <script src="js/routing/baseline_layer.js?v=10"></script>
     <script src="js/routing/segment_highlight.js?v=10"></script>
     <script src="js/routing/segment_hover.js?v=5"></script>
+    <script src="js/ui/a11y.js?v=1"></script>
     <script src="js/ui/tabs.js?v=5"></script>
     <script src="js/ui/sidebar.js?v=10"></script>
     <script src="js/ui/rainfall.js?v=7"></script>
@@ -775,7 +777,7 @@
     <script src="js/navigation/live_location.js?v=1"></script>
     <script src="js/navigation/map_3d.js?v=6"></script>
     <script src="js/navigation/follow_camera.js?v=2"></script>
-    <script src="js/navigation/follow_2d.js?v=1"></script>
+    <script src="js/navigation/follow_2d.js?v=2"></script>
     <script src="js/navigation/nav_ui.js?v=3"></script>
     <script src="js/navigation/nav_session.js?v=3"></script>
     <script src="js/pwa.js?v=1"></script>

@@ -237,7 +237,11 @@ function createOriginMarker(latlng) {
         iconSize: [14, 14],
         iconAnchor: [7, 7]
     });
-    window.appState.originMarker = L.marker(latlng, { icon }).addTo(window.appState.map);
+    window.appState.originMarker = L.marker(latlng, {
+        icon,
+        title: 'Where you are starting from',
+        alt: 'Where you are starting from',
+    }).addTo(window.appState.map);
 }
 
 function removeOriginMarker() {

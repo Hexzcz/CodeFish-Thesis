@@ -20,7 +20,12 @@ function updateUserPosition2D(map, fix, following) {
             iconSize: [26, 26],
             iconAnchor: [13, 13],
         });
-        userMarker2d = L.marker(latlng, { icon, zIndexOffset: 1000 }).addTo(map);
+        userMarker2d = L.marker(latlng, {
+            icon,
+            zIndexOffset: 1000,
+            title: 'Your current location',
+            alt: 'Your current location',
+        }).addTo(map);
     } else {
         userMarker2d.setLatLng(latlng);
     }
