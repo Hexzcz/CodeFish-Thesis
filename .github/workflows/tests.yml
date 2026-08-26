@@ -1,0 +1,36 @@
+name: tests
+
+# Every push and every pull request. The suite is fast (about two seconds);
+# the install is the slow part, so pip is cached.
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # Matches the local venv. 3.9 and earlier cannot install current
+          # geopandas or rasterio.
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        # USE_LOCAL_DATA keeps the suite off the network: no database, no
+        # waiting out connection timeouts on a runner that cannot reach one.
+        env:
+          USE_LOCAL_DATA: '1'
+        run: pytest -q

@@ -5,8 +5,8 @@
 ## Context
 
 The road network, the evacuation centers and their map layers were read
-exclusively from Supabase, with the connection string hardcoded as a fallback
-default. When that project became unreachable, the app still started — and
+exclusively from Supabase, with the connection string — password included —
+hardcoded as a fallback default. When that project became unreachable, the app still started — and
 served an empty graph, no destinations, and a map with no roads. Nothing said
 anything was wrong until a route request returned nothing.
 
@@ -23,6 +23,12 @@ loader falls back on its own:
   and a failed connection are indistinguishable to a user;
 - `USE_LOCAL_DATA=1` skips the database entirely, which also skips ~20 seconds
   of connection timeouts at startup.
+
+Amended 2026-08-26: `DATABASE_URL` now has no default at all. Unset, the app
+reads the bundled files — so the offline path is what a fresh clone gets,
+rather than something you have to know to ask for. The credential that used to
+sit in `database.py` is gone from the source; see
+`tests/test_no_committed_secrets.py`.
 
 ## Consequences
 

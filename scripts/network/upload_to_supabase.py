@@ -1,11 +1,21 @@
-import geopandas as gpd
-from sqlalchemy import create_engine
 import os
+import sys
 
-# --- Replace this with your actual Supabase connection string ---
-# You can find this in Supabase -> Settings -> Database -> Connection string (URI)
-# It looks like: postgresql://postgres.xxxxxxxx:your_password@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
-DB_CONNECTION_URL = "postgresql://postgres:pWkejwZmBik1tMYr@db.uniqqsjwsqnboeuzhdyf.supabase.co:5432/postgres"
+import geopandas as gpd
+from dotenv import load_dotenv
+from sqlalchemy import create_engine
+
+# The connection string comes from the environment — Supabase gives it under
+# Settings -> Database -> Connection string (URI). Never commit it.
+load_dotenv()
+DB_CONNECTION_URL = os.environ.get("DATABASE_URL", "").strip()
+
+if not DB_CONNECTION_URL:
+    sys.exit(
+        "DATABASE_URL is not set.\n"
+        "  export DATABASE_URL='postgresql://user:password@host:5432/postgres'\n"
+        "...or put it in a .env file next to this repo. See .env.example."
+    )
 
 print("Connecting to Supabase...")
 engine = create_engine(DB_CONNECTION_URL)

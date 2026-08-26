@@ -9,7 +9,7 @@ XGBoost flood-susceptibility model and TOPSIS multi-criteria ranking.
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-USE_LOCAL_DATA=1 .venv/bin/python -m uvicorn backend.main:app --reload
+.venv/bin/python -m uvicorn backend.main:app --reload
 ```
 
 Then open http://localhost:8000. On Windows, `run_app.ps1` does the same;
@@ -25,11 +25,29 @@ criteria weights, raster layers, and the full TOPSIS/WSM analysis panel. The
 choice is remembered per browser; each view links to the other. See
 [ADR-0005](docs/decisions/0005-two-views.md).
 
-`USE_LOCAL_DATA=1` runs entirely from the bundled data in `backend/data/`, with
-no database. Without it the app tries Supabase first (`DATABASE_URL`) and falls
-back to the same files if it cannot reach it — so it works either way, it just
-waits for the connection to time out first. See
+With no configuration it runs entirely from the bundled data in
+`backend/data/` — no database, no waiting for a connection that isn't there.
+Point it at Postgres by setting `DATABASE_URL`, and it will use that instead,
+falling back to the same files if it becomes unreachable. See
 [ADR-0002](docs/decisions/0002-local-geojson-fallback.md).
+
+## Configuration
+
+Every setting is optional and read from the environment. Copy the template and
+fill in what you need:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Effect if unset |
+|---|---|
+| `DATABASE_URL` | Reads the bundled GeoJSON instead of Postgres |
+| `JAXA_USER` / `JAXA_PASS` | Live rainfall is disabled and says so; the simulator still works |
+| `USE_LOCAL_DATA` | Implied whenever `DATABASE_URL` is unset |
+
+`.env` is gitignored. No credential belongs in the source — a test
+(`tests/test_no_committed_secrets.py`) fails the build if one reappears.
 
 The Esri basemap and the JAXA rainfall fetch need the internet; routing does
 not. Offline, the map draws without a basemap and rainfall reads 0.00 mm/hr.
@@ -64,6 +82,9 @@ but cannot check progress or reroute, and says so. See
 ```bash
 .venv/bin/python -m pytest tests -q
 ```
+
+Every push runs the same suite on GitHub Actions — see
+[.github/workflows/tests.yml](.github/workflows/tests.yml).
 
 ## Where things are
 

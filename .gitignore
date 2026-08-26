@@ -10,6 +10,8 @@ build/
 # ── Environment & secrets ─────────────────────────────────────────────────────
 .env
 .env.*
+# ...but the template, which holds only variable names, is tracked.
+!.env.example
 
 # ── OS / editor junk ──────────────────────────────────────────────────────────
 .DS_Store

@@ -18,9 +18,9 @@ class RainfallUnavailable(RuntimeError):
     """The rainfall file could not be fetched. The message is user-facing."""
 
 
+from backend.core.config import JAXA_PASS, JAXA_USER
+
 JAXA_HOST = "hokusai.eorc.jaxa.jp"
-JAXA_USER = "rainmap"
-JAXA_PASS = "Niskur+1404"
 
 # GSMaP_NOW: half-hourly rain rate for the latest 24 hours.
 # Files are named gsmap_now.YYYYMMDD.HHNN.dat.gz (UTC start time); the
@@ -77,6 +77,12 @@ def fetch_rainfall(
 
     Raises RainfallUnavailable if the file cannot be fetched.
     """
+    if not JAXA_USER or not JAXA_PASS:
+        raise RainfallUnavailable(
+            "Live rainfall is not configured on this server. Set JAXA_USER and "
+            "JAXA_PASS, or choose a rainfall level by hand in the console."
+        )
+
     try:
         ftp = ftplib.FTP(JAXA_HOST, timeout=20)
         ftp.login(JAXA_USER, JAXA_PASS)

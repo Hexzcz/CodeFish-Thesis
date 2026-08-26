@@ -1,6 +1,13 @@
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
+# Read .env before anything asks for a setting. Everything the app is told
+# from outside is read here, so there is one place to look — and one place
+# that has to stay free of real values.
+load_dotenv()
+
 # Base directory (backend folder)
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -95,6 +102,24 @@ FLOOD_COLORMAP = {
 # The DEM the 3D view drapes its terrain over, served as Terrain-RGB tiles.
 TERRAIN_RASTER = RASTER_PATHS['elevation']
 
-# When set, skip all database access and read road/center data from the
-# bundled GeoJSON files in backend/data/geojson (fully offline mode).
-USE_LOCAL_DATA = os.environ.get("USE_LOCAL_DATA", "0").lower() in ("1", "true", "yes")
+def _flag(name: str) -> bool:
+    return os.environ.get(name, "0").strip().lower() in ("1", "true", "yes")
+
+
+# ── Settings from the environment ───────────────────────────────────────────
+# No defaults with real values. A missing credential disables the feature that
+# needs it and says so; it never falls back to something committed here.
+
+# Postgres/Supabase holding the road network and evacuation centers.
+# Unset is a supported way to run: the app reads the bundled GeoJSON instead.
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+
+# JAXA GSMaP FTP, for live rainfall. Register at
+# https://sharaku.eorc.jaxa.jp/GSMaP/ to get an account.
+JAXA_USER = os.environ.get("JAXA_USER", "").strip()
+JAXA_PASS = os.environ.get("JAXA_PASS", "").strip()
+
+# Skip the database and read everything from backend/data/geojson. Set
+# explicitly, or implied by having no database configured at all — a fresh
+# clone should run offline rather than wait out connection timeouts.
+USE_LOCAL_DATA = _flag("USE_LOCAL_DATA") or not DATABASE_URL
