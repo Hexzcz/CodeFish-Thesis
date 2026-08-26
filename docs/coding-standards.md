@@ -58,5 +58,6 @@ Each has a test. Changing one means changing the test deliberately.
 | Area | Command |
 |---|---|
 | Dependency rule, routing, offline data | `.venv/bin/python -m pytest tests -q` |
+| The resident's view in a real browser | `npm test --prefix tests/e2e` |
 | App starts with nothing plugged in | `USE_LOCAL_DATA=1 .venv/bin/python -m uvicorn backend.main:app` |
 | A route still comes back | `POST /route` with an origin inside District 1 |

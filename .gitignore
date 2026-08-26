@@ -18,6 +18,8 @@ build/
 Thumbs.db
 *.log
 node_modules/
+# Puppeteer downloads a browser; it does not belong in the repo.
+.cache/puppeteer/
 
 # ── Temp / scratch ────────────────────────────────────────────────────────────
 cache/

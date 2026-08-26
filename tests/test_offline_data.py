@@ -3,9 +3,13 @@
 These read the bundled GeoJSON in `backend/data/` — the same files the
 fallback uses — so a broken export fails here rather than at a demo.
 """
+import json
+
 import pytest
 
 from backend.adapters.evacuation_centers import load_centers_from_file
+from backend.core.config import GEOJSON_DIR
+from backend.domain.geo import point_in_boundary
 from backend.adapters.road_network import build_graph_from_files
 from backend.domain.prediction.rainfall_scenario import scenario_for_intensity
 
@@ -38,25 +42,28 @@ def test_evacuation_centers_load_from_file():
     assert all(center['facility'] for center in centers)
 
 
-@pytest.mark.xfail(
-    reason="Data defect: 'Salvacion Barangay Hall' (id 49) is geocoded to "
-           "(7.319, 125.687) — a Salvacion in Mindanao, ~1000 km from Quezon "
-           "City. Barangay Salvacion is in District 1, so the record belongs; "
-           "its coordinates do not. Fix the coordinate in "
-           "backend/data/geojson/evacuation_centers.geojson (and in Supabase) "
-           "and this passes.",
-    strict=False,
-)
-def test_every_center_is_in_metro_manila():
-    """A center in the wrong province is a destination nobody can evacuate to.
+def test_every_center_is_inside_district_1():
+    """A center in the wrong place is a destination nobody can evacuate to.
 
-    Routing never picks it — it is thousands of times too far — but it is
-    drawn on the map and it is one row away from being chosen if someone
-    routes from near it.
+    This caught "Salvacion Barangay Hall" sitting at (7.319, 125.687) — a
+    Salvacion in Mindanao, about 1,000 km from Quezon City, from a geocoding
+    pass that matched the wrong one. Routing never picked it, because it was
+    thousands of times too far, but it was drawn on the map and it was one row
+    away from being chosen by someone routing from near it.
+
+    Checked against the real boundary rather than a bounding box: the wrong
+    Salvacion was in the Philippines, and a box around Metro Manila would not
+    have caught a mistake one city over.
     """
-    for center in load_centers_from_file():
-        assert 14.0 < center['lat'] < 15.5, f"{center['facility']} is at lat {center['lat']}"
-        assert 120.5 < center['lon'] < 121.5, f"{center['facility']} is at lon {center['lon']}"
+    boundary = json.loads((GEOJSON_DIR / "district1_boundary.geojson").read_text())
+    feature = boundary["features"][0]
+
+    outside = [
+        center["facility"]
+        for center in load_centers_from_file()
+        if not point_in_boundary(center["lat"], center["lon"], feature)
+    ]
+    assert not outside, f"evacuation centers outside District 1: {outside}"
 
 
 @pytest.mark.parametrize("mm_per_hour,expected", [

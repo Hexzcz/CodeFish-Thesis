@@ -1,0 +1,11 @@
+{
+  "name": "codefish-e2e",
+  "private": true,
+  "description": "Browser tests for the resident's view. Run with: npm test",
+  "scripts": {
+    "test": "node run.js"
+  },
+  "devDependencies": {
+    "puppeteer": "^25.9.0"
+  }
+}

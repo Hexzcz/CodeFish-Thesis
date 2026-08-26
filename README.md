@@ -83,7 +83,15 @@ but cannot check progress or reroute, and says so. See
 .venv/bin/python -m pytest tests -q
 ```
 
-Every push runs the same suite on GitHub Actions — see
+Browser tests drive the resident's view in a real browser — routing, the 3D
+map, and a walk with emulated GPS:
+
+```bash
+npm install --prefix tests/e2e   # once
+npm test --prefix tests/e2e      # starts the app itself
+```
+
+Every push runs both suites on GitHub Actions — see
 [.github/workflows/tests.yml](.github/workflows/tests.yml).
 
 ## Where things are
