@@ -8,6 +8,10 @@ from backend.core.config import LAYERS_MAP, SCENARIOS, TERRAIN_RASTER
 
 from backend.api.dependencies import get_app_state
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 router = APIRouter()
 
 @router.get("/tiles/terrain-rgb/{z}/{x}/{y}.png")
@@ -33,7 +37,7 @@ async def get_terrain_tile(z: int, x: int, y: int):
         return Response(content=content, media_type="image/png",
                         headers={"Cache-Control": "public, max-age=86400"})
     except Exception as e:
-        print(f"Terrain tile error {z}/{x}/{y}: {e}")
+        log.warning(f"Terrain tile error {z}/{x}/{y}: {e}")
         return Response(content=get_transparent_tile(), media_type="image/png")
 
 
@@ -78,7 +82,7 @@ async def get_tile(layer_name: str, z: int, x: int, y: int, clip: bool = Query(T
                         headers={"Cache-Control": "public, max-age=3600"})
 
     except Exception as e:
-        print(f"Tile error {layer_name} {z}/{x}/{y}: {e}")
+        log.warning(f"Tile error {layer_name} {z}/{x}/{y}: {e}")
         return Response(content=get_transparent_tile(), media_type="image/png")
 
 @router.get("/flood-segments")

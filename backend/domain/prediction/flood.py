@@ -3,16 +3,20 @@ from typing import Dict, Any
 from backend.domain.graph import Graph
 from backend.core.config import SCENARIOS, MODEL_FEATURES
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 
 def _feature_row(feats: Dict[str, float]) -> list[float]:
     return [feats[name] for name in MODEL_FEATURES]
 
 def precompute_predictions(graph: Graph, models: Dict[str, Any]) -> Graph:
     """Pre-compute flood predictions for all edges × scenarios."""
-    print("      Pre-computing flood predictions...")
+    log.info("      Pre-computing flood predictions...")
 
     if not models:
-        print("      Skipped — no models available")
+        log.warning("      Skipped — no models available")
         return graph
 
     for scenario in SCENARIOS:
@@ -53,7 +57,7 @@ def precompute_predictions(graph: Graph, models: Dict[str, Any]) -> Graph:
 
             count += 1
 
-        print(f"      {scenario}: {count} edges processed")
+        log.info(f"      {scenario}: {count} edges processed")
     
     return graph
 
@@ -115,4 +119,4 @@ def predict_scenario_on_the_fly(graph: Graph, models: Dict[str, Any], scenario: 
                 rev[f'flood_proba_{scenario}'] = flood_proba
                 rev[f'flood_proba_array_{scenario}'] = proba.tolist()
     except Exception as e:
-        print(f"On-the-fly inference failed for {scenario}: {e}")
+        log.warning(f"On-the-fly inference failed for {scenario}: {e}")

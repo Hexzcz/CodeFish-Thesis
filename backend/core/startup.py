@@ -13,18 +13,22 @@ from backend.adapters.road_network import build_graph, load_road_geojson
 from backend.core.config import GEOJSON_PATHS
 from backend.domain.routing.connectivity import ensure_connected
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 _STEPS = 7
 
 
 def _step(n: int, message: str) -> None:
-    print(f"[{n}/{_STEPS}] {message}")
+    log.info(f"[{n}/{_STEPS}] {message}")
 
 
 async def startup() -> dict:
     """Assemble the application state. Returns the dict the API reads from."""
-    print("=" * 52)
-    print("  CodeFish Flood-Aware Routing — Starting Up  ")
-    print("=" * 52)
+    log.info("=" * 52)
+    log.info("  CodeFish Flood-Aware Routing — Starting Up  ")
+    log.info("=" * 52)
 
     _step(1, "Loading road network...")
     graph = build_graph()
@@ -48,10 +52,10 @@ async def startup() -> dict:
     road_geojson = load_road_geojson()
     evac_geojson = load_centers_geojson()
 
-    print()
-    print("Application ready.")
-    print("POST /route — flood-aware routing active")
-    print("=" * 52)
+    log.info("")
+    log.info("Application ready.")
+    log.info("POST /route — flood-aware routing active")
+    log.info("=" * 52)
 
     return {
         'graph': graph,
@@ -73,8 +77,8 @@ def _load_boundary() -> dict | None:
     try:
         with open(path, 'r') as f:
             boundary = json.load(f)
-        print(f"  Loaded boundary from {path}")
+        log.info(f"  Loaded boundary from {path}")
         return boundary
     except (OSError, json.JSONDecodeError) as e:
-        print(f"  Warning: Could not load boundary geojson: {e}")
+        log.warning(f"  Warning: Could not load boundary geojson: {e}")
         return None

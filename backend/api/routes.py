@@ -6,7 +6,7 @@ domain error onto a status code. The routing itself lives in
 """
 import time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from backend.adapters.reporting.route_report import (
     print_baseline_comparison,
@@ -19,7 +19,12 @@ from backend.api.schemas import (
     ShortestDistanceRequest,
     ShortestPathRequest,
 )
-from backend.core.config import SCENARIOS
+from backend.core.config import (
+    ROUTE_RATE_LIMIT,
+    ROUTE_RATE_WINDOW_SECONDS,
+    SCENARIOS,
+)
+from backend.core.rate_limit import RateLimiter
 from backend.domain.prediction.flood import predict_scenario_on_the_fly
 from backend.domain.routing.distance import shortest_distance, shortest_distance_path
 from backend.domain.routing.scoring import score_routes
@@ -33,6 +38,26 @@ from backend.domain.services.route_planner import (
 )
 
 router = APIRouter()
+
+# Shared by the three routing endpoints: they cost the same to serve, and a
+# caller who exhausts one has exhausted the server either way.
+_limiter = RateLimiter(ROUTE_RATE_LIMIT, ROUTE_RATE_WINDOW_SECONDS, name="route")
+
+
+def _require_capacity(request: Request) -> None:
+    """Refuse politely rather than letting one caller starve everyone else."""
+    caller = request.client.host if request.client else "unknown"
+    if _limiter.allows(caller):
+        return
+
+    raise HTTPException(
+        status_code=429,
+        detail=(
+            f"Too many route requests — the limit is {ROUTE_RATE_LIMIT} a minute. "
+            "Wait a moment and try again."
+        ),
+        headers={"Retry-After": str(_limiter.retry_after(caller))},
+    )
 
 
 def _require_valid_origin(lat: float, lon: float) -> None:
@@ -61,8 +86,9 @@ def _ensure_scenario_predicted(state: dict, scenario: str) -> None:
 
 
 @router.post("/route/shortest-distance")
-async def shortest_distance_baseline(req: ShortestDistanceRequest, state: dict = Depends(get_app_state)):
+async def shortest_distance_baseline(request: Request, req: ShortestDistanceRequest, state: dict = Depends(get_app_state)):
     """Distance-only shortest path (Dijkstra) to each destination."""
+    _require_capacity(request)
     _require_valid_origin(req.origin_lat, req.origin_lon)
 
     # Snapping mutates the graph, so every request works on its own copy.
@@ -94,8 +120,9 @@ async def shortest_distance_baseline(req: ShortestDistanceRequest, state: dict =
 
 
 @router.post("/route/shortest-path")
-async def shortest_path_baseline(req: ShortestPathRequest, state: dict = Depends(get_app_state)):
+async def shortest_path_baseline(request: Request, req: ShortestPathRequest, state: dict = Depends(get_app_state)):
     """Distance-only shortest path geometry and metrics, for side-by-side compare."""
+    _require_capacity(request)
     _require_valid_origin(req.origin_lat, req.origin_lon)
     _require_known_scenario(req.scenario)
 
@@ -153,8 +180,9 @@ async def shortest_path_baseline(req: ShortestPathRequest, state: dict = Depends
 
 
 @router.post("/route")
-async def find_route(request: RouteRequest, state: dict = Depends(get_app_state)):
+async def find_route(http_request: Request, request: RouteRequest, state: dict = Depends(get_app_state)):
     """Rank flood-aware evacuation routes from an origin to nearby centers."""
+    _require_capacity(http_request)
     started = time.time()
     _require_valid_origin(request.origin_lat, request.origin_lon)
     _require_known_scenario(request.scenario)

@@ -10,6 +10,10 @@ from typing import Dict
 from backend.core.config import GEOJSON_PATHS
 from backend.domain.graph import Graph
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 
 def _blank_edge_data(osmid, name, highway, length, coords) -> Dict:
     return {
@@ -33,7 +37,7 @@ def build_graph_from_files() -> Graph:
     graph = Graph()
     max_edge_length_found = 0.0
 
-    print("Loading nodes from local GeoJSON...")
+    log.info("Loading nodes from local GeoJSON...")
     with open(GEOJSON_PATHS['road_nodes'], 'r') as f:
         nodes_geojson = json.load(f)
     for feature in nodes_geojson.get('features', []):
@@ -45,7 +49,7 @@ def build_graph_from_files() -> Graph:
             continue
         graph.add_node(str(props.get('osmid')), lat=float(lat), lon=float(lon))
 
-    print("Loading edges from local GeoJSON...")
+    log.info("Loading edges from local GeoJSON...")
     with open(GEOJSON_PATHS['road_edges'], 'r') as f:
         edges_geojson = json.load(f)
     for feature in edges_geojson.get('features', []):
@@ -68,7 +72,7 @@ def build_graph_from_files() -> Graph:
         ))
 
     graph.max_edge_length = max_edge_length_found
-    print(f"Graph built with {graph.node_count()} nodes and {graph.edge_count()} edges.")
+    log.info(f"Graph built with {graph.node_count()} nodes and {graph.edge_count()} edges.")
     return graph
 
 def build_graph() -> Graph:
@@ -87,14 +91,14 @@ def build_graph() -> Graph:
     try:
         with get_db_connection() as conn:
             # 1. Load Nodes
-            print("Fetching nodes from Supabase...")
+            log.info("Fetching nodes from Supabase...")
             nodes_result = conn.execute(text("SELECT osmid, lat, lon FROM road_nodes"))
             for row in nodes_result:
                 osmid_str = str(row[0])
                 graph.add_node(osmid_str, lat=row[1], lon=row[2])
 
             # 2. Load Edges
-            print("Fetching edges from Supabase...")
+            log.info("Fetching edges from Supabase...")
             edges_result = conn.execute(text("SELECT u, v, osmid, name, highway, length, ST_AsGeoJSON(geom) as geom_json FROM road_edges"))
             for row in edges_result:
                 u = str(row[0])
@@ -115,12 +119,12 @@ def build_graph() -> Graph:
                     row[2], row[3], row[4], l_val, coords_raw
                 ))
 
-        print(f"Graph built with {graph.node_count()} nodes and {graph.edge_count()} edges.")
+        log.info(f"Graph built with {graph.node_count()} nodes and {graph.edge_count()} edges.")
     except Exception as e:
-        print(f"Error building graph from DB: {e}")
+        log.warning(f"Error building graph from DB: {e}")
 
     if graph.edge_count() == 0:
-        print("  Falling back to local GeoJSON road network.")
+        log.warning("  Falling back to local GeoJSON road network.")
         return build_graph_from_files()
 
     graph.max_edge_length = max_edge_length_found
@@ -159,10 +163,10 @@ def load_road_geojson() -> Dict:
                     },
                 })
     except Exception as e:
-        print(f"Error fetching road_geojson from DB: {e}")
+        log.warning(f"Error fetching road_geojson from DB: {e}")
 
     if not road_geojson["features"]:
-        print("  Falling back to local road edges GeoJSON.")
+        log.warning("  Falling back to local road edges GeoJSON.")
         return _road_geojson_from_file()
     return road_geojson
 

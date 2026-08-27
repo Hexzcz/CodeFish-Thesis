@@ -71,6 +71,15 @@ whether a status change is announced.
 - Check `res.ok` before reading a response body. A 400 carries a sentence worth
   showing; ignoring it produces a `TypeError` three functions later.
 
+## Logging
+
+- **Nothing prints.** `get_logger(__name__)` from `core/logging.py`; a test
+  fails the build on a `print(` anywhere in `backend/`.
+- **Levels mean something.** Progress is `info`, a fallback or a swallowed
+  failure is `warning`. If it went wrong, it is not `info`.
+- The per-request scoring tables log to `codefish.report`, so
+  `REPORT_LEVEL=WARNING` silences them without quieting the app.
+
 ## Gates (must pass before a commit is recommended)
 
 | Area | Command |

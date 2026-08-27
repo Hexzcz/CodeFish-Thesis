@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from backend.core.logging import configure_logging, get_logger
 from backend.core.startup import startup
 from backend.api import routes, layers, network, centers, rainfall, geocode, navigation
 import os
@@ -10,6 +11,10 @@ import os
 # Base directory for static files (frontend)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
+
+configure_logging()
+log = get_logger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,7 +52,9 @@ app.add_middleware(GZipExceptTiles, minimum_size=1024)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    # No cookies, no auth headers: nothing here is credentialed, and "*" with
+    # credentials is a combination browsers refuse anyway.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

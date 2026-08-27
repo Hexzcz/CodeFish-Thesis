@@ -6,6 +6,10 @@ from typing import Dict
 from backend.domain.graph import Graph
 from backend.core.config import RASTER_PATHS, DEFAULT_FEATURES
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 def _sample_raster(path: str, lat: float, lon: float, default: float) -> float:
     """Sample a single raster value at (lat, lon). Returns default on error."""
     try:
@@ -32,7 +36,7 @@ def sample_rasters(graph: Graph) -> Graph:
     available = {k: v for k, v in RASTER_PATHS.items() if os.path.exists(v)}
     missing = set(RASTER_PATHS) - set(available)
     if missing:
-        print(f"      WARNING: rasters not found: {missing}")
+        log.warning(f"      WARNING: rasters not found: {missing}")
 
     count = 0
     for (u, v), edge in list(graph.edges.items()):
@@ -71,7 +75,7 @@ def sample_rasters(graph: Graph) -> Graph:
 
         count += 1
         if count % 500 == 0:
-            print(f"      Sampled {count} edges...")
+            log.info(f"      Sampled {count} edges...")
 
-    print(f"      Sampled {count} edges")
+    log.info(f"      Sampled {count} edges")
     return graph

@@ -119,6 +119,12 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 JAXA_USER = os.environ.get("JAXA_USER", "").strip()
 JAXA_PASS = os.environ.get("JAXA_PASS", "").strip()
 
+# How many route requests one caller may make per minute. Routing is the most
+# expensive thing this server does; the default is generous for a person and
+# uninteresting to a script.
+ROUTE_RATE_LIMIT = int(os.environ.get("ROUTE_RATE_LIMIT", "30"))
+ROUTE_RATE_WINDOW_SECONDS = 60.0
+
 # Skip the database and read everything from backend/data/geojson. Set
 # explicitly, or implied by having no database configured at all — a fresh
 # clone should run offline rather than wait out connection timeouts.

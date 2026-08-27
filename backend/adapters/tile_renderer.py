@@ -8,6 +8,10 @@ import geopandas as gpd
 import os
 from backend.core.config import GEOJSON_PATHS, FLOOD_COLORMAP
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 STRICT_BOUNDARY_GEOM = None
 if os.path.exists(GEOJSON_PATHS['boundary_strict']):
     try:
@@ -15,7 +19,7 @@ if os.path.exists(GEOJSON_PATHS['boundary_strict']):
         if not _bdf.empty:
             STRICT_BOUNDARY_GEOM = _bdf.geometry.union_all() if hasattr(_bdf.geometry, 'union_all') else _bdf.geometry.unary_union
     except Exception as _e:
-        print(f"Error loading boundary for clipping: {_e}")
+        log.warning(f"Error loading boundary for clipping: {_e}")
 
 def tile_bounds_wgs84(tx, ty, tz):
     n = 2 ** tz

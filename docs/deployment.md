@@ -55,6 +55,10 @@ the host's dashboard — never in the image.
 
 `PORT` is honoured if the platform sets it, which Render and Railway do.
 
+Worth setting once it is live: `REPORT_LEVEL=WARNING` to drop the per-request
+scoring tables from the logs, and `ROUTE_RATE_LIMIT` if 30 requests a minute
+per caller turns out to be the wrong number.
+
 ## The one thing that will break a naive image
 
 `python:3.12-slim` does not ship `libexpat1` or `libgomp1`, and the rasterio

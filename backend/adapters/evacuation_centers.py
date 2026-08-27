@@ -3,6 +3,10 @@ import json
 from typing import List, Dict
 from backend.core.config import GEOJSON_PATHS, USE_LOCAL_DATA
 
+from backend.core.logging import get_logger
+
+log = get_logger(__name__)
+
 def _load_centers_file() -> Dict:
     """Read the bundled evacuation_centers GeoJSON."""
     with open(GEOJSON_PATHS['centers'], 'r') as f:
@@ -22,7 +26,7 @@ def load_centers_from_file() -> List[Dict]:
             'barangay': str(props.get('barangay') or ''),
             'type': str(props.get('type') or 'Other'),
         })
-    print(f"      {len(evacuation_centers)} centers loaded from local GeoJSON")
+    log.info(f"      {len(evacuation_centers)} centers loaded from local GeoJSON")
     return evacuation_centers
 
 def load_centers() -> List[Dict]:
@@ -35,7 +39,7 @@ def load_centers() -> List[Dict]:
         return load_centers_from_file()
 
     evacuation_centers = []
-    print("      Reading evacuation centers from DB...")
+    log.info("      Reading evacuation centers from DB...")
     try:
         with get_db_connection() as conn:
             result = conn.execute(text("SELECT id, barangay, facility, type, ST_AsGeoJSON(geom) FROM evacuation_centers"))
@@ -49,12 +53,12 @@ def load_centers() -> List[Dict]:
                     'barangay': str(row[1] or ''),
                     'type': str(row[3] or 'Other'),
                 })
-        print(f"      {len(evacuation_centers)} centers loaded")
+        log.info(f"      {len(evacuation_centers)} centers loaded")
     except Exception as e:
-        print(f"Error loading centers from DB: {e}")
+        log.warning(f"Error loading centers from DB: {e}")
 
     if not evacuation_centers:
-        print("  Falling back to local evacuation centers GeoJSON.")
+        log.warning("  Falling back to local evacuation centers GeoJSON.")
         return load_centers_from_file()
     return evacuation_centers
 
@@ -86,9 +90,9 @@ def load_centers_geojson() -> Dict:
                     }
                 })
     except Exception as e:
-        print(f"Error loading centers geojson from DB: {e}")
+        log.warning(f"Error loading centers geojson from DB: {e}")
 
     if not geojson["features"]:
-        print("  Falling back to local evacuation centers GeoJSON.")
+        log.warning("  Falling back to local evacuation centers GeoJSON.")
         return _load_centers_file()
     return geojson
