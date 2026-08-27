@@ -55,16 +55,15 @@ function navigationStyle() {
     return {
         version: 8,
         sources: {
-            // The 2D map's Esri basemap stops having tiles above zoom 16 —
-            // it answers z17+ with the same placeholder — so at walking zoom
-            // every tile was a 3x upscale, which is why the 3D view looked
-            // soft. This one has real tiles to z20, and 512px retina ones.
+            // Which provider, and why, is documented on BASEMAP_3D in
+            // config.js. The 2D map's Esri basemap is not reused here because
+            // it has no tiles above zoom 16, and navigation happens at 17.5.
             basemap: {
                 type: 'raster',
-                tiles: ['https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
-                tileSize: 512,
-                maxzoom: 20,
-                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                tiles: BASEMAP_3D.tiles,
+                tileSize: BASEMAP_3D.tileSize,
+                maxzoom: BASEMAP_3D.maxzoom,
+                attribution: BASEMAP_3D.attribution,
             },
             terrain: {
                 type: 'raster-dem',
@@ -78,7 +77,8 @@ function navigationStyle() {
             destination: { type: 'geojson', data: _emptyCollection() },
         },
         layers: [
-            { id: 'basemap', type: 'raster', source: 'basemap' },
+            // Muted to sit under a dark interface rather than fight it.
+            { id: 'basemap', type: 'raster', source: 'basemap', paint: BASEMAP_3D.paint },
             {
                 id: 'route-casing',
                 type: 'line',

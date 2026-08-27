@@ -70,6 +70,62 @@ describe('3D navigation map', () => {
     assert.ok(state.label.length > 0, 'the destination is not labelled');
   });
 
+  test('the basemap is a real map, not a demand for an API key', async () => {
+    // This exists because a provider was swapped in that answered 200 with a
+    // picture reading "API KEY REQUIRED" straight across the map. The tiles
+    // loaded, every test passed, and the app looked broken on a phone. A
+    // watermark or a "no data" placeholder is nearly flat; a real map is not.
+    // Derive the tile from the district itself rather than hardcoding numbers
+    // that quietly point at open ocean.
+    const tileUrl = await page.evaluate(() => {
+      const [lon, lat] = [121.02, 14.645];
+      const z = 17;
+      const n = 2 ** z;
+      const x = Math.floor((lon + 180) / 360 * n);
+      const y = Math.floor((1 - Math.asinh(Math.tan(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+      return get3DMap().getStyle().sources.basemap.tiles[0]
+        .replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
+    });
+
+    const tile = await page.evaluate(async (url) => {
+      const bitmap = await createImageBitmap(await (await fetch(url)).blob());
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const context = canvas.getContext('2d');
+      context.drawImage(bitmap, 0, 0);
+      const { data } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+
+      const counts = new Map();
+      for (let i = 0; i < data.length; i += 4) {
+        const colour = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
+        counts.set(colour, (counts.get(colour) || 0) + 1);
+      }
+      const pixels = data.length / 4;
+      return {
+        colours: counts.size,
+        dominantShare: Math.max(...counts.values()) / pixels,
+      };
+    }, tileUrl);
+
+    // Two checks, because the two ways this fails look different. Measured
+    // over District 1 at zoom 17:
+    //
+    //   Carto without a key   15 colours,  45% one colour  ← watermark
+    //   Esri dark canvas     123 colours,  94% one colour  ← "no data" tile
+    //   OpenStreetMap        256 colours,  37% one colour  ← a real map
+    //   Esri imagery      42,808 colours, 0.1% one colour  ← a real map
+    assert.ok(
+      tile.colours > 40,
+      `the basemap tile has only ${tile.colours} distinct colours — that is a ` +
+      'watermark or an error image, not a map'
+    );
+    assert.ok(
+      tile.dominantShare < 0.8,
+      `${Math.round(tile.dominantShare * 100)}% of the basemap tile is a single ` +
+      'colour — the provider has no tiles at this zoom'
+    );
+  });
+
+
   test('terrain tiles come from CodeFish, not a third party', async () => {
     // The DEM is the project's own; a 3D view that depended on someone else's
     // elevation service would stop working offline.

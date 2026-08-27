@@ -59,6 +59,25 @@ Worth setting once it is live: `REPORT_LEVEL=WARNING` to drop the per-request
 scoring tables from the logs, and `ROUTE_RATE_LIMIT` if 30 requests a minute
 per caller turns out to be the wrong number.
 
+## Before this is public: the basemap
+
+The 3D view draws OpenStreetMap's own tiles, which need no API key and have
+detail at walking zoom. OSM's tile usage policy is for light use, and
+distributing an app on their servers is not that — so a public deployment
+should move to a keyed provider (MapTiler, Carto, Stadia all have free tiers).
+
+That is a change to `BASEMAP_3D` in `frontend/js/config.js` and nothing else.
+
+Two providers that look like they work and do not:
+
+| Provider | What you get |
+|---|---|
+| Carto without a key | tiles reading "API KEY REQUIRED" across the map |
+| Esri dark canvas | "Map data not yet available" above zoom 16 |
+
+Both answer HTTP 200, so nothing fails — the map just looks broken.
+`tests/e2e/map_3d.test.js` fetches a tile and measures it, and fails on either.
+
 ## The one thing that will break a naive image
 
 `python:3.12-slim` does not ship `libexpat1` or `libgomp1`, and the rasterio
