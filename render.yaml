@@ -1,0 +1,21 @@
+# Render. Create the service from this file with a Blueprint deploy, or point
+# a new Web Service at this repo and it will be picked up.
+#
+# The free plan gives 512 MB and spins the service down after inactivity, so
+# the first request after a quiet period waits through a cold start — startup
+# loads three models and samples the terrain. Fine for coursework, irritating
+# in a live demo; `plan: starter` removes both problems.
+
+services:
+  - type: web
+    name: codefish
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Self-contained by default. Add DATABASE_URL here (marked secret) to
+      # read the road network from Postgres instead.
+      - key: USE_LOCAL_DATA
+        value: "1"

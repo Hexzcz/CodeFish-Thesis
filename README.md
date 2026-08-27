@@ -15,6 +15,16 @@ python3 -m venv .venv
 Then open http://localhost:8000. On Windows, `run_app.ps1` does the same;
 on macOS or Linux, `./run.sh`.
 
+## Deploying it
+
+```bash
+docker build -t codefish . && docker run --rm -p 8000:8000 codefish
+```
+
+Configs for Fly and Render are in the repo. Deploy it for HTTPS above all:
+live location and installing the app both require a secure origin, so neither
+works from a laptop over plain http. See [docs/deployment.md](docs/deployment.md).
+
 ## Two views
 
 `http://localhost:8000` opens the **resident's view**: one question — where are

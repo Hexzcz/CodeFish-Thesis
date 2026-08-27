@@ -1,0 +1,41 @@
+# Fly.io. Deploy with:  fly launch --copy-config --no-deploy   then  fly deploy
+#
+# 1 GB because the app measured 318 MB in the container with all three models
+# loaded and the terrain sampled — comfortable, not extravagant. 512 MB would
+# probably hold, but running an evacuation tool at 60% of its memory ceiling
+# is not a saving worth making.
+
+app = "codefish"
+primary_region = "sin"          # Singapore — the closest region to Manila
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  USE_LOCAL_DATA = "1"          # self-contained; set DATABASE_URL to override
+
+[http_service]
+  internal_port = 8000
+  force_https = true            # geolocation and service workers require it
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  # Keep one machine warm: a resident opening this during a flood should not
+  # wait for a cold start, and startup samples rasters for 3,137 edges.
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 60
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"
+
+[checks.health]
+  type = "http"
+  port = 8000
+  path = "/health"
+  interval = "30s"
+  timeout = "5s"
+  grace_period = "60s"          # startup loads models and samples rasters

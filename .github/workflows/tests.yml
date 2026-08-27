@@ -65,3 +65,35 @@ jobs:
         env:
           CODEFISH_PYTHON: python
         run: npm test --prefix tests/e2e
+
+  docker:
+    name: docker image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t codefish:ci .
+
+      - name: Boot it and check it answers
+        # The wheels link against system libraries that python:*-slim does not
+        # ship. That failure only appears in the container, so the container is
+        # what gets tested.
+        run: |
+          docker run -d --name codefish-ci -p 8000:8000 codefish:ci
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8000/health > /dev/null; then break; fi
+            sleep 5
+          done
+          curl -sf http://127.0.0.1:8000/health
+          curl -sf -X POST http://127.0.0.1:8000/route \
+            -H 'Content-Type: application/json' \
+            -d '{"origin_lat":14.6357,"origin_lon":121.0219,"scenario":"25yr"}' \
+            -o /dev/null
+          echo "image builds, boots, and routes"
+
+      - name: Show the logs if it did not
+        if: failure()
+        run: docker logs codefish-ci || true

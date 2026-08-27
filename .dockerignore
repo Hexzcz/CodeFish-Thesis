@@ -1,0 +1,21 @@
+# Keep the build context small: everything here is either rebuilt inside the
+# image, irrelevant to running the app, or must never be in an image at all.
+.git
+.github
+.venv
+node_modules
+tests
+scripts
+docs
+*.md
+!README.md
+
+# Secrets never go in an image.
+.env
+.env.*
+!.env.example
+
+__pycache__
+**/__pycache__
+*.pyc
+.DS_Store
