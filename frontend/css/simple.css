@@ -201,3 +201,38 @@
 #offline-banner.hidden {
     display: none;
 }
+
+/* ── Language ───────────────────────────────────────────────────────────── */
+.simple-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.language-toggle {
+    display: flex;
+    border: 1px solid var(--border-default);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.language-toggle button {
+    min-width: 38px;
+    min-height: 30px;
+    padding: 4px 9px;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.language-toggle button.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+}

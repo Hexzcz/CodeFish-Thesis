@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="css/compare_tab.css?v=10">
     <link rel="stylesheet" href="css/decision_matrix.css?v=10">
     <link rel="stylesheet" href="css/map.css?v=5">
-    <link rel="stylesheet" href="css/simple.css?v=2">
+    <link rel="stylesheet" href="css/simple.css?v=3">
     <link rel="stylesheet" href="css/simple_result.css?v=3">
     <link rel="stylesheet" href="css/simple_phone.css?v=1">
     <link rel="stylesheet" href="css/admin_phone.css?v=3">
@@ -50,7 +50,7 @@
 
     <div id="app">
 
-        <div id="offline-banner" class="hidden" role="status">
+        <div id="offline-banner" class="hidden" role="status" data-i18n="offline_banner">
             You are offline — a new route needs a connection.
         </div>
 
@@ -73,19 +73,15 @@
         <section id="simple-shell">
             <header class="simple-header">
                 <span class="simple-brand">CODEFISH</span>
-                <span class="simple-tagline">Flood-aware evacuation routing · Quezon City District 1</span>
+                <span class="simple-tagline" data-i18n="tagline">Flood-aware evacuation routing · Quezon City District 1</span>
             </header>
 
             <!-- Step 1: the only question we ask -->
             <div id="simple-asking" class="simple-step-panel">
-                <h1 class="simple-question">Where are you right now?</h1>
-                <button class="simple-primary" id="simple-locate-btn" onclick="simpleUseMyLocation()">
-                    Use my location
-                </button>
-                <button class="simple-secondary" onclick="simpleTapTheMap()">
-                    Or tap the map
-                </button>
-                <p class="simple-hint hidden" id="simple-tap-hint">Tap where you are on the map →</p>
+                <h1 class="simple-question" data-i18n="where_are_you">Where are you right now?</h1>
+                <button class="simple-primary" id="simple-locate-btn" onclick="simpleUseMyLocation()" data-i18n="use_my_location">Use my location</button>
+                <button class="simple-secondary" onclick="simpleTapTheMap()" data-i18n="or_tap_the_map">Or tap the map</button>
+                <p class="simple-hint hidden" id="simple-tap-hint" data-i18n="tap_hint">Tap where you are on the map →</p>
                 <p class="simple-error hidden" id="simple-error" role="alert"></p>
                 <button class="simple-secondary hidden" id="simple-last-route-btn"
                     onclick="showLastRoute()"></button>
@@ -94,18 +90,18 @@
             <!-- Step 2 and 3: waiting -->
             <div id="simple-locating" class="simple-step-panel hidden">
                 <div class="simple-spinner"></div>
-                <p class="simple-waiting">Finding where you are…</p>
+                <p class="simple-waiting" data-i18n="finding_you">Finding where you are…</p>
             </div>
 
             <div id="simple-routing" class="simple-step-panel hidden">
                 <div class="simple-spinner"></div>
-                <p class="simple-waiting">Looking for the safest way out…</p>
+                <p class="simple-waiting" data-i18n="looking_for_route">Looking for the safest way out…</p>
             </div>
 
             <!-- Step 4: the answer -->
             <div id="simple-result" class="simple-step-panel hidden">
                 <p class="simple-stale hidden" id="simple-stale" role="status"></p>
-                <p class="simple-eyebrow">GO HERE</p>
+                <p class="simple-eyebrow" data-i18n="go_here">GO HERE</p>
                 <h1 class="simple-destination" id="simple-destination"></h1>
                 <p class="simple-distance" id="simple-distance"></p>
                 <p class="simple-dest-note hidden" id="simple-dest-note"></p>
@@ -121,23 +117,23 @@
                     Show me the way
                 </button>
                 <ol class="simple-steps hidden" id="simple-directions">
-                    <li class="steps-title">Walk along these roads</li>
+                    <li class="steps-title" data-i18n="walk_along_these">Walk along these roads</li>
                     <div id="simple-steps"></div>
                 </ol>
 
                 <button class="simple-primary" id="simple-navigate-btn"
-                    onclick="startNavigation()">Start navigation</button>
+                    onclick="startNavigation()" data-i18n="start_navigation">Start navigation</button>
 
                 <button class="simple-secondary hidden" id="simple-alternatives-btn"
                     onclick="toggleSimpleAlternatives()"></button>
                 <div class="simple-alternatives hidden" id="simple-alternatives"></div>
 
-                <button class="simple-tertiary" onclick="simpleStartOver()">Start over</button>
+                <button class="simple-tertiary" onclick="simpleStartOver()" data-i18n="start_over">Start over</button>
             </div>
 
             <div id="nav-panel" class="hidden">
                 <div class="nav-head">
-                    <span class="nav-eyebrow">WALKING TO</span>
+                    <span class="nav-eyebrow" data-i18n="walking_to">WALKING TO</span>
                     <h2 class="nav-destination" id="nav-destination"></h2>
                 </div>
 
@@ -152,13 +148,17 @@
 
                 <div class="nav-actions">
                     <button class="simple-secondary hidden" id="nav-recenter-btn"
-                        onclick="recenterNavigation()">Recenter on me</button>
-                    <button class="simple-tertiary" onclick="stopNavigation()">Stop navigation</button>
+                        onclick="recenterNavigation()" data-i18n="recenter_on_me">Recenter on me</button>
+                    <button class="simple-tertiary" onclick="stopNavigation()" data-i18n="stop_navigation">Stop navigation</button>
                 </div>
             </div>
 
             <footer class="simple-footer">
-                <a href="?mode=admin">Advanced view</a>
+                <a href="?mode=admin" data-i18n="advanced_view">Advanced view</a>
+                <div class="language-toggle" id="language-toggle" role="group" aria-label="Language">
+                    <button type="button" data-language="en" onclick="setLanguage('en')">EN</button>
+                    <button type="button" data-language="fil" onclick="setLanguage('fil')">FIL</button>
+                </div>
             </footer>
         </section>
 
@@ -745,6 +745,7 @@
     <!-- Scripts -->
     <script src="vendor/leaflet/leaflet.js"></script>
     <script src="js/mode.js?v=1"></script>
+    <script src="js/i18n.js?v=1"></script>
     <script src="js/config.js?v=6"></script>
     <script src="js/state.js?v=7"></script>
     <script src="js/ui/utils.js?v=5"></script>
@@ -770,16 +771,17 @@
     <script src="js/ui/panel/segments.js?v=17"></script>
     <script src="js/ui/panel/baseline.js?v=17"></script>
     <script src="js/ui/panel/compare.js?v=17"></script>
-    <script src="js/simple/plain_language.js?v=3"></script>
-    <script src="js/simple/result_card.js?v=5"></script>
-    <script src="js/simple/directions.js?v=2"></script>
-    <script src="js/simple/flow.js?v=5"></script>
-    <script src="js/navigation/live_location.js?v=1"></script>
+    <script src="js/simple/plain_language.js?v=4"></script>
+    <script src="js/simple/result_card.js?v=6"></script>
+    <script src="js/simple/directions.js?v=3"></script>
+    <script src="js/simple/flow.js?v=6"></script>
+    <script src="js/navigation/live_location.js?v=2"></script>
     <script src="js/navigation/map_3d.js?v=7"></script>
     <script src="js/navigation/follow_camera.js?v=2"></script>
     <script src="js/navigation/follow_2d.js?v=2"></script>
-    <script src="js/navigation/nav_ui.js?v=3"></script>
-    <script src="js/navigation/nav_session.js?v=3"></script>
+    <script src="js/navigation/rainfall_watch.js?v=1"></script>
+    <script src="js/navigation/nav_ui.js?v=5"></script>
+    <script src="js/navigation/nav_session.js?v=4"></script>
     <script src="js/pwa.js?v=1"></script>
     <script src="js/app.js?v=6"></script>
 </body>

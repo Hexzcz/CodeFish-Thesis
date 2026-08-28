@@ -37,7 +37,7 @@ function navAccuracy(metres) {
     if (!el) return;
     // Worth saying only when it is bad enough to explain a jumpy marker.
     const poor = metres && metres > 30;
-    el.textContent = poor ? `Location accurate to about ${Math.round(metres)} m` : '';
+    el.textContent = poor ? t('accuracy_poor', { metres: Math.round(metres) }) : '';
     el.classList.toggle('hidden', !poor);
 }
 
@@ -51,30 +51,44 @@ function navStatus(text, kind = 'neutral') {
 }
 
 function navOnRoute() {
-    navStatus('Following your location', 'good');
+    navStatus(t('following_you'), 'good');
 }
 
 function navOffRoute() {
-    navStatus('You are off the recommended route', 'warn');
+    navStatus(t('off_route'), 'warn');
 }
 
 function navRerouting() {
-    navStatus('Updating your route…', 'warn');
+    navStatus(t('updating_route'), 'warn');
 }
 
-function navRerouted(route) {
-    navStatus('Safer route updated', 'good');
+function navRerouted(route, reason = 'deviation') {
+    const because = {
+        'heavier-rain': t('route_updated_heavier'),
+        'lighter-rain': t('route_updated_eased'),
+    };
+    navStatus(because[reason] || t('route_updated'), 'good');
     navRemaining((route.properties.total_length_km || 0) * 1000);
 }
 
+/**
+ * Say that the weather moved before the new route arrives.
+ *
+ * Deliberately about rain and not about models: a resident does not need to
+ * know that a 25-year return period just became a 100-year one.
+ */
+function navWeatherChanged(heavier) {
+    navStatus(heavier ? t('rain_heavier_checking') : t('rain_eased_checking'), 'warn');
+}
+
 function navRerouteFailed(message) {
-    navStatus('Could not update your route — keep following the one shown', 'warn');
+    navStatus(t('reroute_failed'), 'warn');
     navError(message);
 }
 
 function navRerouteUnavailable() {
-    navStatus('You are off the route, and offline', 'warn');
-    navError('Your route cannot be updated without a connection. The route shown is the last safe one worked out for you.');
+    navStatus(t('offline_and_off_route'), 'warn');
+    navError(t('reroute_offline'));
 }
 
 /**
@@ -85,19 +99,19 @@ function navRerouteUnavailable() {
  * on track" would be a claim the app cannot make.
  */
 function navOfflineProgress() {
-    navStatus('Following your location — offline', 'warn');
+    navStatus(t('following_offline'), 'warn');
     const el = document.getElementById('nav-remaining');
     if (el) el.textContent = '—';
     const walk = document.getElementById('nav-remaining-walk');
     if (walk) {
-        walk.textContent = 'Distance left and route checks need a connection';
+        walk.textContent = t('distance_needs_connection');
     }
 }
 
 function navArrived() {
-    navStatus('You have arrived', 'good');
+    navStatus(t('arrived'), 'good');
     const walk = document.getElementById('nav-remaining-walk');
-    if (walk) walk.textContent = 'Stay safe';
+    if (walk) walk.textContent = t('stay_safe');
 }
 
 function navError(message) {
@@ -162,3 +176,13 @@ function _setModeButtons(mode) {
     if (to2d) to2d.classList.toggle('active', mode === '2d');
     if (to3d) to3d.classList.toggle('active', mode === '3d');
 }
+
+
+// Switching language mid-walk must not leave half the panel in the old one.
+document.addEventListener('codefish:language-changed', () => {
+    const routes = (window.appState.routeData || {}).routes || [];
+    if (routes.length && typeof renderSimpleResult === 'function') {
+        renderSimpleResult(routes);
+    }
+    if (typeof isNavigating === 'function' && isNavigating()) navOnRoute();
+});

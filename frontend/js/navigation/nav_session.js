@@ -74,6 +74,7 @@ async function startNavigation() {
     }
 
     setFollowing(true);
+    startRainfallWatch();
     if (!startWatchingPosition()) return;    // its own error event explains why
 }
 
@@ -85,6 +86,7 @@ function stopNavigation() {
     session.offRouteStreak = 0;
 
     stopWatchingPosition();
+    stopRainfallWatch();
     removeUserMarker();
     removeUserMarker2D();
     hideNavigationPanel();
@@ -114,6 +116,19 @@ document.addEventListener('codefish:position', (event) => {
 document.addEventListener('codefish:position-error', (event) => {
     if (!session.active) return;
     navError(event.detail.message);
+});
+
+/**
+ * The rain changed which flood model applies, so the route chosen under the
+ * old one may no longer be the safest. Ask for a new one under the new model.
+ */
+document.addEventListener('codefish:scenario-changed', (event) => {
+    if (!session.active || !session.lastFix) return;
+
+    const { to, heavier } = event.detail;
+    window.appState.scenario = to;
+    navWeatherChanged(heavier);
+    _reroute({ reason: heavier ? 'heavier-rain' : 'lighter-rain' });
 });
 
 document.addEventListener('codefish:map-dragged', () => {
@@ -187,10 +202,15 @@ function _applyProgress(progress) {
  * This is the same endpoint, weights and ranking the app used to choose the
  * first route. Nothing here re-implements routing, and if it fails the old
  * route stays on screen rather than being replaced by something shorter.
+ *
+ * Two things ask for it: walking off the route, and the rain changing which
+ * flood model applies. The cooldown covers straying — a change of model is
+ * rare and important enough to bypass it.
  */
-async function _reroute() {
+async function _reroute({ reason = 'deviation' } = {}) {
     const now = Date.now();
-    if (session.rerouting || now - session.lastRerouteAt < REROUTE_COOLDOWN_MS) return;
+    const coolingDown = now - session.lastRerouteAt < REROUTE_COOLDOWN_MS;
+    if (session.rerouting || (coolingDown && reason === 'deviation')) return;
 
     if (!navigator.onLine) {
         navRerouteUnavailable();
@@ -222,7 +242,7 @@ async function _reroute() {
         drawAllRoutes(data.routes);           // keep the 2D view in step
         if (session.mode === '3d') show3DRoute(best, destinationName(best.properties));
         renderSimpleResult(data.routes);
-        navRerouted(best);
+        navRerouted(best, reason);
     } catch (e) {
         console.error('[nav] reroute failed:', e);
         navRerouteFailed(e.message);

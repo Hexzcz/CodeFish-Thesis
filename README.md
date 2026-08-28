@@ -130,4 +130,7 @@ it explains the one rule the layout depends on.
 - Live rainfall from JAXA GSMaP, mapped to a return period by PAGASA
   thresholds — see [ADR-0004](docs/decisions/0004-gsmap-now-rainfall.md)
 - Side-by-side comparison against the plain shortest-distance route
+- English and Filipino, switchable in the resident's view
+- Rainfall re-read while navigating: heavier rain re-checks the route under the
+  model that now applies
 - Usable by keyboard and screen reader, and checked by tests

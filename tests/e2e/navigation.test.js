@@ -75,6 +75,44 @@ describe('live navigation', () => {
     );
   });
 
+  test('heavier rain re-checks the route under the new model', async () => {
+    // The scenario is chosen when the page loads. An evacuation takes half an
+    // hour, and the safest route under the 5-year model is not always the
+    // safest under the 100-year one — so the rain is re-read while walking.
+    const before = await page.evaluate(() => ({
+      scenario: window.appState.scenario,
+      watching: isWatchingRainfall(),
+    }));
+    assert.equal(before.watching, true, 'nothing is watching the rain during navigation');
+
+    const routesBefore = routeRequests.length;
+
+    // Stand in for JAXA reporting heavier rain than when the page loaded.
+    await page.evaluate(() => {
+      const realFetch = window.fetch;
+      window.fetch = (url, options) => {
+        if (String(url).includes('/rainfall/jaxa')) {
+          return Promise.resolve(new Response(JSON.stringify({
+            intensity: 42.0, mapping: '100yr', message: 'stubbed',
+            mode: 'forecast', step: 1, time_ph: 'now',
+          }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+        }
+        return realFetch(url, options);
+      };
+    });
+
+    await page.evaluate(() => checkRainfallNow());
+    await sleep(6000);
+
+    assert.notEqual(
+      await page.evaluate(() => window.appState.scenario), before.scenario,
+      'the flood model did not change with the rain'
+    );
+    assert.ok(routeRequests.length > routesBefore,
+      'the route was not re-checked under the new model');
+    assert.match(await text(page, 'nav-status'), /rain/i);
+  });
+
   test('stopping clears the watcher and the panel', async () => {
     await page.evaluate(() => stopNavigation());
     const state = await page.evaluate(() => ({
@@ -83,5 +121,7 @@ describe('live navigation', () => {
     }));
     assert.equal(state.panelHidden, true, 'the navigation panel is still showing');
     assert.equal(state.navigating, false, 'navigation is still running');
+    assert.equal(await page.evaluate(() => isWatchingRainfall()), false,
+      'the rainfall watcher is still running after navigation stopped');
   });
 });

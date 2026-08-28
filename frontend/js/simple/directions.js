@@ -17,7 +17,7 @@ function renderSimpleDirections(route) {
 
     const streets = _mergeConsecutiveStreets(segments);
     if (!streets.length) {
-        list.innerHTML = '<li class="step-empty">Follow the highlighted route on the map.</li>';
+        list.innerHTML = `<li class="step-empty">${t('follow_route_on_map')}</li>`;
         return;
     }
 
@@ -38,7 +38,7 @@ function toggleSimpleDirections() {
     panel.classList.toggle('hidden', !opening);
 
     const btn = document.getElementById('simple-directions-btn');
-    if (btn) btn.textContent = opening ? 'Hide the way' : 'Show me the way';
+    if (btn) btn.textContent = opening ? t('hide_the_way') : t('show_me_the_way');
 
     if (opening && window.appState.map && window.appState.routeData) {
         const routes = window.appState.routeData.routes || [];
@@ -63,5 +63,5 @@ function _mergeConsecutiveStreets(segments) {
 
 function _streetName(seg) {
     const raw = Array.isArray(seg.name) ? seg.name[0] : seg.name;
-    return raw && raw !== 'Unnamed Road' ? raw : 'Unnamed road';
+    return raw && raw !== 'Unnamed Road' ? raw : t('unnamed_road');
 }

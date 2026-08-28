@@ -18,10 +18,13 @@ const SOME_RISK_EXPOSURE = 0.15;
 
 function walkingTime(metres) {
     const minutes = Math.max(1, Math.round(metres / WALKING_METRES_PER_MINUTE));
-    if (minutes < 60) return `about ${minutes} min walk`;
+    if (minutes < 60) return t('walk_time_minutes', { minutes });
+
     const hours = Math.floor(minutes / 60);
     const rest = minutes % 60;
-    return rest ? `about ${hours} hr ${rest} min walk` : `about ${hours} hr walk`;
+    return rest
+        ? t('walk_time_hours_minutes', { hours, minutes: rest })
+        : t('walk_time_hours', { hours });
 }
 
 function formatDistance(km) {
@@ -40,8 +43,8 @@ function riskySegmentCount(props) {
 /** "all roads clear" / "1 road may flood" / "4 roads may flood" */
 function riskPhrase(props) {
     const risky = riskySegmentCount(props);
-    if (!risky) return 'all roads clear';
-    return risky === 1 ? '1 road may flood' : `${risky} roads may flood`;
+    if (!risky) return t('all_roads_clear');
+    return risky === 1 ? t('one_road_may_flood') : t('n_roads_may_flood', { count: risky });
 }
 
 /** How this route reads to someone deciding whether to take it. */
@@ -52,22 +55,22 @@ function routeVerdict(props) {
     if (exposure >= HIGH_RISK_EXPOSURE) {
         return {
             level: 'high',
-            headline: 'This route crosses flood-prone roads',
-            detail: 'Take care, or wait where you are if you can.',
+            headline: t('route_crosses_flooding'),
+            detail: t('take_care_or_wait'),
         };
     }
     if (exposure >= SOME_RISK_EXPOSURE || risky > 0) {
         return {
             level: 'some',
             headline: risky
-                ? `${risky} of ${props.segment_count} roads on this route may flood`
-                : 'Parts of this route may flood',
-            detail: 'It is still the safest way out from where you are.',
+                ? t('roads_may_flood', { risky, total: props.segment_count })
+                : t('parts_may_flood'),
+            detail: t('still_safest'),
         };
     }
     return {
         level: 'safe',
-        headline: 'This route avoids flood-prone roads',
+        headline: t('route_avoids_flooding'),
         detail: '',
     };
 }
@@ -86,9 +89,7 @@ function whyThisRoute(best, routes) {
 
     if (!shorter.length) return '';
     const allShorterAreRiskier = shorter.every(r => riskySegmentCount(r.properties) > bestRisky);
-    return allShorterAreRiskier
-        ? 'Shorter ways exist, but they cross roads that may flood.'
-        : '';
+    return allShorterAreRiskier ? t('shorter_ways_flood') : '';
 }
 
 /**
@@ -99,7 +100,7 @@ function whyThisRoute(best, routes) {
  * walk to. The count moves to its own quiet line instead.
  */
 function destinationName(props) {
-    const raw = props.destination_name || 'Nearest evacuation center';
+    const raw = props.destination_name || t('nearest_center');
     return raw.replace(/\s*\(\+\d+\s*nearby\)\s*$/, '').trim();
 }
 
@@ -109,8 +110,8 @@ function destinationNote(props) {
     if (!match) return '';
     const others = Number(match[1]);
     return others === 1
-        ? '1 more evacuation center is at the same place'
-        : `${others} more evacuation centers are at the same place`;
+        ? t('one_more_center_here')
+        : t('more_centers_here', { count: others });
 }
 
 /** One line for an alternative route in the list. */

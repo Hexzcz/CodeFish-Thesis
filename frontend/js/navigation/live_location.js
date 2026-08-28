@@ -39,11 +39,11 @@ function startWatchingPosition() {
     if (watchId !== null) return true;
 
     if (!isLiveLocationSupported()) {
-        _fail('This browser cannot follow your location. You can still read the directions.');
+        _fail(t('location_not_supported'));
         return false;
     }
     if (isLiveLocationBlocked()) {
-        _fail('Live location needs a secure (https) connection. You can still read the directions.');
+        _fail(t('location_needs_https'));
         return false;
     }
 
@@ -104,11 +104,11 @@ function _headingFor(position) {
 
 function _onError(error) {
     const messages = {
-        1: 'Location permission was refused. Turn it on in your browser settings to follow your position.',
-        2: 'Your location is unavailable right now — GPS may be blocked indoors.',
-        3: 'Finding your location is taking too long. Move somewhere with a clearer view of the sky.',
+        1: t('location_refused'),
+        2: t('location_unavailable'),
+        3: t('location_slow'),
     };
-    _fail(messages[error.code] || 'Your location could not be found.');
+    _fail(messages[error.code] || t('location_failed'));
 }
 
 function _fail(message) {

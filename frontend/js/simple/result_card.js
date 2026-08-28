@@ -56,7 +56,7 @@ function _renderAlternativesButton(routes) {
     const btn = document.getElementById('simple-alternatives-btn');
     const others = routes.length - 1;
     btn.classList.toggle('hidden', others < 1);
-    btn.textContent = others === 1 ? 'Other option (1)' : `Other options (${others})`;
+    btn.textContent = others === 1 ? t('other_option') : t('other_options', { count: others });
 }
 
 /** The alternatives list, built only when someone asks to see it. */

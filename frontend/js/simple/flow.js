@@ -50,7 +50,7 @@ function simpleUseMyLocation() {
         },
         () => {
             simpleShow('asking');
-            simpleError('Could not get your location. Tap the map to show where you are.');
+            simpleError(t('could_not_get_location'));
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -105,8 +105,8 @@ async function simpleFindRoute() {
         console.error('Route error:', err);
         simpleShow('asking');
         simpleError(navigator.onLine
-            ? (err.message || 'Could not find a route from there.')
-            : 'You are offline, so a new route cannot be worked out. Your last route is below if you had one.');
+            ? (err.message || t('no_route_from_there'))
+            : t('offline_no_new_route'));
         offerLastRoute();
     }
 }
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Offline on arrival: there is nothing to ask for, so lead with what we
     // already know rather than a button that cannot work.
     if (!navigator.onLine) {
-        simpleError('You are offline. A new route needs a connection.');
+        simpleError(t('offline_no_new_route'));
         offerLastRoute();
     }
 

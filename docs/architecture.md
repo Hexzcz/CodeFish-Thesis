@@ -102,13 +102,15 @@ frontend/
 ├── vendor/leaflet/                 vendored, so the map needs no CDN
 └── js/
 ├── mode.js       which face you get: simple, or the admin console
+├── i18n.js       English and Filipino for the resident's view
 ├── pwa.js        registration, the offline banner, the last-route memory
 ├── map/          the Leaflet map and the district outline
 ├── layers/       raster overlays and the road layer
 ├── centers/      evacuation center markers
 ├── routing/      the request, drawing routes, visibility, the baseline
 ├── navigation/   walking it: the GPS watch, the 3D map, the follow camera,
-│                 the session that reroutes when someone strays
+│                 the rainfall watch, and the session that reroutes when
+│                 someone strays or the weather turns
 ├── simple/       the resident's view: the flow, the card, the way there,
 │                 and the one file that turns model output into sentences
 └── ui/           the console: sidebar, rainfall controls, and
