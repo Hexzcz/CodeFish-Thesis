@@ -58,3 +58,28 @@ function getRiskLabel(flood_proba) {
     if (flood_proba < 0.65) return 'High';
     return 'Critical';
 }
+
+
+/**
+ * One colour for a whole route, from its overall flood risk.
+ *
+ * The resident's view draws each route in a single colour: a line that changes
+ * colour every fifty metres is a patchwork, and the thing a person needs from
+ * the map is which route is the safe one, not which individual road is wet.
+ * The per-road colouring survives in the console, where it is the evidence.
+ *
+ * The banding comes from routeVerdict() so the line and the sentence beside it
+ * can never disagree — green next to "this route crosses flood-prone roads"
+ * would be worse than no colour at all.
+ */
+function getRouteColorHex(props) {
+    const level = (typeof routeVerdict === 'function')
+        ? routeVerdict(props || {}).level
+        : 'safe';
+
+    return {
+        safe: '#4caf7d',   // avoids flood-prone roads
+        some: '#ffc107',   // some roads on it may flood
+        high: '#e53935',   // crosses flood-prone roads
+    }[level] || '#4caf7d';
+}

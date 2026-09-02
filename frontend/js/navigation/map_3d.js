@@ -216,19 +216,20 @@ function _placeDestinationLabel(coordinates, name) {
 }
 
 /**
- * Split the route into one feature per drawn segment so each keeps its own
- * flood colour, matching the 2D view rather than inventing a second scheme.
+ * The route as drawn segments, all in the route's own colour.
+ *
+ * This view belongs to the resident, so it follows the 2D resident view: one
+ * colour for the whole route, taken from its overall flood risk. Still one
+ * feature per segment, because the geometry arrives that way.
  */
 function _segmentFeatures(routeFeature) {
     const lines = (routeFeature.geometry || {}).coordinates || [];
-    const segments = (routeFeature.properties || {}).segments || [];
+    const color = getRouteColorHex(routeFeature.properties || {});
 
-    return lines.map((line, index) => ({
+    return lines.map(line => ({
         type: 'Feature',
         geometry: { type: 'LineString', coordinates: line },
-        properties: {
-            color: getRiskColorHex(segments[index] ? segments[index].flood_proba : 0),
-        },
+        properties: { color },
     })).filter(f => f.geometry.coordinates.length > 1);
 }
 

@@ -64,6 +64,26 @@ describe('accessibility', () => {
         assert.deepEqual(announced, { verdict: true, error: true, navStatus: true });
     });
 
+    test('the console keeps its per-road flood colouring', async () => {
+        // The single colour is for residents. The console is where the
+        // segment breakdown is the evidence, so it must not follow.
+        await page.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 });
+        await page.goto(`${BASE_URL}/?mode=admin`, { waitUntil: 'networkidle2' });
+        await page.evaluate(() => {
+            window.appState.placingOrigin = true;
+            window.appState.map.fire('click', { latlng: L.latLng(14.6300, 121.0100) });
+        });
+        await page.evaluate(() => findRoutes());
+        await page.waitForFunction(() => (window._segmentPolylines || []).length > 0,
+            { timeout: 45000, polling: 250 });
+
+        const colours = await page.evaluate(() =>
+            [...new Set((window._segmentPolylines[0] || []).map(p => p.options.color))]);
+
+        assert.ok(colours.length > 1,
+            `the console lost its per-road colouring: ${colours.join(', ')}`);
+    });
+
     test('every switch in the console can be reached and read by a keyboard', async () => {
         // The console is a desktop view: on a phone-width viewport it shows a
         // notice over everything pointing to the resident's view instead, and

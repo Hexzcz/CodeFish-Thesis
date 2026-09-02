@@ -94,10 +94,15 @@ function drawAllRoutes(routes) {
         );
         window._bgPolylines.push(bgPolys);
 
-        // ── 3. Flood-risk-colored segment polylines (on top) ──
+        // ── 3. The coloured line on top ──
+        // One colour for the whole route in the resident's view; per-road in
+        // the console, where the segment breakdown is the point.
+        const wholeRouteColor = currentMode() === 'simple' ? getRouteColorHex(props) : null;
+
         const segPolys = latlngsSegments.map((latlngs, segIdx) => {
             const seg = segments[segIdx];
-            const segColor = seg ? getRiskColorHex(seg.flood_proba || 0) : color;
+            const segColor = wholeRouteColor
+                || (seg ? getRiskColorHex(seg.flood_proba || 0) : color);
             const poly = L.polyline(latlngs, {
                 color: segColor,
                 weight: 5,

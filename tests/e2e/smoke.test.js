@@ -53,6 +53,27 @@ describe('resident view', () => {
     }
   });
 
+  test('a route is drawn in one colour, and it matches what the card says', async () => {
+    // Per-road colouring turns a route into a patchwork. The resident's view
+    // draws each route in a single colour taken from its overall risk — and
+    // that colour has to agree with the sentence printed beside it, because
+    // green next to "this route crosses flood-prone roads" would be worse
+    // than no colour at all.
+    const drawn = await page.evaluate(() => {
+      const colours = [...new Set((window._segmentPolylines[0] || []).map(p => p.options.color))];
+      const props = window.appState.routeData.routes[0].properties;
+      return { colours, level: routeVerdict(props).level, expected: getRouteColorHex(props) };
+    });
+
+    assert.equal(drawn.colours.length, 1,
+      `the route is drawn in ${drawn.colours.length} colours: ${drawn.colours.join(', ')}`);
+    assert.equal(drawn.colours[0], drawn.expected);
+
+    const byLevel = { safe: '#4caf7d', some: '#ffc107', high: '#e53935' };
+    assert.equal(drawn.colours[0], byLevel[drawn.level],
+      `the line is ${drawn.colours[0]} but the card says "${drawn.level}"`);
+  });
+
   test('the way there lists streets in order', async () => {
     await page.evaluate(() => toggleSimpleDirections());
     const steps = await page.$$eval('.simple-step .step-street', els => els.map(e => e.textContent.trim()));
