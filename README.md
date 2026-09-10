@@ -55,12 +55,19 @@ cp .env.example .env
 | `DATABASE_URL` | Reads the bundled GeoJSON instead of Postgres |
 | `JAXA_USER` / `JAXA_PASS` | Live rainfall is disabled and says so; the simulator still works |
 | `USE_LOCAL_DATA` | Implied whenever `DATABASE_URL` is unset |
+| `ROUTE_RATE_LIMIT` | 30 route requests per caller per minute |
+| `LOG_LEVEL` | `INFO`. Nothing prints; a test fails the build on a stray `print(` |
+| `REPORT_LEVEL` | Follows `LOG_LEVEL`. Set it to `WARNING` to drop the per-request scoring tables without quieting the app |
 
 `.env` is gitignored. No credential belongs in the source — a test
 (`tests/test_no_committed_secrets.py`) fails the build if one reappears.
 
-The Esri basemap and the JAXA rainfall fetch need the internet; routing does
-not. Offline, the map draws without a basemap and rainfall reads 0.00 mm/hr.
+Basemap tiles and the JAXA rainfall fetch need the internet; routing does not.
+Offline, the map draws without a basemap and rainfall reads 0.00 mm/hr. The 2D
+map uses Esri's dark canvas; the 3D view uses OpenStreetMap, because Esri has
+no tiles above zoom 16 and navigation happens at 17.5. Both are defined in one
+place — `BASEMAP_3D` in `frontend/js/config.js` — and OSM's tile policy is for
+light use, so read it before putting this in front of a crowd.
 
 ## Installing it on a phone
 
@@ -93,16 +100,23 @@ but cannot check progress or reroute, and says so. See
 .venv/bin/python -m pytest tests -q
 ```
 
-Browser tests drive the resident's view in a real browser — routing, the 3D
-map, and a walk with emulated GPS:
+200 backend tests. Browser tests drive the resident's view in a real browser —
+routing, the 3D map, a walk with emulated GPS that strays and gets rerouted,
+an axe accessibility pass, and the language switch:
 
 ```bash
 npm install --prefix tests/e2e   # once
 npm test --prefix tests/e2e      # starts the app itself
 ```
 
-Every push runs both suites on GitHub Actions — see
-[.github/workflows/tests.yml](.github/workflows/tests.yml).
+28 of those. Every push runs three jobs on GitHub Actions: the backend suite,
+the browser suite, and a container build that boots the image and asks it for a
+route. See [.github/workflows/tests.yml](.github/workflows/tests.yml).
+
+Several tests exist because a specific bug shipped, and say so in their
+docstrings — the 3D style that rendered nothing, the evacuation center a
+thousand kilometres away, the credentials that were committed. Breaking the
+code on purpose to confirm a test fails is part of writing one here.
 
 ## Where things are
 
@@ -115,7 +129,7 @@ Every push runs both suites on GitHub Actions — see
 | `backend/data/` | models, rasters and GeoJSON — the app's whole world |
 | `frontend/` | the map: plain JS and CSS, no build step |
 | `scripts/` | the data pipeline that produced `backend/data/` |
-| `tests/` | the dependency rule, the routing behaviour, the offline data |
+| `tests/` | the dependency rule, routing behaviour, offline data, committed secrets, translations — and `tests/e2e/` for the browser |
 | `docs/` | [architecture](docs/architecture.md) · [coding standards](docs/coding-standards.md) · [decisions](docs/decisions) · [model evaluation](docs/model-evaluation.md) |
 
 Read [docs/architecture.md](docs/architecture.md) before changing anything —
@@ -130,6 +144,9 @@ it explains the one rule the layout depends on.
 - Live rainfall from JAXA GSMaP, mapped to a return period by PAGASA
   thresholds — see [ADR-0004](docs/decisions/0004-gsmap-now-rainfall.md)
 - Side-by-side comparison against the plain shortest-distance route
+- One colour per route in the resident's view, taken from its overall flood
+  risk and drawn from the same rule that writes the sentence beside it; the
+  console keeps the per-road colouring, where the breakdown is the evidence
 - English and Filipino, switchable in the resident's view
 - Rainfall re-read while navigating: heavier rain re-checks the route under the
   model that now applies
