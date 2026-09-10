@@ -2,152 +2,93 @@
 
 Given a pin anywhere in District 1, Quezon City, CodeFish ranks three routes to
 nearby evacuation centers — preferring the dry way over the short way, using an
-XGBoost flood-susceptibility model and TOPSIS multi-criteria ranking.
+XGBoost flood-susceptibility model and TOPSIS ranking.
 
-## Running it
+## Run it
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python -m uvicorn backend.main:app --reload
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+./run.sh                      # or run_app.ps1 on Windows
 ```
 
-Then open http://localhost:8000. On Windows, `run_app.ps1` does the same;
-on macOS or Linux, `./run.sh`.
+http://localhost:8000 — the **resident's view**: one question, one answer.
+Add `?mode=admin` for the **console**: weights, layers, TOPSIS analysis.
+([ADR-0005](docs/decisions/0005-two-views.md))
 
-## Deploying it
+No configuration needed. It runs entirely from `backend/data/` — no database,
+no keys. ([ADR-0002](docs/decisions/0002-local-geojson-fallback.md))
+
+## Deploy it
 
 ```bash
 docker build -t codefish . && docker run --rm -p 8000:8000 codefish
 ```
 
-Configs for Fly and Render are in the repo. Deploy it for HTTPS above all:
-live location and installing the app both require a secure origin, so neither
-works from a laptop over plain http. See [docs/deployment.md](docs/deployment.md).
+Fly and Render configs are in the repo. Deploy for HTTPS above all: live
+location and installing to a home screen both need a secure origin.
+See [docs/deployment.md](docs/deployment.md).
 
-## Two views
+## Configure it
 
-`http://localhost:8000` opens the **resident's view**: one question — where are
-you — and one answer, with the flood-model vocabulary kept out of it.
+Optional, from the environment. `cp .env.example .env`.
 
-`http://localhost:8000/?mode=admin` opens the **console**: rainfall source,
-criteria weights, raster layers, and the full TOPSIS/WSM analysis panel. The
-choice is remembered per browser; each view links to the other. See
-[ADR-0005](docs/decisions/0005-two-views.md).
-
-With no configuration it runs entirely from the bundled data in
-`backend/data/` — no database, no waiting for a connection that isn't there.
-Point it at Postgres by setting `DATABASE_URL`, and it will use that instead,
-falling back to the same files if it becomes unreachable. See
-[ADR-0002](docs/decisions/0002-local-geojson-fallback.md).
-
-## Configuration
-
-Every setting is optional and read from the environment. Copy the template and
-fill in what you need:
-
-```bash
-cp .env.example .env
-```
-
-| Variable | Effect if unset |
+| Variable | If unset |
 |---|---|
-| `DATABASE_URL` | Reads the bundled GeoJSON instead of Postgres |
-| `JAXA_USER` / `JAXA_PASS` | Live rainfall is disabled and says so; the simulator still works |
-| `USE_LOCAL_DATA` | Implied whenever `DATABASE_URL` is unset |
+| `DATABASE_URL` | Bundled GeoJSON instead of Postgres |
+| `JAXA_USER` / `JAXA_PASS` | Live rainfall off, and says so; simulator still works |
+| `USE_LOCAL_DATA` | Implied when `DATABASE_URL` is unset |
 | `ROUTE_RATE_LIMIT` | 30 route requests per caller per minute |
-| `LOG_LEVEL` | `INFO`. Nothing prints; a test fails the build on a stray `print(` |
-| `REPORT_LEVEL` | Follows `LOG_LEVEL`. Set it to `WARNING` to drop the per-request scoring tables without quieting the app |
+| `LOG_LEVEL` / `REPORT_LEVEL` | `INFO`. `REPORT_LEVEL=WARNING` drops the scoring tables |
 
-`.env` is gitignored. No credential belongs in the source — a test
-(`tests/test_no_committed_secrets.py`) fails the build if one reappears.
+No credential belongs in the source — `tests/test_no_committed_secrets.py`
+fails the build if one reappears.
 
-Basemap tiles and the JAXA rainfall fetch need the internet; routing does not.
-Offline, the map draws without a basemap and rainfall reads 0.00 mm/hr. The 2D
-map uses Esri's dark canvas; the 3D view uses OpenStreetMap, because Esri has
-no tiles above zoom 16 and navigation happens at 17.5. Both are defined in one
-place — `BASEMAP_3D` in `frontend/js/config.js` — and OSM's tile policy is for
-light use, so read it before putting this in front of a crowd.
+Basemap tiles and JAXA rainfall need the internet; routing does not. The 2D map
+uses Esri, the 3D view OpenStreetMap (Esri has no tiles above zoom 16;
+navigation runs at 17.5). Both live in `BASEMAP_3D`, `frontend/js/config.js` —
+OSM's tile policy is for light use, so read it before a public demo.
 
-## Installing it on a phone
-
-The resident's view is a progressive web app: open it in Chrome or Safari and
-choose "Add to Home Screen". It then opens like an app, and keeps working when
-the signal does not — the map, the district, the centers and your last route
-are all still there.
-
-Routing itself needs the server, so a new route cannot be worked out offline;
-the app says so rather than failing quietly. Service workers also require
-HTTPS: over plain `http://` from another machine it stays an ordinary website.
-See [ADR-0006](docs/decisions/0006-installable-and-offline.md).
-
-## Walking a route
-
-After a route is chosen, **Start navigation** follows the walker live: the map
-tilts into a 3D heading-up view, the position marker moves with them, and the
-panel shows the distance left. Straying from the route asks the same
-flood-aware router for a new one from where they now are — never a shorter,
-riskier path.
-
-Live location needs HTTPS (or localhost). If the device cannot run the 3D view,
-navigation continues on the flat map. Offline it keeps following the position
-but cannot check progress or reroute, and says so. See
-[ADR-0007](docs/decisions/0007-live-navigation.md).
-
-## Checking it
+## Test it
 
 ```bash
-.venv/bin/python -m pytest tests -q
+.venv/bin/python -m pytest tests -q      # 200 tests
+npm test --prefix tests/e2e              # 28 in a real browser; starts the app
 ```
 
-200 backend tests. Browser tests drive the resident's view in a real browser —
-routing, the 3D map, a walk with emulated GPS that strays and gets rerouted,
-an axe accessibility pass, and the language switch:
+Three CI jobs on every push: backend, browser, and a container build that boots
+the image and asks it for a route.
 
-```bash
-npm install --prefix tests/e2e   # once
-npm test --prefix tests/e2e      # starts the app itself
-```
+## Layout
 
-28 of those. Every push runs three jobs on GitHub Actions: the backend suite,
-the browser suite, and a container build that boots the image and asks it for a
-route. See [.github/workflows/tests.yml](.github/workflows/tests.yml).
-
-Several tests exist because a specific bug shipped, and say so in their
-docstrings — the 3D style that rendered nothing, the evacuation center a
-thousand kilometres away, the credentials that were committed. Breaking the
-code on purpose to confirm a test fails is part of writing one here.
-
-## Where things are
-
-| Directory | What lives there |
+| Directory | |
 |---|---|
-| `backend/domain/` | the engine: routing, scoring, prediction rules. Imports no framework. |
+| `backend/domain/` | the engine: routing, scoring, prediction. Imports no framework. |
 | `backend/adapters/` | everything that talks outward: database, files, rasters, FTP, HTTP |
-| `backend/api/` | the HTTP layer — thin routers over the engine |
-| `backend/core/` | configuration, and the startup that wires it all together |
-| `backend/data/` | models, rasters and GeoJSON — the app's whole world |
-| `frontend/` | the map: plain JS and CSS, no build step |
-| `scripts/` | the data pipeline that produced `backend/data/` |
-| `tests/` | the dependency rule, routing behaviour, offline data, committed secrets, translations — and `tests/e2e/` for the browser |
-| `docs/` | [architecture](docs/architecture.md) · [coding standards](docs/coding-standards.md) · [decisions](docs/decisions) · [model evaluation](docs/model-evaluation.md) |
+| `backend/api/` | thin routers over the engine |
+| `backend/core/` | config, logging, rate limiting, startup |
+| `backend/data/` | models, rasters, GeoJSON |
+| `frontend/` | plain JS and CSS, no build step |
+| `scripts/` | the pipeline that produced `backend/data/` |
+| `tests/` | rules, routing, offline data, secrets, translations · `tests/e2e/` for the browser |
 
-Read [docs/architecture.md](docs/architecture.md) before changing anything —
-it explains the one rule the layout depends on.
+Read [docs/architecture.md](docs/architecture.md) first — it explains the one
+rule the layout depends on. Also:
+[coding standards](docs/coding-standards.md) ·
+[decisions](docs/decisions) ·
+[model evaluation](docs/model-evaluation.md)
 
 ## Features
 
-- Multi-criteria route selection (TOPSIS): flood exposure 0.764, road class
-  0.124, distance 0.112 — see [ADR-0003](docs/decisions/0003-topsis-weights.md)
-- Flood prediction per road segment across 5-, 25- and 100-year return periods
-- Real-time raster tile rendering of hazard, elevation, slope and land cover
-- Live rainfall from JAXA GSMaP, mapped to a return period by PAGASA
-  thresholds — see [ADR-0004](docs/decisions/0004-gsmap-now-rainfall.md)
-- Side-by-side comparison against the plain shortest-distance route
-- One colour per route in the resident's view, taken from its overall flood
-  risk and drawn from the same rule that writes the sentence beside it; the
-  console keeps the per-road colouring, where the breakdown is the evidence
-- English and Filipino, switchable in the resident's view
-- Rainfall re-read while navigating: heavier rain re-checks the route under the
-  model that now applies
-- Usable by keyboard and screen reader, and checked by tests
+- TOPSIS route selection: flood 0.764, road class 0.124, distance 0.112
+  ([ADR-0003](docs/decisions/0003-topsis-weights.md))
+- Flood prediction per road across 5-, 25- and 100-year return periods
+- Raster tiles for hazard, elevation, slope, land cover
+- Live rainfall from JAXA GSMaP via PAGASA thresholds
+  ([ADR-0004](docs/decisions/0004-gsmap-now-rainfall.md))
+- Live navigation: 3D heading-up view, rerouting when you stray or the rain
+  turns ([ADR-0007](docs/decisions/0007-live-navigation.md))
+- Installable, and honest about what works offline
+  ([ADR-0006](docs/decisions/0006-installable-and-offline.md))
+- One colour per route from its overall flood risk, drawn from the same rule
+  that writes the sentence beside it; the console keeps per-road colouring
+- English and Filipino · keyboard and screen reader, checked by tests
